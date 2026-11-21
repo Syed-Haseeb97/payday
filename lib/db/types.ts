@@ -1,6 +1,6 @@
 // Payday Data Model Types
 
-export type PaymentReliability = 'high' | 'medium' | 'low';
+export type PaymentReliability = 'reliable' | 'average' | 'slow' | 'unreliable' | 'new';
 
 export type BookingStatus = 'inquiry' | 'confirmed' | 'completed' | 'cancelled';
 
@@ -10,7 +10,7 @@ export type PaymentMethod = 'UPI' | 'bank_transfer' | 'cash' | 'cheque' | 'other
 
 export type ExpenseFrequency = 'weekly' | 'monthly' | 'quarterly' | 'yearly';
 
-export type ExpenseCategory = 'rent' | 'emi' | 'salary' | 'software' | 'operational' | 'other';
+export type ExpenseCategory = 'rent' | 'emi' | 'salary' | 'software' | 'insurance' | 'operational' | 'other';
 
 export type ReminderTone = 'friendly' | 'firm' | 'final';
 
@@ -69,10 +69,11 @@ export interface Invoice {
   booking_id: string;
   client_id: string;
   invoice_number: string;
-  milestone_label: string;
+  milestone_label: string; // 'advance' | 'mid' | 'final'
   amount: number;
   paid_amount: number;
   due_date: string; // YYYY-MM-DD
+  sent: boolean;
   status: InvoiceStatus;
   upi_link?: string | null;
   upi_qr_placeholder?: string | null;
@@ -96,6 +97,8 @@ export interface Payment {
   reference_number?: string | null;
   notes?: string | null;
   created_at: string;
+  // Joined
+  invoice?: Invoice;
 }
 
 export interface RecurringExpense {
@@ -154,7 +157,7 @@ export const DEMO_USER: User = {
   email: 'arjun@example.com',
   full_name: 'Arjun Verma',
   business_name: 'Arjun Visuals',
-  phone: '+919876543210',
+  phone: '+91 90000 00000',
   upi_id: 'arjunvisuals@okaxis',
   created_at: '2026-11-01T00:00:00Z',
   updated_at: '2026-11-01T00:00:00Z',

@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email TEXT UNIQUE NOT NULL,
     full_name TEXT NOT NULL,
-    business_name TEXT NOT NULL DEFAULT 'Arjun Photography',
+    business_name TEXT NOT NULL DEFAULT 'Arjun Visuals',
     phone TEXT,
     upi_id TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -17,14 +17,14 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- 2. CLIENTS TABLE
--- payment_reliability: 'high' (pays on time), 'medium' (occasional minor delay), 'low' (habitual late payer)
+-- payment_reliability: 'reliable' (0-2d), 'average' (5-8d), 'slow' (~12d), 'unreliable' (15+d), 'new' (0d)
 CREATE TABLE IF NOT EXISTS clients (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     phone TEXT,
     email TEXT,
-    payment_reliability TEXT NOT NULL DEFAULT 'medium' CHECK (payment_reliability IN ('high', 'medium', 'low')),
+    payment_reliability TEXT NOT NULL DEFAULT 'average' CHECK (payment_reliability IN ('reliable', 'average', 'slow', 'unreliable', 'new')),
     average_delay_days INTEGER NOT NULL DEFAULT 0,
     notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 );
 
 -- 4. INVOICES TABLE
--- milestone_label: 'Advance (30%)', 'Shoot Day / Mid (50%)', 'Final Album / Video Delivery (20%)', custom
+-- milestone_label: 'advance', 'mid', 'final'
 -- status: 'draft', 'sent', 'partially_paid', 'paid', 'overdue'
 CREATE TABLE IF NOT EXISTS invoices (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS invoices (
     amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
     paid_amount NUMERIC(12, 2) NOT NULL DEFAULT 0.00 CHECK (paid_amount >= 0),
     due_date DATE NOT NULL,
+    sent BOOLEAN NOT NULL DEFAULT TRUE,
     status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'sent', 'partially_paid', 'paid', 'overdue')),
     upi_link TEXT,
     upi_qr_placeholder TEXT,
@@ -85,7 +86,7 @@ CREATE TABLE IF NOT EXISTS payments (
 );
 
 -- 6. RECURRING EXPENSES TABLE
--- Fixed overhead costs: studio rent, equipment EMIs, assistant salary, software subscriptions
+-- Fixed overhead costs: studio rent, equipment EMIs, assistant salary, software subscriptions, insurance
 CREATE TABLE IF NOT EXISTS recurring_expenses (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -93,7 +94,7 @@ CREATE TABLE IF NOT EXISTS recurring_expenses (
     amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
     frequency TEXT NOT NULL DEFAULT 'monthly' CHECK (frequency IN ('weekly', 'monthly', 'quarterly', 'yearly')),
     next_due_date DATE NOT NULL,
-    category TEXT NOT NULL DEFAULT 'operational' CHECK (category IN ('rent', 'emi', 'salary', 'software', 'operational', 'other')),
+    category TEXT NOT NULL DEFAULT 'operational' CHECK (category IN ('rent', 'emi', 'salary', 'software', 'insurance', 'operational', 'other')),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -101,8 +102,6 @@ CREATE TABLE IF NOT EXISTS recurring_expenses (
 
 -- 7. REMINDERS TABLE
 -- Tracks WhatsApp reminder message drafts and sent status
--- tone: 'friendly', 'firm', 'final'
--- language: 'en', 'hinglish'
 CREATE TABLE IF NOT EXISTS reminders (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -135,7 +134,7 @@ CREATE TABLE IF NOT EXISTS alerts (
 CREATE TABLE IF NOT EXISTS settings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    opening_cash_balance NUMERIC(12, 2) NOT NULL DEFAULT 50000.00,
+    opening_cash_balance NUMERIC(12, 2) NOT NULL DEFAULT 140000.00,
     currency TEXT NOT NULL DEFAULT 'INR',
     locale TEXT NOT NULL DEFAULT 'en-IN',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

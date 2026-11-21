@@ -1,14 +1,7 @@
 // Database access layer for Payday
-// Designed to isolate Supabase queries and allow moving business logic to its own service later.
-
-import { DEMO_USER_ID, DEMO_USER } from './types';
+// Designed to isolate Supabase/In-memory store queries and keep business logic in lib/.
 
 export * from './types';
-
-export function getDemoUserId(): string {
-  return DEMO_USER_ID;
-}
-
-export function getDemoUser() {
-  return DEMO_USER;
-}
+export * from './schemas';
+export * from './repository';
+export * from './seed-data';
