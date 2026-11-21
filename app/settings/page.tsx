@@ -70,7 +70,7 @@ export default function SettingsPage() {
       } else {
         let desc = 'Connection failed.';
         if (data.errorKind === 'not_configured') {
-          desc = 'AI is not configured. Set LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL in .env.local to enable real AI drafts.';
+          desc = 'AI is not configured. Set the required LLM environment variables (base URL, key, model) in your server environment to enable real AI drafts.';
         } else if (data.errorKind === 'timeout') {
           desc = 'Request timed out after 10 seconds.';
         } else if (data.errorKind === 'http_error') {

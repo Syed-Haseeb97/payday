@@ -18,9 +18,10 @@ export function getDemoNumbers() {
   for (const inv of seed.invoices) {
     const balance = inv.amount - inv.paid_amount;
     const status = deriveInvoiceStatus({
+      amount: inv.amount,
+      paidAmount: inv.paid_amount,
       dueDate: inv.due_date,
-      balance,
-      totalAmount: inv.amount,
+      sent: inv.sent,
       today,
     });
     if (balance > 0) {
