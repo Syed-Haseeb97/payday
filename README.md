@@ -78,6 +78,10 @@ $$\text{Score} = 0.50 \times \text{CashImpact} + 0.25 \times \text{Urgency} + 0.
   1. **Primary AI Parser**: Context-aware LLM extraction returning structured JSON.
   2. **Deterministic Regex Engine**: 100% offline fallback parsing Indian currency shorthands (`1.2L`, `80k`, `₹80,000`, `2 lakh 50 thousand`), Indian calendar dates, advance payment statuses, and payment modes (`upi`, `cash`, `bank_transfer`).
 - **Editable Preview Drawer**: Displays parsed client, event date, milestone split (`25% / 50% / 25%`), advance payment receipt, and confidence breakdown. **Zero silent writes**—the user verifies everything before saving.
+- **Transactional All-or-Nothing Rollback**:
+  - Atomic confirmation creates Client (if new), Booking, 3 Milestone Invoices, and Advance Payment atomically.
+  - If any stage fails, automated compensation cleans up created entities in reverse order via repository `deleteBooking(id)` and `deleteClient(id)` methods on both In-Memory and Supabase modes.
+  - **Duplicate Booking Prevention**: Rejects duplicate submissions for the same client, title, event date, and total amount created within the last 2 minutes. The UI disables the Confirm button while pending to prevent accidental double-submits.
 
 ### 5. Pricing & Unit Economics
 - Clear transparent pricing designed for Indian creatives:

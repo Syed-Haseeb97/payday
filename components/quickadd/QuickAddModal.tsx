@@ -226,6 +226,7 @@ export function QuickAddModal({ isOpen, onClose }: QuickAddModalProps) {
   };
 
   const handleConfirm = async () => {
+    if (submitting) return;
     setSubmitting(true);
     setSubmitError(null);
 

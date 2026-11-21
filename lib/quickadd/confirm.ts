@@ -1,9 +1,10 @@
 // Quick Add Confirm Handler
 // Transactional safety: creates Client (if new), Booking, Milestones, and Payment together.
+// All-or-nothing compensation rollback on both In-Memory and Supabase repositories.
 
 import { z } from 'zod';
 import { getRepository, PaydayRepository } from '../db/repository';
-import { Booking, Client, Invoice, Payment, PaymentMethod } from '../db/types';
+import { Booking, Client, Invoice, Payment } from '../db/types';
 import { getIndiaTodayStr } from '../date';
 
 export const quickAddConfirmSchema = z
@@ -73,10 +74,38 @@ export async function executeQuickAddConfirm(
 ): Promise<QuickAddConfirmResult> {
   const validated = quickAddConfirmSchema.parse(input);
 
+  // Prevent duplicate bookings created in the last 2 minutes
+  const existingBookings = await repo.getBookings();
+  const twoMinutesAgo = Date.now() - 2 * 60 * 1000;
+
+  const isDuplicate = existingBookings.some((b) => {
+    const matchesClient =
+      validated.clientMode === 'existing'
+        ? b.client_id === validated.clientId
+        : b.client?.name?.trim().toLowerCase() === validated.newClient?.name.trim().toLowerCase();
+    const matchesTitle = b.title.trim().toLowerCase() === validated.title.trim().toLowerCase();
+    const matchesDate = b.event_date === validated.eventDate;
+    const matchesAmount = Math.round(Number(b.total_amount)) === validated.totalAmount;
+    const createdTime = new Date(b.created_at).getTime();
+
+    return (
+      matchesClient &&
+      matchesTitle &&
+      matchesDate &&
+      matchesAmount &&
+      createdTime >= twoMinutesAgo
+    );
+  });
+
+  if (isDuplicate) {
+    throw new Error(
+      `A booking for "${validated.title}" on ${validated.eventDate} was already confirmed a moment ago. Please wait 2 minutes before creating a duplicate.`
+    );
+  }
+
   let client: Client;
   let createdClientId: string | null = null;
   let createdBookingId: string | null = null;
-  const createdInvoiceIds: string[] = [];
 
   try {
     // 1. Resolve or Create Client
@@ -113,9 +142,6 @@ export async function executeQuickAddConfirm(
       notes: validated.notes,
     });
     createdBookingId = booking.id;
-    for (const inv of invoices) {
-      createdInvoiceIds.push(inv.id);
-    }
 
     // 3. Record Advance Payment if advancePaid is true
     let payment: Payment | null = null;
@@ -149,23 +175,19 @@ export async function executeQuickAddConfirm(
       payment,
     };
   } catch (err: unknown) {
-    // Rollback created entities on failure to guarantee atomic all-or-nothing
+    // Compensate in reverse order: delete created booking (with its invoices/payments), then created client
     try {
-      // In-memory rollback support if available
-      const anyRepo = repo as any;
-      if (anyRepo.store) {
-        if (createdBookingId) {
-          anyRepo.store.bookings = anyRepo.store.bookings.filter((b: any) => b.id !== createdBookingId);
-        }
-        if (createdInvoiceIds.length > 0) {
-          anyRepo.store.invoices = anyRepo.store.invoices.filter((i: any) => !createdInvoiceIds.includes(i.id));
-        }
-        if (createdClientId) {
-          anyRepo.store.clients = anyRepo.store.clients.filter((c: any) => c.id !== createdClientId);
-        }
+      if (createdBookingId) {
+        await repo.deleteBooking(createdBookingId);
       }
-    } catch {
-      // ignore rollback cleanup errors
+      if (createdClientId) {
+        await repo.deleteClient(createdClientId);
+      }
+    } catch (compErr: unknown) {
+      console.error(
+        '[QuickAdd] Compensation rollback failed:',
+        compErr instanceof Error ? compErr.name : 'UnknownError'
+      );
     }
 
     throw err;

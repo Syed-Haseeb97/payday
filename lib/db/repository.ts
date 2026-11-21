@@ -50,6 +50,7 @@ export interface PaydayRepository {
   getClientById(id: string): Promise<Client | null>;
   createClient(data: Omit<Client, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<Client>;
   updateClient(id: string, data: Partial<Client>): Promise<Client>;
+  deleteClient(id: string): Promise<void>;
 
   getBookings(): Promise<Booking[]>;
   getBookingById(id: string): Promise<Booking | null>;
@@ -67,6 +68,7 @@ export interface PaydayRepository {
     customMilestones?: Array<{ label: 'advance' | 'mid' | 'final'; amount: number; due: string }>;
     notes?: string | null;
   }): Promise<{ booking: Booking; invoices: Invoice[] }>;
+  deleteBooking(id: string): Promise<void>;
 
   getInvoices(filter?: { status?: string; clientId?: string }): Promise<Invoice[]>;
   getInvoiceById(id: string): Promise<Invoice | null>;
@@ -194,6 +196,14 @@ export class InMemoryRepository implements PaydayRepository {
     };
     this.store.clients[index] = updated;
     return { ...updated };
+  }
+
+  async deleteClient(id: string): Promise<void> {
+    const hasBookings = this.store.bookings.some((b) => b.client_id === id);
+    if (hasBookings) {
+      throw new Error(`Cannot delete client with existing bookings: ${id}`);
+    }
+    this.store.clients = this.store.clients.filter((c) => c.id !== id);
   }
 
   async getBookings(): Promise<Booking[]> {
@@ -333,6 +343,18 @@ export class InMemoryRepository implements PaydayRepository {
       },
       invoices: createdInvoices,
     };
+  }
+
+  async deleteBooking(id: string): Promise<void> {
+    const booking = this.store.bookings.find((b) => b.id === id);
+    if (!booking) return;
+
+    const bookingInvoices = this.store.invoices.filter((inv) => inv.booking_id === id);
+    const invoiceIds = new Set(bookingInvoices.map((inv) => inv.id));
+
+    this.store.payments = this.store.payments.filter((p) => !invoiceIds.has(p.invoice_id));
+    this.store.invoices = this.store.invoices.filter((inv) => inv.booking_id !== id);
+    this.store.bookings = this.store.bookings.filter((b) => b.id !== id);
   }
 
   async getInvoices(filter?: { status?: string; clientId?: string }): Promise<Invoice[]> {
@@ -694,6 +716,26 @@ export class SupabaseRepository implements PaydayRepository {
     return updated;
   }
 
+  async deleteClient(id: string): Promise<void> {
+    const { data: bookings, error: checkError } = await this.client
+      .from('bookings')
+      .select('id')
+      .eq('client_id', id)
+      .limit(1);
+
+    if (checkError) throw checkError;
+    if (bookings && bookings.length > 0) {
+      throw new Error(`Cannot delete client with existing bookings: ${id}`);
+    }
+
+    const { error } = await this.client
+      .from('clients')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
   async getBookings(): Promise<Booking[]> {
     const { data, error } = await this.client
       .from('bookings')
@@ -801,6 +843,33 @@ export class SupabaseRepository implements PaydayRepository {
     if (invErr) throw invErr;
 
     return { booking, invoices: invoices || [] };
+  }
+
+  async deleteBooking(id: string): Promise<void> {
+    const { data: invoices } = await this.client
+      .from('invoices')
+      .select('id')
+      .eq('booking_id', id);
+
+    if (invoices && invoices.length > 0) {
+      const invoiceIds = invoices.map((inv: { id: string }) => inv.id);
+      await this.client
+        .from('payments')
+        .delete()
+        .in('invoice_id', invoiceIds);
+    }
+
+    await this.client
+      .from('invoices')
+      .delete()
+      .eq('booking_id', id);
+
+    const { error } = await this.client
+      .from('bookings')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   }
 
   async getInvoices(filter?: { status?: string; clientId?: string }): Promise<Invoice[]> {
