@@ -256,6 +256,16 @@ cp .env.example .env.local
 | `LLM_MODEL` | No | Primary model (e.g. `llama-3.3-70b-versatile` or `gpt-4o-mini`) |
 | `NEXT_PUBLIC_DEMO_RESET` | No | Set to `'true'` to allow resetting demo data |
 
+### 3. Supabase Postgres Setup (Persistent Production Mode)
+1. Create a project in Supabase and run all SQL files in `supabase/migrations/` in the SQL Editor.
+2. Regenerate fresh seed data relative to today:
+   ```bash
+   npm run seed:sql
+   ```
+   Execute the generated `supabase/seed.sql` in the Supabase SQL Editor.
+3. Add `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to `.env.local` (or Vercel environment variables).
+4. Run `npm run build && npm run start`. The app will automatically connect to Supabase Postgres.
+
 ---
 
 ## Test Verification

@@ -1282,12 +1282,18 @@ export class SupabaseRepository implements PaydayRepository {
     this.alertStates = {};
     this.reminders = [];
 
+    // Delete in strict foreign-key dependency order
+    await this.client.from('reminders').delete().eq('user_id', DEMO_USER_ID);
+    await this.client.from('alerts').delete().eq('user_id', DEMO_USER_ID);
     await this.client.from('payments').delete().eq('user_id', DEMO_USER_ID);
     await this.client.from('invoices').delete().eq('user_id', DEMO_USER_ID);
     await this.client.from('bookings').delete().eq('user_id', DEMO_USER_ID);
     await this.client.from('clients').delete().eq('user_id', DEMO_USER_ID);
     await this.client.from('recurring_expenses').delete().eq('user_id', DEMO_USER_ID);
 
+    // Insert user and fresh seed data relative to runtime date
+    await this.client.from('users').upsert(seed.user);
+    await this.client.from('settings').upsert(seed.settings);
     await this.client.from('clients').insert(seed.clients);
     await this.client.from('bookings').insert(seed.bookings);
     await this.client.from('invoices').insert(seed.invoices);
