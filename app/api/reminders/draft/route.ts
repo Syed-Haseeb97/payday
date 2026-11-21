@@ -7,27 +7,7 @@ import { formatINR } from '@/lib/money';
 import { getIndiaTodayStr } from '@/lib/date';
 import { daysBetween } from '@/lib/forecast';
 import { DEMO_USER } from '@/lib/db/types';
-
-// Rate Limiter: In-memory sliding window, 20 requests per minute per IP
-const RATE_LIMIT_WINDOW_MS = 60 * 1000;
-const MAX_REQUESTS_PER_WINDOW = 20;
-const ipRequestHistory = new Map<string, number[]>();
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const timestamps = (ipRequestHistory.get(ip) || []).filter(
-    (t) => now - t < RATE_LIMIT_WINDOW_MS
-  );
-
-  if (timestamps.length >= MAX_REQUESTS_PER_WINDOW) {
-    ipRequestHistory.set(ip, timestamps);
-    return false;
-  }
-
-  timestamps.push(now);
-  ipRequestHistory.set(ip, timestamps);
-  return true;
-}
+import { getClientIp, checkRateLimit } from '@/lib/rate-limit';
 
 const reminderDraftSchema = z.object({
   invoiceId: z.string().min(1, 'Invoice ID is required'),
@@ -37,12 +17,11 @@ const reminderDraftSchema = z.object({
 
 export async function POST(req: NextRequest) {
   // Check rate limit
-  const clientIp =
-    req.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1';
+  const clientIp = getClientIp(req);
 
-  if (!checkRateLimit(clientIp)) {
+  if (!checkRateLimit(clientIp).allowed) {
     return NextResponse.json(
-      { error: 'Rate limit exceeded. Maximum 20 reminder requests per minute.' },
+      { error: 'Too many requests. Please try again later.' },
       { status: 429 }
     );
   }

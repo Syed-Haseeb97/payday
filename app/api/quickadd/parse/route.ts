@@ -4,37 +4,19 @@ import { getRepository } from '@/lib/db/repository';
 import { parseQuickAdd } from '@/lib/quickadd/ai';
 import { buildBookingProposal } from '@/lib/quickadd/builder';
 import { getIndiaTodayStr } from '@/lib/date';
+import { getClientIp, checkRateLimit } from '@/lib/rate-limit';
 
 const parseRequestSchema = z.object({
   text: z.string().min(1, 'Text cannot be empty').max(1500, 'Text must be at most 1,500 characters'),
   languageHint: z.string().optional(),
 });
 
-// Sliding-window rate limiter: max 15 requests per minute
-const rateLimitMap = new Map<string, number[]>();
-const RATE_LIMIT_WINDOW_MS = 60 * 1000;
-const MAX_REQUESTS_PER_WINDOW = 15;
-
-function checkRateLimit(key: string): boolean {
-  const now = Date.now();
-  const timestamps = rateLimitMap.get(key) || [];
-  const validTimestamps = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-
-  if (validTimestamps.length >= MAX_REQUESTS_PER_WINDOW) {
-    return false;
-  }
-
-  validTimestamps.push(now);
-  rateLimitMap.set(key, validTimestamps);
-  return true;
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const ip = req.headers.get('x-forwarded-for') || 'default-user';
-    if (!checkRateLimit(ip)) {
+    const ip = getClientIp(req);
+    if (!checkRateLimit(ip).allowed) {
       return NextResponse.json(
-        { error: 'Rate limit exceeded. Maximum 15 requests per minute.' },
+        { error: 'Too many requests. Please try again later.' },
         { status: 429 }
       );
     }

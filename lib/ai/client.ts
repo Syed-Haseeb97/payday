@@ -2,6 +2,7 @@
 // Implements 10s timeout, 1 retry, model fallback, and deterministic template fallback.
 
 import { getLLMConfig, isLLMConfigured } from './config';
+import { isDailyCapReached, incrementDailyCallCount } from '../rate-limit';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -93,9 +94,18 @@ export async function executeCompletionWithFallback(
     };
   }
 
+  // If daily cap is reached, fall back immediately without making network calls
+  if (await isDailyCapReached()) {
+    return {
+      content: deterministicFallback(),
+      modelUsed: 'deterministic-template',
+    };
+  }
+
   // Attempt 1: Primary Model (with 1 retry)
   for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
     try {
+      await incrementDailyCallCount();
       const content = await fetchWithTimeout(
         config.baseUrl,
         config.apiKey,
