@@ -46,17 +46,6 @@ export function ReminderDrawer({
   const [markedSent, setMarkedSent] = useState(false);
   const [recentReminderNote, setRecentReminderNote] = useState<string | null>(null);
 
-  // Sync default tone when opened or invoiceId changes
-  useEffect(() => {
-    if (isOpen && invoiceId) {
-      setTone(defaultTone);
-      setLanguage(defaultLanguage);
-      setMarkedSent(false);
-      checkRecentReminder(invoiceId);
-      fetchDraft(invoiceId, defaultTone, defaultLanguage);
-    }
-  }, [isOpen, invoiceId, defaultTone, defaultLanguage]);
-
   const checkRecentReminder = async (invId: string) => {
     try {
       const res = await fetch(`/api/reminders/status?invoiceId=${invId}`);
@@ -103,6 +92,17 @@ export function ReminderDrawer({
       setLoading(false);
     }
   };
+
+  // Sync default tone when opened or invoiceId changes
+  useEffect(() => {
+    if (isOpen && invoiceId) {
+      setTone(defaultTone);
+      setLanguage(defaultLanguage);
+      setMarkedSent(false);
+      checkRecentReminder(invoiceId);
+      fetchDraft(invoiceId, defaultTone, defaultLanguage);
+    }
+  }, [isOpen, invoiceId, defaultTone, defaultLanguage]);
 
   const handleToneChange = (newTone: ReminderTone) => {
     setTone(newTone);

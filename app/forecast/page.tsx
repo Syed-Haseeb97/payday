@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import {
   TrendingUp,
@@ -125,6 +126,24 @@ export default function ForecastPage() {
   useEffect(() => {
     fetchInputs();
   }, []);
+
+  // Check URL params for guided demo preset (e.g. ?preset=mehta)
+  useEffect(() => {
+    if (!rawInputs) return;
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('preset') === 'mehta') {
+        const mehta = rawInputs.clients.find((c) =>
+          c.name.toLowerCase().includes('mehta')
+        );
+        if (mehta) {
+          setScenarios([
+            { type: 'clientLate', clientId: mehta.id, extraDays: 20 },
+          ]);
+        }
+      }
+    }
+  }, [rawInputs]);
 
   // ---------------------------------------------------------------------------
   // Real-Time Pure Forecast Computations (Zero Network Delay)
@@ -441,19 +460,26 @@ export default function ForecastPage() {
 
         {/* Horizon Toggle & Mobile Scenario Toggle */}
         <div className="flex items-center gap-2.5">
-          <div className="inline-flex items-center rounded-full border border-[#C8C2B5] bg-white p-1">
+          <div className="inline-flex items-center rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] p-1">
             {([30, 60, 90] as const).map((h) => (
               <button
                 key={h}
                 type="button"
                 onClick={() => setHorizonDays(h)}
-                className={`rounded-full px-3.5 py-1 text-xs font-mono uppercase tracking-wider font-semibold transition-all ${
+                className={`relative rounded-full px-3.5 py-1 text-xs font-mono uppercase tracking-wider font-semibold transition-colors z-10 ${
                   horizonDays === h
-                    ? 'bg-[#16181D] text-[#F5F3EE]'
-                    : 'text-[#5F626A] hover:text-[#16181D]'
+                    ? 'text-[var(--bg-canvas)]'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                 }`}
               >
-                {h}D
+                {horizonDays === h && (
+                  <motion.span
+                    layoutId="forecast-horizon-highlight"
+                    transition={{ type: 'spring', stiffness: 480, damping: 36, mass: 0.65 }}
+                    className="absolute inset-0 rounded-full bg-[var(--text-primary)] -z-10"
+                  />
+                )}
+                <span>{h}D</span>
               </button>
             ))}
           </div>
@@ -876,40 +902,43 @@ export default function ForecastPage() {
               </div>
 
               {/* Event Type Filter Tabs */}
-              <div className="inline-flex items-center rounded-full border border-[#C8C2B5] bg-[#F5F3EE] p-0.5 text-xs font-mono">
-                <button
-                  type="button"
-                  onClick={() => setEventFilter('all')}
-                  className={`rounded-full px-3 py-1 font-medium transition-colors ${
-                    eventFilter === 'all'
-                      ? 'bg-white text-[#16181D] shadow-2xs font-semibold'
-                      : 'text-[#5F626A] hover:text-[#16181D]'
-                  }`}
-                >
-                  All ({activeResult.events.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEventFilter('inflow')}
-                  className={`rounded-full px-3 py-1 font-medium transition-colors ${
-                    eventFilter === 'inflow'
-                      ? 'bg-white text-[#1D6B52] shadow-2xs font-semibold'
-                      : 'text-[#5F626A] hover:text-[#1D6B52]'
-                  }`}
-                >
-                  Receipts
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEventFilter('outflow')}
-                  className={`rounded-full px-3 py-1 font-medium transition-colors ${
-                    eventFilter === 'outflow'
-                      ? 'bg-white text-[#B53A26] shadow-2xs font-semibold'
-                      : 'text-[#5F626A] hover:text-[#B53A26]'
-                  }`}
-                >
-                  Bills &amp; Outflows
-                </button>
+              <div className="inline-flex items-center rounded-full border border-[var(--border-line)] bg-[var(--bg-surface-subtle)] p-0.5 text-xs font-mono">
+                {(['all', 'inflow', 'outflow'] as const).map((tab) => {
+                  const isActive = eventFilter === tab;
+                  const label =
+                    tab === 'all'
+                      ? `All (${activeResult.events.length})`
+                      : tab === 'inflow'
+                      ? 'Receipts'
+                      : 'Bills & Outflows';
+
+                  const activeColor =
+                    tab === 'inflow'
+                      ? 'text-[var(--money-in)]'
+                      : tab === 'outflow'
+                      ? 'text-[var(--money-out)]'
+                      : 'text-[var(--text-primary)]';
+
+                  return (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setEventFilter(tab)}
+                      className={`relative rounded-full px-3 py-1 font-medium transition-colors z-10 ${
+                        isActive ? `${activeColor} font-semibold` : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                      }`}
+                    >
+                      {isActive && (
+                        <motion.span
+                          layoutId="forecast-events-filter-pill"
+                          transition={{ type: 'spring', stiffness: 480, damping: 36, mass: 0.65 }}
+                          className="absolute inset-0 rounded-full bg-[var(--bg-surface)] border border-[var(--border-line)] -z-10 shadow-2xs"
+                        />
+                      )}
+                      <span>{label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

@@ -164,10 +164,10 @@ export default function BookingsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-10 w-48 bg-[var(--bg-surface-subtle)] rounded-xl animate-pulse" />
+        <div className="h-10 w-48 bg-[var(--bg-surface-subtle)] rounded-xl opacity-70" />
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-40 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-line)] p-5 animate-pulse" />
+            <div key={i} className="h-40 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-line)] p-5 opacity-70" />
           ))}
         </div>
       </div>

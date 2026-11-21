@@ -23,6 +23,8 @@ import { format, parseISO } from 'date-fns';
 import { GeneratedAlert } from '@/lib/alerts';
 import { ReminderDrawer } from '@/components/reminders/ReminderDrawer';
 import { QuickAddModal } from '@/components/quickadd/QuickAddModal';
+import { RollingNumber } from '@/components/ui/RollingNumber';
+import { buildTodaySummary } from '@/lib/dashboard/summary';
 import { X, Bell, Send, Zap } from 'lucide-react';
 
 interface CashOutlook {
@@ -182,6 +184,18 @@ export default function DashboardPage() {
 
   const { totalOutstanding, totalOverdue, thisMonthReceived, agingBuckets, whoOwesRows } = data;
 
+  const overdueCount =
+    (agingBuckets['1_7']?.count || 0) +
+    (agingBuckets['8_30']?.count || 0) +
+    (agingBuckets['30_plus']?.count || 0);
+
+  const todaySentence = buildTodaySummary({
+    overdueCount,
+    lowestBalance: cashOutlook?.lowestBalance ?? null,
+    lowestBalanceDate: cashOutlook?.lowestBalanceDate ?? null,
+    whoOwesCount: whoOwesRows.length,
+  });
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
@@ -198,24 +212,57 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setQuickAddOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#16181D] text-[#F5F3EE] px-4 py-2 text-xs font-mono font-medium hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-1.5 rounded-full bg-[var(--text-primary)] text-[var(--bg-canvas)] px-4 py-2 text-xs font-mono font-medium hover:opacity-90 transition-opacity touch-target"
           >
-            <Zap className="w-3.5 h-3.5 text-[#E3EFE8]" />
+            <Zap className="w-3.5 h-3.5 text-[var(--money-in)]" />
             <span>Quick Add</span>
           </button>
           <Link
             href="/bad-day"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--money-out)] bg-[var(--money-out-bg)] px-4 py-2 text-xs font-mono font-medium text-[var(--money-out)] hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--money-out)] bg-[var(--money-out-bg)] px-4 py-2 text-xs font-mono font-medium text-[var(--money-out)] hover:opacity-90 transition-opacity touch-target"
           >
             <Flame className="w-3.5 h-3.5" />
             <span>Bad Day Mode</span>
           </Link>
           <Link
             href="/invoices"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-4 py-2 text-xs font-mono uppercase tracking-wider text-[var(--text-primary)] font-medium hover:bg-[var(--bg-surface-subtle)] transition-colors"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-4 py-2 text-xs font-mono uppercase tracking-wider text-[var(--text-primary)] font-medium hover:bg-[var(--bg-surface-subtle)] transition-colors touch-target"
           >
             <Receipt className="w-3.5 h-3.5" />
             <span>All Invoices</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* 1. Today Summary Hero Card */}
+      <div className="p-5 sm:p-6 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="space-y-2 max-w-2xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface-subtle)] px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-[var(--text-muted)] font-medium">
+            <span className="w-2 h-2 rounded-full bg-[var(--text-primary)]" />
+            <span>Today's Executive Briefing</span>
+          </div>
+          <p className="font-serif italic text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)] leading-snug">
+            {todaySentence}
+          </p>
+          <p className="text-xs text-[var(--text-muted)] font-mono">
+            Deterministic daily snapshot calculated from active client receivables and fixed studio bills.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 self-start md:self-center flex-shrink-0">
+          <Link
+            href="/bad-day"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--money-out)] text-white px-5 py-2.5 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity touch-target"
+          >
+            <Flame className="w-4 h-4" />
+            <span>Bad Day Triage</span>
+          </Link>
+          <Link
+            href="/forecast"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-4 py-2.5 text-xs font-mono uppercase tracking-wider font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-surface-subtle)] transition-colors touch-target"
+          >
+            <TrendingUp className="w-4 h-4 text-[var(--text-muted)]" />
+            <span>90D Forecast</span>
           </Link>
         </div>
       </div>
@@ -325,13 +372,13 @@ export default function DashboardPage() {
       {/* Top Level KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Total Outstanding */}
-        <div className="p-5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-line)]">
+        <div className="p-5 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)]">
           <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-[var(--text-muted)]">
             <span>Total Outstanding</span>
             <Receipt className="w-4 h-4 text-[var(--text-muted)]" />
           </div>
           <div className="mt-2 text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[var(--text-primary)]">
-            {formatINR(totalOutstanding)}
+            <RollingNumber value={totalOutstanding} />
           </div>
           <p className="mt-1 text-xs text-[var(--text-faint)] font-mono">
             Combined unpaid sent balance
@@ -339,13 +386,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Total Overdue */}
-        <div className="p-5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-line)]">
+        <div className="p-5 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)]">
           <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-[var(--money-out)]">
             <span>Total Overdue</span>
             <Clock className="w-4 h-4 text-[var(--money-out)]" />
           </div>
           <div className="mt-2 text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[var(--money-out)]">
-            {formatINR(totalOverdue)}
+            <RollingNumber value={totalOverdue} />
           </div>
           <p className="mt-1 text-xs text-[var(--text-faint)] font-mono">
             Invoices past milestone due date
@@ -353,13 +400,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Received This Month */}
-        <div className="p-5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-line)]">
+        <div className="p-5 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)]">
           <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-[var(--money-in)]">
             <span>Received This Month</span>
             <ArrowUpRight className="w-4 h-4 text-[var(--money-in)]" />
           </div>
           <div className="mt-2 text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[var(--money-in)]">
-            {formatINR(thisMonthReceived)}
+            <RollingNumber value={thisMonthReceived} />
           </div>
           <p className="mt-1 text-xs text-[var(--text-faint)] font-mono">
             Collected via UPI &amp; transfers
@@ -368,43 +415,46 @@ export default function DashboardPage() {
       </div>
 
       {/* Cash Outlook Teaser Card */}
-      <div className="p-5 rounded-2xl bg-white border border-[#C8C2B5] flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-5 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-start sm:items-center gap-3.5">
           <div
             className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
               cashOutlook?.health === 'danger'
-                ? 'bg-[#F8E9E4] text-[#B53A26]'
+                ? 'bg-[var(--money-out-bg)] text-[var(--money-out)]'
                 : cashOutlook?.health === 'tight'
-                ? 'bg-[#F6ECD9] text-[#86560D]'
-                : 'bg-[#E3EFE8] text-[#1D6B52]'
+                ? 'bg-[var(--money-warn-bg)] text-[var(--money-warn)]'
+                : 'bg-[var(--money-in-bg)] text-[var(--money-in)]'
             }`}
           >
             <TrendingUp className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono uppercase tracking-wider text-[#5F626A] font-semibold">
+              <span className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
                 90-Day Cash Outlook
               </span>
               {cashOutlook && (
                 <span
                   className={`inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[10px] uppercase tracking-wider font-bold ${
                     cashOutlook.health === 'danger'
-                      ? 'bg-[#F8E9E4] text-[#B53A26]'
+                      ? 'bg-[var(--money-out-bg)] text-[var(--money-out)]'
                       : cashOutlook.health === 'tight'
-                      ? 'bg-[#F6ECD9] text-[#86560D]'
-                      : 'bg-[#E3EFE8] text-[#1D6B52]'
+                      ? 'bg-[var(--money-warn-bg)] text-[var(--money-warn)]'
+                      : 'bg-[var(--money-in-bg)] text-[var(--money-in)]'
                   }`}
                 >
                   {cashOutlook.health}
                 </span>
               )}
             </div>
-            <p className="mt-1 text-sm font-sans text-[#16181D]">
+            <p className="mt-1 text-sm font-sans text-[var(--text-primary)]">
               {cashOutlook ? (
                 <>
                   Lowest projected cash in 90 days is{' '}
-                  <span className="font-semibold">{formatINR(cashOutlook.lowestBalance)}</span> on{' '}
+                  <span className="font-semibold">
+                    <RollingNumber value={cashOutlook.lowestBalance} />
+                  </span>{' '}
+                  on{' '}
                   <span className="font-semibold">
                     {format(parseISO(cashOutlook.lowestBalanceDate), 'd MMM yyyy')}
                   </span>
@@ -425,7 +475,7 @@ export default function DashboardPage() {
 
         <Link
           href="/forecast"
-          className="inline-flex items-center gap-2 rounded-full border border-[#C8C2B5] bg-white px-4 py-2 text-xs font-mono uppercase tracking-wider font-semibold text-[#16181D] hover:bg-[#F5F3EE] transition-colors self-start md:self-auto flex-shrink-0"
+          className="inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-4 py-2 text-xs font-mono uppercase tracking-wider font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-surface-subtle)] transition-colors self-start md:self-auto flex-shrink-0 touch-target"
         >
           <span>Open 90D Forecast</span>
           <ChevronRight className="w-3.5 h-3.5" />

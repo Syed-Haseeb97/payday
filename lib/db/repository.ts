@@ -100,6 +100,9 @@ export interface PaydayRepository {
     channel?: 'whatsapp' | 'sms' | 'email';
   }): Promise<Reminder>;
   getLastReminderSent(invoiceId: string): Promise<Reminder | null>;
+
+  // Demo Reset
+  resetDemoData(): Promise<void>;
 }
 
 // Global reference for in-memory persistence across hot module reloads in Next.js development
@@ -612,6 +615,13 @@ export class InMemoryRepository implements PaydayRepository {
     });
     return sorted[0] || null;
   }
+
+  async resetDemoData(): Promise<void> {
+    global.__payday_in_memory_store = generateSeedData();
+    this.store = global.__payday_in_memory_store;
+    this.store.alertStates = {};
+    this.store.reminders = [];
+  }
 }
 
 export class SupabaseRepository implements PaydayRepository {
@@ -1114,6 +1124,24 @@ export class SupabaseRepository implements PaydayRepository {
       return timeB.localeCompare(timeA);
     });
     return sorted[0] || null;
+  }
+
+  async resetDemoData(): Promise<void> {
+    const seed = generateSeedData();
+    this.alertStates = {};
+    this.reminders = [];
+
+    await this.client.from('payments').delete().eq('user_id', DEMO_USER_ID);
+    await this.client.from('invoices').delete().eq('user_id', DEMO_USER_ID);
+    await this.client.from('bookings').delete().eq('user_id', DEMO_USER_ID);
+    await this.client.from('clients').delete().eq('user_id', DEMO_USER_ID);
+    await this.client.from('recurring_expenses').delete().eq('user_id', DEMO_USER_ID);
+
+    await this.client.from('clients').insert(seed.clients);
+    await this.client.from('bookings').insert(seed.bookings);
+    await this.client.from('invoices').insert(seed.invoices);
+    await this.client.from('payments').insert(seed.payments);
+    await this.client.from('recurring_expenses').insert(seed.recurringExpenses);
   }
 }
 

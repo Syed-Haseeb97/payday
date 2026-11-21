@@ -10,7 +10,8 @@ import {
   Receipt, 
   TrendingUp, 
   Flame, 
-  Settings 
+  Settings,
+  CreditCard
 } from 'lucide-react';
 
 export const NAV_ITEMS = [
@@ -20,6 +21,7 @@ export const NAV_ITEMS = [
   { href: '/invoices', label: 'Invoices', icon: Receipt },
   { href: '/forecast', label: 'Forecast (90d)', icon: TrendingUp },
   { href: '/bad-day', label: 'Bad Day Mode', icon: Flame, isSpecial: true },
+  { href: '/pricing', label: 'Pricing', icon: CreditCard },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 

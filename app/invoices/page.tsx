@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { 
   Receipt, 
   QrCode, 
@@ -177,7 +178,7 @@ function InvoicesContent() {
       {/* Filter Tabs & Search Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Status Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
           {(
             [
               { key: 'all', label: 'All Invoices' },
@@ -185,20 +186,30 @@ function InvoicesContent() {
               { key: 'overdue', label: 'Overdue' },
               { key: 'paid', label: 'Paid' },
             ] as const
-          ).map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setStatusFilter(tab.key)}
-              type="button"
-              className={`px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wide transition-colors whitespace-nowrap ${
-                statusFilter === tab.key
-                  ? 'bg-[var(--text-primary)] text-[var(--bg-canvas)] font-semibold'
-                  : 'border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          ).map((tab) => {
+            const isActive = statusFilter === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setStatusFilter(tab.key)}
+                type="button"
+                className={`relative px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wide transition-colors whitespace-nowrap z-10 ${
+                  isActive
+                    ? 'text-[var(--bg-canvas)] font-semibold'
+                    : 'border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="invoices-filter-pill"
+                    transition={{ type: 'spring', stiffness: 480, damping: 36, mass: 0.65 }}
+                    className="absolute inset-0 rounded-full bg-[var(--text-primary)] -z-10"
+                  />
+                )}
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
           {clientFilter && (
             <button
               onClick={() => setClientFilter('')}
@@ -228,7 +239,7 @@ function InvoicesContent() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-16 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-line)] animate-pulse" />
+            <div key={i} className="h-16 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-line)] opacity-70" />
           ))}
         </div>
       ) : error ? (
@@ -654,10 +665,10 @@ export default function InvoicesPage() {
     <Suspense
       fallback={
         <div className="space-y-6">
-          <div className="h-10 w-48 bg-[var(--bg-surface-subtle)] rounded-xl animate-pulse" />
+          <div className="h-10 w-48 bg-[var(--bg-surface-subtle)] rounded-xl opacity-70" />
           <div className="space-y-3">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-16 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-line)] animate-pulse" />
+              <div key={i} className="h-16 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-line)] opacity-70" />
             ))}
           </div>
         </div>
