@@ -100,3 +100,5 @@ npm run start
 2. **Deterministic Fallbacks**: Every AI feature falls back to deterministic templates (English & Hinglish) if the primary LLM times out (10s) or encounters an error.
 3. **Deterministic Financial Maths**: All 90-day cash projections, what-if simulations, and Bad Day triage calculations are executed in pure TypeScript — never calculated by LLMs.
 4. **Mandatory Advisory Notice**: As marked on the forecast page: *"Estimates based on the data you entered."*
+
+lol
