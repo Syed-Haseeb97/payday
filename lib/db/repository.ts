@@ -16,6 +16,7 @@ import {
   Settings,
   DEMO_USER_ID,
   PaymentMethod,
+  PaymentReliability,
 } from './types';
 import { generateSeedData, SeedDataBundle } from './seed-data';
 import { splitMilestones } from '../milestones';

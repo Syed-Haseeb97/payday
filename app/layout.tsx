@@ -43,6 +43,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: 'globalThis.__zod_globalConfig = { jitless: true };',
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-[var(--bg-canvas)] text-[var(--text-primary)]">
         <AppHeader />
         <AppNav />

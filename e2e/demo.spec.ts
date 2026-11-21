@@ -264,8 +264,9 @@ test.describe('Payday Hackathon Demo Path & Hardening', () => {
         `Accessibility violations found on ${path} (Light): ${JSON.stringify(seriousOrCriticalLight, null, 2)}`
       ).toHaveLength(0);
 
-      // Switch to dark theme
+      // Switch to dark theme and wait for CSS color transition to settle
       await page.evaluate(() => document.documentElement.classList.add('dark'));
+      await page.waitForTimeout(300);
       const darkResults = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa'])
         .analyze();
@@ -279,5 +280,42 @@ test.describe('Payday Hackathon Demo Path & Hardening', () => {
         `Accessibility violations found on ${path} (Dark): ${JSON.stringify(seriousOrCriticalDark, null, 2)}`
       ).toHaveLength(0);
     }
+  });
+
+  test('8. Security headers & CSP: zero securitypolicyviolation events or console errors across all pages', async ({ page }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
+    page.on('pageerror', (err) => consoleErrors.push(err.message));
+
+    await page.addInitScript(() => {
+      (window as any).__cspViolations = [];
+      window.addEventListener('securitypolicyviolation', (e) => {
+        (window as any).__cspViolations.push({
+          blockedURI: e.blockedURI,
+          violatedDirective: e.violatedDirective,
+          effectiveDirective: e.effectiveDirective,
+          sourceFile: e.sourceFile,
+          lineNumber: e.lineNumber,
+          columnNumber: e.columnNumber,
+          sample: (e as any).sample,
+        });
+      });
+    });
+
+    const routes = ['/dashboard', '/bad-day', '/forecast', '/invoices', '/pricing', '/settings', '/bookings', '/clients'];
+    for (const route of routes) {
+      await page.goto(route);
+      await page.waitForLoadState('networkidle');
+
+      const violations = await page.evaluate(() => (window as any).__cspViolations || []);
+      expect(
+        violations,
+        `CSP violations reported on ${route}: ${JSON.stringify(violations)}`
+      ).toHaveLength(0);
+    }
+
+    expect(consoleErrors).toHaveLength(0);
   });
 });
