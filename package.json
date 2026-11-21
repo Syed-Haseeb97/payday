@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "seed:sql": "tsx scripts/generate-seed-sql.ts"
+    "seed:sql": "tsx scripts/generate-seed-sql.ts",
+    "licenses": "tsx scripts/generate-licenses.ts",
+    "demo:numbers": "tsx scripts/demo-numbers.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.2",

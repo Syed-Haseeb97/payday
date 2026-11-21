@@ -1,72 +1,55 @@
-# Third-Party Licenses & Dependencies
+# Third-Party Software & Licenses
 
-This document provides a complete inventory of all direct dependencies, fonts, and third-party services utilized by **Payday**, along with their respective versions and software licenses.
+This document lists all third-party open-source libraries, versions, licenses, fonts, and external runtime services utilized by Payday.
 
----
+> Automatically generated via `npm run licenses` (`scripts/generate-licenses.ts`).
 
-## 1. Direct Production Dependencies (`dependencies`)
+## Production Dependencies
 
-| Package Name | Version | License | License Category | Notes / Flag |
-| :--- | :--- | :--- | :--- | :--- |
-| `@supabase/supabase-js` | `^2.119.2` | MIT | Permissive | Supabase Postgres client |
-| `clsx` | `^2.1.1` | MIT | Permissive | Utility for constructing className strings |
-| `date-fns` | `^4.4.0` | MIT | Permissive | Modern JavaScript date utility library |
-| `framer-motion` | `^14.14.0` | MIT | Permissive | Motion library for React |
-| `lucide-react` | `^1.77.0` | ISC | Permissive | Icon library |
-| `next` | `16.4.6` | MIT | Permissive | Next.js React Framework |
-| `qrcode.react` | `^4.2.0` | ISC | Permissive | React component for generating QR codes |
-| `react` | `19.3.0` | MIT | Permissive | UI foundation |
-| `react-dom` | `19.3.0` | MIT | Permissive | React DOM renderer |
-| `recharts` | `^3.11.0` | MIT | Permissive | Redefined chart library for React |
-| `tailwind-merge` | `^3.7.1` | MIT | Permissive | Merge Tailwind CSS classes safely |
-| `zod` | `^4.6.7` | MIT | Permissive | TypeScript-first schema validation |
-
-*All production dependencies use permissive MIT or ISC open-source licenses.*
-
----
-
-## 2. Direct Development Dependencies (`devDependencies`)
-
-| Package Name | Version | License | License Category | Notes / Flag |
-| :--- | :--- | :--- | :--- | :--- |
-| `@tailwindcss/turbopack` | `4.3.3` | MIT | Permissive | Turbopack integration for Tailwind |
-| `@types/node` | `^22.20.5` | MIT | Permissive | TypeScript type definitions for Node.js |
-| `@types/react` | `^19` | MIT | Permissive | TypeScript type definitions for React |
-| `@types/react-dom` | `^19` | MIT | Permissive | TypeScript type definitions for React DOM |
-| `eslint` | `^9` | Apache-2.0 | Permissive | JavaScript and TypeScript linter |
-| `eslint-config-next` | `16.4.6` | MIT | Permissive | ESLint configuration for Next.js |
-| `tailwindcss` | `4.3.3` | MIT | Permissive | Utility-first CSS framework |
-| `typescript` | `^5` | Apache-2.0 | Permissive | TypeScript compiler |
-| `vitest` | `^5.1.1` | MIT | Permissive | Fast unit test runner |
-| `@playwright/test` | `^1.52.0` | Apache-2.0 | Permissive | End-to-end testing framework |
-| `@axe-core/playwright` | `^4.10.1` | MPL-2.0 | **Weak Copyleft (Flagged for Review)** | Automated accessibility testing wrapper |
-
-> [!WARNING]
-> **License Flag for Review**: `@axe-core/playwright` and its underlying engine `axe-core` are licensed under the **Mozilla Public License 2.0 (MPL-2.0)**. MPL-2.0 is a weak copyleft license that permits commercial use, proprietary linking, and distribution, provided that modifications to the MPL-licensed files themselves remain open-source. Because this package is strictly a **development-time testing tool** (`devDependencies`) executed during CI/testing and is never bundled into production client artifacts, it imposes no copyleft obligations on Payday's proprietary codebase.
-
----
-
-## 3. Typography & Web Fonts
-
-Payday imports web fonts via Google Fonts:
-
-| Font Family | Designer / Foundry | License | Usage |
+| Package | Installed Version | License | Status |
 | :--- | :--- | :--- | :--- |
-| **Instrument Serif** | Instrument & Rodrigo Fuenzalida | SIL Open Font License, Version 1.1 (OFL-1.1) | Display headings, currency totals, executive briefing |
-| **Geist Sans** | Vercel | SIL Open Font License, Version 1.1 (OFL-1.1) | Primary UI labels, body text, form controls |
-| **Geist Mono** | Vercel | SIL Open Font License, Version 1.1 (OFL-1.1) | Metadata tags, badges, metrics, tables, and numeric dates |
+| `@supabase/supabase-js` | `2.119.2` | MIT | Permissive (Approved) |
+| `clsx` | `2.1.1` | MIT | Permissive (Approved) |
+| `date-fns` | `4.4.0` | MIT | Permissive (Approved) |
+| `framer-motion` | `14.14.0` | MIT | Permissive (Approved) |
+| `lucide-react` | `1.77.0` | ISC | Permissive (Approved) |
+| `next` | `16.4.6` | MIT | Permissive (Approved) |
+| `qrcode.react` | `4.2.0` | ISC | Permissive (Approved) |
+| `react` | `19.3.0` | MIT | Permissive (Approved) |
+| `react-dom` | `19.3.0` | MIT | Permissive (Approved) |
+| `recharts` | `3.11.0` | MIT | Permissive (Approved) |
+| `tailwind-merge` | `3.7.1` | MIT | Permissive (Approved) |
+| `zod` | `4.6.7` | MIT | Permissive (Approved) |
 
-*The SIL Open Font License 1.1 allows free usage, bundling, and web embedding without royalties or commercial restrictions.*
+## Development Dependencies
 
----
+| Package | Installed Version | License | Status |
+| :--- | :--- | :--- | :--- |
+| `@axe-core/playwright` | `4.14.0` | MPL-2.0 | Review Required (MPL-2.0) |
+| `@playwright/test` | `1.65.1` | Apache-2.0 | Permissive (Approved) |
+| `@tailwindcss/turbopack` | `4.3.3` | MIT | Permissive (Approved) |
+| `@types/node` | `22.20.5` | MIT | Permissive (Approved) |
+| `@types/react` | `19.3.0` | MIT | Permissive (Approved) |
+| `@types/react-dom` | `19.3.0` | MIT | Permissive (Approved) |
+| `eslint` | `9.39.5` | MIT | Permissive (Approved) |
+| `eslint-config-next` | `16.4.6` | MIT | Permissive (Approved) |
+| `tailwindcss` | `4.3.3` | MIT | Permissive (Approved) |
+| `tsx` | `4.23.15` | MIT | Permissive (Approved) |
+| `typescript` | `5.9.3` | Apache-2.0 | Permissive (Approved) |
+| `vitest` | `5.1.1` | MIT | Permissive (Approved) |
 
-## 4. Third-Party Runtime Services & APIs
+## Typography & Fonts
 
-- **LLM Gateway / OpenAI-Compatible API**:
-  - The language model is an external third-party API accessed at runtime over HTTPS.
-  - Model identifiers (e.g. `llama-3.3-70b-versatile`, `gpt-4o-mini`) and API base endpoints are strictly decoupled and configured via runtime environment variables (`LLM_BASE_URL`, `LLM_MODEL`, `LLM_FALLBACK_MODEL`).
-  - No proprietary model weights, server binaries, or static AI models are stored or distributed in this repository.
-  - If the external API is unreachable or environment variables are unset, Payday automatically falls back to deterministic local templates.
+| Font Family | Designer / Source | License | Serving Strategy |
+| :--- | :--- | :--- | :--- |
+| **Geist Sans** | Vercel | SIL Open Font License 1.1 | Self-hosted via `next/font/google` |
+| **Geist Mono** | Vercel | SIL Open Font License 1.1 | Self-hosted via `next/font/google` |
+| **Instrument Serif** | Rodrigo Fuenzalida / Instrument | SIL Open Font License 1.1 | Google Fonts CSS import |
 
-- **Supabase Postgres (Optional)**:
-  - Persistent storage uses Supabase's managed PostgreSQL database. All client communication uses the official `@supabase/supabase-js` SDK via HTTPS/REST.
+## External Runtime Services & APIs
+
+| Service | Role | Environment Variables | Fallback Mechanism |
+| :--- | :--- | :--- | :--- |
+| **Supabase Postgres** | Persistent relational storage & transactional rollback | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | In-memory repository with relative synthetic demo seed data |
+| **OpenAI / Compatible LLM API** | AI reminder drafting & WhatsApp unstructured parse | `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_FALLBACK_MODEL` | Deterministic rule-based template generation and regex parser |
+| **Vercel** | Hosting, Edge CDN, and Serverless deployment | Platform managed | Standard Node.js / Docker container |

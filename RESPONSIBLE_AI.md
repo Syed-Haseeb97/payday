@@ -25,7 +25,7 @@ Payday applies generative AI strictly as a specialized conversational assistant 
    - The LLM is never invoked to sum balances, project cash, calculate fees, or determine deficits.
 
 2. **Never Determines Prioritization or Ranking**:
-   - The Bad Day Triage algorithm ranks actions using a mathematical score function (`cashImpact * 0.4 + daysOverdueWeight * 0.35 + clientUnreliability * 0.25`) implemented entirely in deterministic code (`lib/ranking`). The AI never decides which client is chased first.
+   - The Bad Day Triage algorithm ranks actions using a mathematical score function (`W_IMPACT * normalizedCashImpact + W_URGENCY * urgency + W_UNRELIABILITY * unreliability`) implemented entirely in deterministic code (`lib/ranking`). The AI never decides which client is chased first.
 
 3. **Never Saves Data Without User Review & Confirmation**:
    - Every booking parsed from free text is presented in an interactive preview card (Step 2 of the Quick Add modal).
@@ -33,27 +33,38 @@ Payday applies generative AI strictly as a specialized conversational assistant 
 
 ---
 
-## 3. Guardrails & Safety Mechanisms
+## 3. Guardrails, Cost Controls & Safety Mechanisms
+
+- **No Default Models or Endpoints Out of the Box**:
+   - `isLLMConfigured()` returns true only when `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL` are all non-empty and non-placeholder.
+   - If any configuration variable is missing, no outbound network call is ever made, and all AI features immediately route through deterministic fallbacks without delay or error.
+   - Judge verification: The current status of AI configuration can be checked via `GET /api/status` or tested live via the "Test AI connection" button in Settings (`/settings`), which calls `POST /api/ai/test` and returns `{ ok, latencyMs, modelUsed, errorKind }`.
+
+- **Global Daily Rate Limit & Cost Control (`AI_DAILY_CALL_LIMIT`)**:
+   - The system enforces a daily AI call budget cap (configured via `AI_DAILY_CALL_LIMIT`, default 400 calls/day).
+   - When running on Supabase, the call counter is incremented atomically in the `usage_counters` table; when running in demo mode, an in-memory sliding window counter is maintained.
+   - If the daily quota is exhausted, endpoints reject requests with HTTP 429 and status `ai_cap_reached`, cleanly routing users to deterministic fallbacks to avoid runaway API bills.
+   - Per-IP rate limiting (15 requests/minute for reminders, 20 requests/minute for quick-add) is also enforced.
 
 - **Strict PII Protection**:
-  - Personal notes, phone numbers, email addresses, and client family surnames are stripped before constructing reminder prompts. Only the client's first name, project title, milestone label, formatted amount, and due date reach the LLM.
-  - A dedicated automated test (`lib/ai/ai.test.ts`) verifies that client notes, phone numbers, and emails never appear in prompt strings.
+   - Personal notes, phone numbers, email addresses, and client family surnames are stripped before constructing reminder prompts. Only the client's first name, project title, milestone label, formatted amount, and due date reach the LLM.
+   - A dedicated automated test (`lib/ai/ai.test.ts`) verifies that client notes, phone numbers, and emails never appear in prompt strings.
 
 - **Server-Side Prompt Construction**:
-  - All prompts are constructed server-side in `lib/ai/index.ts`. Client inputs are sanitized to strip control characters and capped in length to prevent prompt injection.
+   - All prompts are constructed server-side in `lib/ai/index.ts`. Client inputs are sanitized to strip control characters and capped in length to prevent prompt injection.
 
 - **Aggression & Legal Threat Filter (Banned Words)**:
-  - Wedding photography is relationship-driven. To preserve client goodwill, the model output validator strictly rejects any draft containing aggressive, defamatory, or litigious language, including:
-    `lawyer`, `legal action`, `police`, `court`, `penalty`, `defaulter`, `fraud`, `cheat`, `blacklist`.
+   - Wedding photography is relationship-driven. To preserve client goodwill, the model output validator strictly rejects any draft containing aggressive, defamatory, or litigious language, including:
+     `lawyer`, `legal action`, `police`, `court`, `penalty`, `defaulter`, `fraud`, `cheat`, `blacklist`.
 
 - **Output Amount Integrity Validation**:
-  - The model output validator verifies that the generated text contains the exact rupee balance due (`amountFormatted`). If the model hallucinates a different figure or omits the amount, the output is rejected.
+   - The model output validator verifies that the generated text contains the exact rupee balance due (`amountFormatted`). If the model hallucinates a different figure or omits the amount, the output is rejected.
 
 - **Instant Deterministic Fallbacks**:
-  - If the LLM is unconfigured (`LLM_API_KEY` missing), times out (10s limit), encounters HTTP 5xx errors, or returns malformed text, Payday seamlessly falls back to pre-authored deterministic templates (`lib/ai/fallbacks.ts`) and regex rule parsers (`lib/quickadd/rules.ts`). The application UI never hangs or errors.
+   - If the LLM is unconfigured (`LLM_API_KEY` missing), times out (10s limit), encounters HTTP 5xx errors, or returns malformed text, Payday seamlessly falls back to pre-authored deterministic templates (`lib/ai/fallbacks.ts`) and regex rule parsers (`lib/quickadd/rules.ts`). The application UI never hangs or errors.
 
 - **Zero Secrets in Client Bundles**:
-  - All LLM API keys and database credentials reside exclusively on the server. Bundles in `.next/static` are audited to verify that no secret keys or variable names are exposed to the browser.
+   - All LLM API keys and database credentials reside exclusively on the server. Bundles in `.next/static` are audited in automated unit tests (`lib/security-bundle.test.ts`) to verify that no secret keys or variable names are exposed to the browser.
 
 ---
 

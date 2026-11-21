@@ -1,6 +1,6 @@
 # Payday: 2-Minute Demo Script
 
-> **Product**: Payday (Cash Flow OS for Freelance Creative Studios)  
+> **Product**: Payday (Cash Flow Intelligence & Receivables Management for Creative Freelancers)  
 > **Speaker Persona**: Product Engineer presenting to hackathon judges  
 > **Total Duration**: ~120 seconds  
 
@@ -8,45 +8,49 @@
 
 ## Screen 0: Introduction & The Persona (0:00 – 0:20)
 
-**URL**: `http://localhost:3000/dashboard`
+**URL**: `<your-deployment-url>/dashboard`
 
 ### What to Click:
 - Start on the **Dashboard** in default Light Theme ("Warm Archival Paper").
 
 ### Talking Points:
-> "Meet Arjun, an independent wedding photographer in Mumbai. On paper, his studio booked ₹4.5 Lakhs this wedding season. But when rent and assistant payouts are due this week, he has no idea whether his bank account can actually cover them.
+> "Meet Arjun, an independent wedding photographer operating Arjun Visuals. On paper, his studio has ₹11.24 Lakhs in receivables across the wedding season. But when fixed monthly studio rent and assistant payouts are due, he needs to know whether his bank balance can actually cover them.
 >
-> Traditional invoicing tools only tell Arjun what happened in the past. Payday gives him a calm, forward-looking cash flow OS. It answers three questions: Who owes me today? When will I run out of cash? And what single action should I take right now?"
+> Traditional accounting tools only look backward. Payday is a forward-looking cash flow and receivables tool. It answers three questions: Who owes me money? When will my cash dip to its lowest point? And what single action should I take right now?"
 
 ### Key Numbers on Screen:
-- **Total Outstanding**: `₹3,85,000`
+- **Opening Cash**: `₹1,40,000`
+- **Total Outstanding**: `₹11,24,000`
 - **Total Overdue**: `₹35,000`
-- **Today's Briefing**: `"1 invoice needs chasing. Your lowest cash point is ₹26,500 on 12 Dec."`
+- **Today's Briefing**: Identifies overdue items and the 90-day cash outlook lowest point (`₹26,500` on 13 Dec 2026).
 
 ---
 
 ## Screen 1: Bad Day Triage & WhatsApp Reminder (0:20 – 0:50)
 
-**URL**: Click **Bad Day Triage** in the top navigation or banner (`/bad-day`).
+**URL**: Click **Bad Day Triage** in the top navigation (`/bad-day`).
 
 ### What to Click:
-1. Point to the top prioritized invoice: **Rohit Mehta** (`₹35,000`, 12 days overdue).
-2. Click **Draft WhatsApp**.
-3. In the Slide-Over Drawer:
-   - Toggle Tone from **Firm** to **Friendly** to **Final**.
-   - Toggle Language from **English** to **Hinglish**.
-4. Show the prefilled message containing the exact rupee balance (`₹35,000`) and the `wa.me` deep link.
-5. Click **Mark as Sent**.
+1. Point to the prioritized receivables list sorted by the deterministic ranking score (combining financial impact, urgency, and client unreliability).
+2. Look at the top item: **Rohit Mehta (Mehta Weddings)** (`₹95,000`, due in 10 days, average delay history of 13 days; action type: `heads_up`).
+3. Click **Draft WhatsApp** to open the slide-over drawer.
+4. In the Slide-Over Drawer:
+   - Toggle Tone between **Friendly**, **Firm**, and **Final**.
+   - Toggle Language between **English** and **Hinglish**.
+5. Observe the prefilled message containing the exact rupee balance (`₹95,000`) and the `wa.me` deep link.
+6. Click **Mark as Sent**.
 
 ### Talking Points:
-> "When money is tight, you enter **Bad Day Mode**. Our deterministic ranking engine sorts receivables by financial urgency and client unreliability.
+> "When receivables need attention, Arjun enters **Bad Day Mode**. Our deterministic ranking engine scores and sorts candidates by financial impact on the 90-day lowest balance, days overdue, and client unreliability.
 >
-> Rohit Mehta is our top overdue client at ₹35,000. Arjun clicks 'Draft WhatsApp'. Our AI drafts a polite, concise reminder message under 70 words, with strict guardrails: zero legal threats, no personal phone or notes leaked, and the exact amount guaranteed. It even offers culturally natural Hinglish. One click copies it or launches a direct WhatsApp wa.me link with UPI payment QR."
+> Rohit Mehta is ranked as the highest-priority action: an upcoming ₹95,000 milestone due in 10 days with a historical 13-day delay. Reaching out with a heads-up prevents delays and protects Arjun's upcoming bills.
+>
+> Arjun clicks 'Draft WhatsApp'. If an LLM is configured, it drafts a polite, concise reminder message under 70 words without aggressive language, keeping the exact rupee amount accurate. If no LLM is configured, our deterministic template fallback produces the message immediately. One click allows copying the text or opening a pre-populated WhatsApp link."
 
 ### Key Numbers on Screen:
-- Top Overdue Item: **Rohit Mehta (Shoot Day Milestone)**
-- Balance: `₹35,000`
-- Days Overdue: `12 days`
+- Top Ranked Item: **Rohit Mehta (Mehta Weddings)**
+- Milestone: `mid` milestone (`₹95,000`)
+- Action Type: `heads_up` (due in 10 days, historical 13-day delay)
 
 ---
 
@@ -55,19 +59,20 @@
 **URL**: Click **Forecast (90d)** in the navigation (`/forecast`).
 
 ### What to Click:
-1. Point to the **Daily Cash Trajectory** chart and the **Lowest Balance** card (`₹26,500` on 12 Dec).
-2. Under "What-If Scenarios", click the one-click preset: **"Slowest client pays 15 days late"**.
-3. Watch the trajectory immediately recalculate into a negative balance (`Deficit / Danger`).
+1. Point to the **Daily Cash Trajectory** chart and the **Lowest Balance** card (`₹26,500` on 13 Dec 2026).
+2. Under "What-If Scenarios", click the one-click preset: **"Slowest client pays 15 days late"** (or apply the Mehta delayed scenario).
+3. Watch the trajectory recalculate into a projected deficit (`-₹9,500` on 14 Dec 2026, a dip of `₹36,000`).
 4. Click **Reset** to restore baseline.
 
 ### Talking Points:
-> "Next, Arjun checks his 90-day cash curve. Our forecast engine runs on pure math in Indian Standard Time, factoring in each client's historical payment delay and fixed monthly bills.
+> "Next, Arjun opens the 90-day forecast. The forecast engine calculates daily inflows and recurring outflows in Indian Standard Time, factoring in each client's historical payment delay alongside fixed recurring bills like studio rent.
 >
-> Right now, his lowest cash point is positive at ₹26,500. But what happens if his slowest client delays again? He taps our one-click stress-test preset: 'Slowest client pays 15 days late'. Instantly, the trajectory turns red, revealing a projected cash deficit before gear repair day. He doesn't need to guess—he can see the exact deficit date and plan follow-ups weeks before it happens. Tapping 'Reset' instantly restores the baseline."
+> In the baseline projection, his lowest cash balance is ₹26,500. But what happens if his slowest client delays payment? With one tap on the stress-test preset, the forecast recalculates: the balance dips below zero to -₹9,500 when rent is due. Arjun can see the exact deficit date weeks in advance and take action early. Clicking 'Reset' restores the baseline trajectory."
 
 ### Key Numbers on Screen:
-- Baseline Lowest Balance: `₹26,500` (Safe)
-- What-If Lowest Balance: Negative deficit (Danger / Deficit alert triggered)
+- Baseline Lowest Balance: `₹26,500` (on 13 Dec 2026)
+- What-If Projected Lowest Balance: `-₹9,500` (on 14 Dec 2026)
+- Projected Cash Dip: `-₹36,000`
 
 ---
 
@@ -80,51 +85,46 @@
    `Sharma wedding 14 Dec, ₹80k, ₹25k advance paid`
 2. Click **Read it**.
 3. Point to the parsed preview card:
-   - Client: `Priya Sharma`
-   - Total: `₹80,000`
-   - Advance token: `₹25,000` marked as paid via UPI.
-   - 3-stage milestone breakdown automatically split (30% / 50% / 20%).
+   - Client Name: `Sharma`
+   - Total Amount: `₹80,000`
+   - Advance Paid: `₹25,000`
+   - 3-stage milestone breakdown automatically split (`advance`: ₹24,000, `mid`: ₹40,000, `final`: ₹16,000).
 4. Click **Confirm Booking**.
-5. App routes to `/invoices`, displaying the newly booked milestones.
+5. The modal closes, and the invoices list updates with the new booking and its milestones.
 
 ### Talking Points:
-> "Creatives hate complex invoice builders. With Quick Add, Arjun simply pastes a WhatsApp message or speaks: *'Sharma wedding 14 Dec, ₹80k, ₹25k advance paid'*.
+> "Solo photographers often receive booking confirmations on WhatsApp while on location. With Quick Add, Arjun pastes the message text directly: *'Sharma wedding 14 Dec, ₹80k, ₹25k advance paid'*.
 >
-> Our hybrid parser extracts the amounts, dates, and payment state, automatically splitting it into Indian wedding milestone tranches (Advance, Shoot Day, Album Delivery). Nothing saves silently: Arjun inspects the preview card, clicks Confirm Booking, and his receivables, forecast, and ledger update immediately."
+> The parser extracts the amounts, dates, and advance status, splitting the booking into standard wedding milestone tranches: advance, mid, and final. Nothing is saved until Arjun inspects the preview and confirms. On confirmation, the booking, milestone invoices, and any advance payment are created atomically with rollback safety."
 
 ### Key Numbers on Screen:
 - Total Amount: `₹80,000`
 - Advance Paid: `₹25,000`
-- Pending Inflows: `₹55,000` across shoot and delivery milestones
+- Unpaid Milestone Inflows: `₹55,000` across `mid` and `final` tranches
 
 ---
 
-## Screen 4: Pricing & Conclusion (1:50 – 2:00)
+## Screen 4: Pricing & Settings Overview (1:50 – 2:00)
 
-**URL**: Click **Pricing** (`/pricing`).
+**URL**: Click **Pricing** (`/pricing`) or **Settings** (`/settings`).
 
 ### What to Click:
-1. Point to **Your Numbers** (Live Delay Cost Calculator).
-2. Move the **Assumed Cost of Delay** slider from 1.5% to 2.5%.
-3. Point to the Solo Plan value proposition.
+1. On `/pricing`, show the **Your Numbers** interactive assumption slider adjusting the estimated monthly cost of delayed capital.
+2. Navigate to `/settings` to show the **System Status** card (displaying whether the app is running in Demo or Supabase mode, whether LLM is configured, and the active model names).
 
 ### Talking Points:
-> "Finally, our pricing page shows Arjun the real financial cost of delayed receivables: delayed payments cost solo studios thousands of rupees in credit card overdrafts every month. Payday pays for itself by collecting just one overdue invoice a few days earlier.
+> "Finally, our pricing page models the financial impact of delayed receivables based on the user's outstanding book. In Settings, the System Status card gives transparent visibility into data mode—demo in-memory or Supabase live—and confirms whether LLM integration is active.
 >
-> That is Payday: deterministic financial intelligence, cultural precision, and calm clarity for India's independent creative studios. Thank you!"
+> That is Payday: deterministic forecasting, culturally attuned communication, and clear receivables management for independent creative studios. Thank you!"
 
 ---
 
-## If Something Breaks (Troubleshooting & Backup Plan)
+## Troubleshooting & Verification
 
-1. **If the demo data gets altered by previous testing**:
-   - Click **Settings** in the left navigation -> click **Reset Demo Dataset**, OR
-   - Visit or curl `POST http://localhost:3000/api/demo/reset`.
-   - The entire dataset resets cleanly in under 50ms to the default Arjun Visuals state.
+1. **Reset Demo Dataset**:
+   - Go to **Settings** -> Click **Reset Demo Data**, or trigger `POST <your-deployment-url>/api/demo/reset`.
+   - The entire dataset resets cleanly in memory or in Supabase to fresh seed data relative to the current calendar date.
 
-2. **If external LLM API is slow, rate-limited, or unavailable**:
-   - Zero problem: Payday's AI layer has built-in instant deterministic template fallbacks (`lib/ai/fallbacks.ts`).
-   - If `LLM_API_KEY` is unset or fails, reminder drafting and quick-add parsing complete instantly using tested, pre-authored templates and regex heuristics.
-
-3. **Backup Video**:
-   - If live network connectivity fails completely during the presentation, open the pre-recorded 2-minute offline walkthrough MP4 backup in the submission drive.
+2. **AI Availability & Fallbacks**:
+   - Verify AI status at `<your-deployment-url>/api/status` or click **Test AI connection** on `/settings`.
+   - If an API key is not configured, the app operates entirely on deterministic rule-based parsing and pre-authored reminder templates.
