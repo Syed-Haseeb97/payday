@@ -10,6 +10,7 @@ import { getLLMConfig, isLLMConfigured } from './config';
 export * from './config';
 export * from './fallbacks';
 export * from './client';
+export * from './test-connection';
 
 export const BANNED_WORDS = [
   'lawyer',

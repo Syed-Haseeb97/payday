@@ -2,34 +2,95 @@
 
 import React, { useEffect, useState } from 'react';
 import { 
-  Settings as SettingsIcon, 
   IndianRupee, 
   RotateCcw, 
   Lock, 
   AlertTriangle, 
   CheckCircle2, 
   RefreshCw,
-  Database
+  Server,
+  Sparkles,
+  Zap
 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 
+interface SystemStatus {
+  dataMode: 'demo' | 'supabase';
+  llmConfigured: boolean;
+  primaryModel: string;
+  fallbackModel: string;
+  resetEnabled: boolean;
+}
+
 export default function SettingsPage() {
+  const [status, setStatus] = useState<SystemStatus | null>(null);
   const [isDemo, setIsDemo] = useState(true);
   const [isResetOpen, setIsResetOpen] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
 
+  const [testingAi, setTestingAi] = useState(false);
+  const [aiTestResult, setAiTestResult] = useState<{
+    ok: boolean;
+    message: string;
+  } | null>(null);
+
   useEffect(() => {
     fetch('/api/status')
       .then((res) => res.json())
-      .then((data) => {
-        if (typeof data.isDemo === 'boolean') {
-          setIsDemo(data.isDemo);
+      .then((data: SystemStatus) => {
+        if (data && data.dataMode) {
+          setStatus(data);
+          setIsDemo(data.dataMode === 'demo');
         }
       })
       .catch(() => {});
   }, []);
+
+  const handleTestAi = async () => {
+    setTestingAi(true);
+    setAiTestResult(null);
+    try {
+      const res = await fetch('/api/ai/test', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        setAiTestResult({
+          ok: false,
+          message: data.error || 'Rate limit exceeded or request error.',
+        });
+        return;
+      }
+
+      if (data.ok) {
+        setAiTestResult({
+          ok: true,
+          message: `Connected successfully (${data.latencyMs}ms) using ${data.modelUsed}.`,
+        });
+      } else {
+        let desc = 'Connection failed.';
+        if (data.errorKind === 'not_configured') {
+          desc = 'AI is not configured. Set LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL in .env.local to enable real AI drafts.';
+        } else if (data.errorKind === 'timeout') {
+          desc = 'Request timed out after 10 seconds.';
+        } else if (data.errorKind === 'http_error') {
+          desc = 'LLM API endpoint returned an HTTP error. Verify your API key and model name.';
+        } else if (data.errorKind === 'empty_response') {
+          desc = 'LLM API returned an empty completion.';
+        } else {
+          desc = 'Unable to reach configured LLM endpoint.';
+        }
+        setAiTestResult({ ok: false, message: desc });
+      }
+    } catch {
+      setAiTestResult({
+        ok: false,
+        message: 'Network error checking AI connection.',
+      });
+    } finally {
+      setTestingAi(false);
+    }
+  };
 
   const handleResetConfirm = async () => {
     setResetting(true);
@@ -64,9 +125,98 @@ export default function SettingsPage() {
             Settings
           </h1>
           <p className="mt-1 text-sm text-[var(--text-muted)] font-mono">
-            Opening cash balance, recurring expenses, UPI configuration, and demo controls
+            System status, AI configuration, opening cash, and demo data controls
           </p>
         </div>
+      </div>
+
+      {/* System Status Card */}
+      <div className="p-6 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2 text-sm font-mono uppercase tracking-wider text-[var(--text-primary)] font-semibold">
+            <Server className="w-4 h-4 text-[var(--text-muted)]" />
+            <span>System Status &amp; AI Integration</span>
+          </div>
+          <span className={`inline-flex px-2.5 py-1 rounded-full border font-mono text-[10px] uppercase tracking-wider font-semibold ${
+            status?.dataMode === 'supabase'
+              ? 'border-[var(--money-in)] bg-[var(--money-in-bg)] text-[var(--money-in)]'
+              : 'border-[var(--border-line)] bg-[var(--bg-surface-subtle)] text-[var(--text-muted)]'
+          }`}>
+            Mode: {status?.dataMode === 'supabase' ? 'Supabase Postgres' : 'In-Memory Demo'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div className="p-3.5 rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface-subtle)] space-y-1">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--text-muted)]">
+              AI Reminders &amp; Parsing
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${
+                status?.llmConfigured ? 'bg-[var(--money-in)]' : 'bg-[var(--money-warn)]'
+              }`} />
+              <span className="font-mono text-sm font-medium text-[var(--text-primary)]">
+                {status?.llmConfigured ? 'AI drafts on' : 'Using templates'}
+              </span>
+            </div>
+            <p className="text-[11px] text-[var(--text-faint)] font-mono">
+              {status?.llmConfigured 
+                ? 'External LLM configured with automated fallback to templates.' 
+                : '100% offline deterministic templates active.'}
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface-subtle)] space-y-1">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--text-muted)]">
+              Configured Models
+            </div>
+            <div className="font-mono text-xs text-[var(--text-primary)] truncate">
+              Primary: <span className="font-semibold">{status?.primaryModel || 'None'}</span>
+            </div>
+            <div className="font-mono text-xs text-[var(--text-muted)] truncate">
+              Fallback: <span>{status?.fallbackModel || 'None'}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-[var(--border-line-subtle)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <p className="text-xs text-[var(--text-faint)] font-mono">
+            Test the live server-to-LLM connection with a lightweight probe.
+          </p>
+          <button
+            type="button"
+            disabled={testingAi}
+            onClick={handleTestAi}
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-4 py-2 text-xs font-mono font-medium text-[var(--text-primary)] hover:border-[var(--text-primary)] transition-colors self-start sm:self-auto touch-target disabled:opacity-50"
+          >
+            {testingAi ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Testing...</span>
+              </>
+            ) : (
+              <>
+                <Zap className="w-3.5 h-3.5" />
+                <span>Test AI connection</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {aiTestResult && (
+          <div className={`p-3 rounded-xl border text-xs font-mono flex items-start gap-2 ${
+            aiTestResult.ok
+              ? 'border-[var(--money-in)] bg-[var(--money-in-bg)] text-[var(--money-in)]'
+              : 'border-[var(--money-warn)] bg-[var(--money-warn-bg)] text-[var(--money-warn)]'
+          }`}>
+            {aiTestResult.ok ? (
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            )}
+            <span className="leading-relaxed">{aiTestResult.message}</span>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -144,7 +294,7 @@ export default function SettingsPage() {
 
       {/* Demo Data Management & Reset Action */}
       <div className="p-6 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-sm font-mono uppercase tracking-wider text-[var(--text-primary)] font-semibold">
               <RotateCcw className="w-4 h-4 text-[var(--money-warn)]" />
@@ -158,6 +308,14 @@ export default function SettingsPage() {
             {isDemo ? 'In-Memory Demo' : 'Supabase Connected'}
           </span>
         </div>
+
+        {/* Note on relative to today per Section 7 */}
+        {(isDemo || status?.resetEnabled) && (
+          <div className="p-3 rounded-xl border border-[var(--border-line-subtle)] bg-[var(--bg-surface-subtle)] text-xs font-mono text-[var(--text-muted)] flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5 text-[var(--money-in)] flex-shrink-0" />
+            <span>Demo data dates are relative to today.</span>
+          </div>
+        )}
 
         <div className="pt-3 border-t border-[var(--border-line-subtle)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <p className="text-xs text-[var(--text-faint)] font-mono">

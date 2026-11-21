@@ -16,7 +16,9 @@ export function AppHeader() {
     fetch('/api/status')
       .then((res) => res.json())
       .then((data) => {
-        if (typeof data.isDemo === 'boolean') {
+        if (data.dataMode) {
+          setIsDemo(data.dataMode === 'demo');
+        } else if (typeof data.isDemo === 'boolean') {
           setIsDemo(data.isDemo);
         }
       })
