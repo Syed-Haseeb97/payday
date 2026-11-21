@@ -26,6 +26,22 @@ import { daysOverdue, buildAgingSummary, AgingInvoice } from '../aging';
 import { buildWhoOwesMe, WhoOwesRow, ClientRef } from '../receivables';
 import { BadDaySummary, rankBadDayActions } from '../ranking';
 import { GeneratedAlert, deriveAlerts } from '../alerts';
+import { computeClientPaymentLearning } from '../business/clientLearning';
+
+export interface ClientLearningDelta {
+  clientId: string;
+  clientName?: string;
+  oldAverage: number;
+  newAverage: number;
+  oldReliability: PaymentReliability;
+  newReliability: PaymentReliability;
+}
+
+export interface RecordPaymentResult {
+  payment: Payment;
+  invoice: Invoice;
+  clientLearning?: ClientLearningDelta | null;
+}
 
 export interface DashboardViewData {
   totalOutstanding: number;
@@ -81,7 +97,7 @@ export interface PaydayRepository {
     paymentMethod?: PaymentMethod;
     referenceNumber?: string | null;
     notes?: string | null;
-  }): Promise<{ payment: Payment; invoice: Invoice }>;
+  }): Promise<RecordPaymentResult>;
 
   getRecurringExpenses(): Promise<RecurringExpense[]>;
   getSettings(): Promise<Settings>;
@@ -405,7 +421,7 @@ export class InMemoryRepository implements PaydayRepository {
     paymentMethod?: PaymentMethod;
     referenceNumber?: string | null;
     notes?: string | null;
-  }): Promise<{ payment: Payment; invoice: Invoice }> {
+  }): Promise<RecordPaymentResult> {
     const invoice = this.store.invoices.find((i) => i.id === data.invoiceId);
     if (!invoice) {
       throw new Error(`Invoice not found: ${data.invoiceId}`);
@@ -418,9 +434,14 @@ export class InMemoryRepository implements PaydayRepository {
       );
     }
 
+    const todayStr = this.getTodayStr();
+    const paymentDate = data.paymentDate || todayStr;
+    if (paymentDate > todayStr) {
+      throw new Error('Payment date cannot be in the future');
+    }
+
     const payCount = this.store.payments.length + 1;
     const paymentId = `p1000000-0000-0000-0000-${String(payCount).padStart(12, '0')}`;
-    const paymentDate = data.paymentDate || this.getTodayStr();
 
     const payment: Payment = {
       id: paymentId,
@@ -443,9 +464,36 @@ export class InMemoryRepository implements PaydayRepository {
 
     this.store.payments.push(payment);
 
+    // Learning from real payments: if payment brings balance to zero, update client metrics
+    let clientLearning: ClientLearningDelta | null = null;
+    const isFullyPaid = invoice.paid_amount >= invoice.amount - 0.001;
+
+    if (isFullyPaid) {
+      const client = this.store.clients.find((c) => c.id === invoice.client_id);
+      if (client) {
+        const learning = computeClientPaymentLearning(
+          client.average_delay_days,
+          invoice.due_date,
+          paymentDate
+        );
+        clientLearning = {
+          clientId: client.id,
+          clientName: client.name,
+          oldAverage: client.average_delay_days,
+          newAverage: learning.newAverage,
+          oldReliability: client.payment_reliability,
+          newReliability: learning.newReliability,
+        };
+        client.average_delay_days = learning.newAverage;
+        client.payment_reliability = learning.newReliability;
+        client.updated_at = new Date().toISOString();
+      }
+    }
+
     return {
       payment,
       invoice: this.enrichInvoice(invoice),
+      clientLearning,
     };
   }
 
@@ -960,7 +1008,7 @@ export class SupabaseRepository implements PaydayRepository {
     paymentMethod?: PaymentMethod;
     referenceNumber?: string | null;
     notes?: string | null;
-  }): Promise<{ payment: Payment; invoice: Invoice }> {
+  }): Promise<RecordPaymentResult> {
     const inv = await this.getInvoiceById(data.invoiceId);
     if (!inv) throw new Error(`Invoice not found: ${data.invoiceId}`);
 
@@ -971,7 +1019,11 @@ export class SupabaseRepository implements PaydayRepository {
       );
     }
 
-    const paymentDate = data.paymentDate || this.getTodayStr();
+    const todayStr = this.getTodayStr();
+    const paymentDate = data.paymentDate || todayStr;
+    if (paymentDate > todayStr) {
+      throw new Error('Payment date cannot be in the future');
+    }
 
     const { data: payment, error: payErr } = await this.client
       .from('payments')
@@ -1006,7 +1058,33 @@ export class SupabaseRepository implements PaydayRepository {
 
     if (invUpdateErr) throw invUpdateErr;
 
-    return { payment, invoice: updatedInv };
+    let clientLearning: ClientLearningDelta | null = null;
+    const isFullyPaid = newPaidAmount >= inv.amount - 0.001;
+
+    if (isFullyPaid) {
+      const client = await this.getClientById(inv.client_id);
+      if (client) {
+        const learning = computeClientPaymentLearning(
+          client.average_delay_days,
+          inv.due_date,
+          paymentDate
+        );
+        clientLearning = {
+          clientId: client.id,
+          clientName: client.name,
+          oldAverage: client.average_delay_days,
+          newAverage: learning.newAverage,
+          oldReliability: client.payment_reliability,
+          newReliability: learning.newReliability,
+        };
+        await this.updateClient(client.id, {
+          average_delay_days: learning.newAverage,
+          payment_reliability: learning.newReliability,
+        });
+      }
+    }
+
+    return { payment, invoice: updatedInv, clientLearning };
   }
 
   async getRecurringExpenses(): Promise<RecurringExpense[]> {

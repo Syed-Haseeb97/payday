@@ -51,6 +51,7 @@ function InvoicesContent() {
   const [paymentNotes, setPaymentNotes] = useState('');
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [learningFeedback, setLearningFeedback] = useState<string | null>(null);
 
   const fetchInvoices = () => {
     setLoading(true);
@@ -139,6 +140,12 @@ function InvoicesContent() {
         throw new Error(json.error || 'Failed to record payment');
       }
 
+      if (json.clientLearning) {
+        const { clientName, newAverage, oldAverage } = json.clientLearning;
+        setLearningFeedback(`${clientName || 'Client'} now averages ${newAverage} days late (was ${oldAverage})`);
+        setTimeout(() => setLearningFeedback(null), 8000);
+      }
+
       setIsPaymentOpen(false);
       if (selectedInvoice && selectedInvoice.id === paymentInvoice.id) {
         openDetailModal(paymentInvoice.id);
@@ -174,6 +181,13 @@ function InvoicesContent() {
           </p>
         </div>
       </div>
+
+      {learningFeedback && (
+        <div className="p-3.5 rounded-2xl border border-[var(--money-in)] bg-[var(--money-in-bg)] text-xs font-mono text-[var(--money-in)] flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+          <span>{learningFeedback}</span>
+        </div>
+      )}
 
       {/* Filter Tabs & Search Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">

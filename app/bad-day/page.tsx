@@ -60,6 +60,7 @@ export default function BadDayPage() {
   const [paymentNotes, setPaymentNotes] = useState('');
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [learningFeedback, setLearningFeedback] = useState<string | null>(null);
 
   const fetchBadDayData = useCallback(async () => {
     setLoading(true);
@@ -137,6 +138,12 @@ export default function BadDayPage() {
       const json = await res.json();
       if (!res.ok || !json.success) {
         throw new Error(json.error || 'Failed to record payment');
+      }
+
+      if (json.clientLearning) {
+        const { clientName, newAverage, oldAverage } = json.clientLearning;
+        setLearningFeedback(`${clientName || 'Client'} now averages ${newAverage} days late (was ${oldAverage})`);
+        setTimeout(() => setLearningFeedback(null), 8000);
       }
 
       setIsPaymentOpen(false);
@@ -255,6 +262,13 @@ export default function BadDayPage() {
           </div>
         </div>
       </div>
+
+      {learningFeedback && (
+        <div className="p-3.5 rounded-2xl border border-[var(--money-in)] bg-[var(--money-in-bg)] text-xs font-mono text-[var(--money-in)] flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+          <span>{learningFeedback}</span>
+        </div>
+      )}
 
       {/* 2. Top Summary Impact Card */}
       {hasItems && (
