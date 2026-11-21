@@ -5,7 +5,7 @@
 [![React](https://img.shields.io/badge/React-19.3.0-blue?style=flat&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
-[![Vitest](https://img.shields.io/badge/Vitest-141_Passed-6E9F18?style=flat&logo=vitest)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-149_Passed-6E9F18?style=flat&logo=vitest)](https://vitest.dev/)
 [![Playwright](https://img.shields.io/badge/Playwright-E2E_Ready-2EAD33?style=flat&logo=playwright)](https://playwright.dev/)
 [![License](https://img.shields.io/badge/License-MIT-orange.svg)](LICENSE)
 
@@ -256,7 +256,7 @@ cp .env.example .env.local
 
 ## Test Verification
 
-Payday is covered by a comprehensive automated test suite consisting of **141 unit tests** across 14 test suites and full **Playwright E2E integration tests**.
+Payday is covered by a comprehensive automated test suite consisting of **149 unit tests** across 17 test suites and full **Playwright E2E integration tests**.
 
 ```bash
 # Run Vitest unit tests
