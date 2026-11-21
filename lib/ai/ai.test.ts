@@ -305,4 +305,104 @@ describe('AI Client - executeCompletionWithFallback (Mocked fetch)', () => {
     expect(combinedPrompts).toContain('₹40,000');
     expect(combinedPrompts).toContain('15 Dec 2026');
   });
+
+  describe('Missing environment variables prevent any network call', () => {
+    it('makes NO network call when LLM_API_KEY is empty', async () => {
+      process.env.LLM_API_KEY = '';
+      const mockFetch = vi.fn();
+      global.fetch = mockFetch;
+
+      const result = await executeCompletionWithFallback(
+        { messages: [{ role: 'user', content: 'test' }] },
+        () => 'fallback-result'
+      );
+
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(result.content).toBe('fallback-result');
+      expect(result.modelUsed).toBe('deterministic-template');
+    });
+
+    it('makes NO network call when LLM_API_KEY is a placeholder', async () => {
+      process.env.LLM_API_KEY = 'your-api-key-here';
+      const mockFetch = vi.fn();
+      global.fetch = mockFetch;
+
+      const result = await executeCompletionWithFallback(
+        { messages: [{ role: 'user', content: 'test' }] },
+        () => 'fallback-result'
+      );
+
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(result.content).toBe('fallback-result');
+      expect(result.modelUsed).toBe('deterministic-template');
+    });
+
+    it('makes NO network call when LLM_BASE_URL is empty', async () => {
+      process.env.LLM_BASE_URL = '';
+      const mockFetch = vi.fn();
+      global.fetch = mockFetch;
+
+      const result = await executeCompletionWithFallback(
+        { messages: [{ role: 'user', content: 'test' }] },
+        () => 'fallback-result'
+      );
+
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(result.content).toBe('fallback-result');
+      expect(result.modelUsed).toBe('deterministic-template');
+    });
+
+    it('makes NO network call when LLM_MODEL is empty', async () => {
+      process.env.LLM_MODEL = '';
+      const mockFetch = vi.fn();
+      global.fetch = mockFetch;
+
+      const result = await executeCompletionWithFallback(
+        { messages: [{ role: 'user', content: 'test' }] },
+        () => 'fallback-result'
+      );
+
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(result.content).toBe('fallback-result');
+      expect(result.modelUsed).toBe('deterministic-template');
+    });
+
+    it('makes NO network call when all AI environment variables are missing', async () => {
+      delete process.env.LLM_API_KEY;
+      delete process.env.LLM_BASE_URL;
+      delete process.env.LLM_MODEL;
+      delete process.env.LLM_FALLBACK_MODEL;
+      const mockFetch = vi.fn();
+      global.fetch = mockFetch;
+
+      const result = await executeCompletionWithFallback(
+        { messages: [{ role: 'user', content: 'test' }] },
+        () => 'fallback-result'
+      );
+
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(result.content).toBe('fallback-result');
+      expect(result.modelUsed).toBe('deterministic-template');
+    });
+
+    it('skips fallback model if LLM_FALLBACK_MODEL is empty', async () => {
+      process.env.LLM_FALLBACK_MODEL = '';
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+      global.fetch = mockFetch;
+
+      const result = await executeCompletionWithFallback(
+        { messages: [{ role: 'user', content: 'test' }] },
+        () => 'template-after-primary-failure'
+      );
+
+      // Primary model runs attempt 1 + retry 1 = 2 calls; fallback model is NOT called
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(result.content).toBe('template-after-primary-failure');
+      expect(result.modelUsed).toBe('deterministic-template');
+    });
+  });
 });

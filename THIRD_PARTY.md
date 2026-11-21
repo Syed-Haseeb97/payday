@@ -64,7 +64,7 @@ Payday imports web fonts via Google Fonts:
 
 - **LLM Gateway / OpenAI-Compatible API**:
   - The language model is an external third-party API accessed at runtime over HTTPS.
-  - Model identifiers (e.g. `llama-3.3-70b-versatile`, `gpt-4o-mini`) and API base endpoints are strictly decoupled and configured via runtime environment variables (`LLM_BASE_URL`, `LLM_PRIMARY_MODEL`, `LLM_FALLBACK_MODEL`).
+  - Model identifiers (e.g. `llama-3.3-70b-versatile`, `gpt-4o-mini`) and API base endpoints are strictly decoupled and configured via runtime environment variables (`LLM_BASE_URL`, `LLM_MODEL`, `LLM_FALLBACK_MODEL`).
   - No proprietary model weights, server binaries, or static AI models are stored or distributed in this repository.
   - If the external API is unreachable or environment variables are unset, Payday automatically falls back to deterministic local templates.
 

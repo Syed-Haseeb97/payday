@@ -67,6 +67,15 @@ async function fetchWithTimeout(
   }
 }
 
+function sanitizeErrorMessage(err: unknown): string {
+  if (!err) return 'Unknown error';
+  const msg = err instanceof Error ? err.message : String(err);
+  return msg
+    .replace(/Bearer\s+[A-Za-z0-9_\-\.]+/gi, 'Bearer [REDACTED]')
+    .replace(/https?:\/\/[^\s]+/gi, '[URL]')
+    .slice(0, 120);
+}
+
 /**
  * Executes completion with timeout, 1 retry, and model fallback
  */
@@ -98,28 +107,29 @@ export async function executeCompletionWithFallback(
       );
       return { content, modelUsed: config.model };
     } catch (err) {
-      console.warn(`[lib/ai] Primary model attempt ${attempt + 1} failed:`, (err as Error).message);
+      console.warn(`[lib/ai] Primary model attempt ${attempt + 1} failed:`, sanitizeErrorMessage(err));
       if (attempt === config.maxRetries) break;
       // Brief pause before retry
       await new Promise((resolve) => setTimeout(resolve, 500));
     }
   }
 
-  // Attempt 2: Fallback Model (if different from primary)
-  if (config.fallbackModel && config.fallbackModel !== config.model) {
+  // Attempt 2: Fallback Model (if specified, non-empty, and different from primary)
+  const trimmedFallback = config.fallbackModel?.trim();
+  if (trimmedFallback && trimmedFallback.length > 0 && trimmedFallback !== config.model) {
     try {
       const content = await fetchWithTimeout(
         config.baseUrl,
         config.apiKey,
-        config.fallbackModel,
+        trimmedFallback,
         options.messages,
         config.timeoutMs,
         options.temperature,
         options.maxTokens
       );
-      return { content, modelUsed: config.fallbackModel };
+      return { content, modelUsed: trimmedFallback };
     } catch (err) {
-      console.warn(`[lib/ai] Fallback model failed:`, (err as Error).message);
+      console.warn(`[lib/ai] Fallback model failed:`, sanitizeErrorMessage(err));
     }
   }
 

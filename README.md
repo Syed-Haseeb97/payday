@@ -249,7 +249,7 @@ cp .env.example .env.local
 | `SUPABASE_SERVICE_ROLE_KEY` | No | Supabase service role key (server-side only) |
 | `LLM_API_KEY` | No | Groq or OpenAI API key (if omitted, deterministic templates are used) |
 | `LLM_BASE_URL` | No | Base URL for LLM gateway (e.g. `https://api.groq.com/openai/v1`) |
-| `LLM_PRIMARY_MODEL` | No | Primary model (e.g. `llama-3.3-70b-versatile` or `gpt-4o-mini`) |
+| `LLM_MODEL` | No | Primary model (e.g. `llama-3.3-70b-versatile` or `gpt-4o-mini`) |
 | `NEXT_PUBLIC_DEMO_RESET` | No | Set to `'true'` to allow resetting demo data |
 
 ---
