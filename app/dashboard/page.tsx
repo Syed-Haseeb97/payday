@@ -22,7 +22,8 @@ import { computeCashForecast, CashHealth } from '@/lib/forecast';
 import { format, parseISO } from 'date-fns';
 import { GeneratedAlert } from '@/lib/alerts';
 import { ReminderDrawer } from '@/components/reminders/ReminderDrawer';
-import { X, Bell, Send } from 'lucide-react';
+import { QuickAddModal } from '@/components/quickadd/QuickAddModal';
+import { X, Bell, Send, Zap } from 'lucide-react';
 
 interface CashOutlook {
   lowestBalance: number;
@@ -51,6 +52,7 @@ export default function DashboardPage() {
   // Reminder drawer state
   const [reminderDrawerOpen, setReminderDrawerOpen] = useState(false);
   const [drawerInvoiceId, setDrawerInvoiceId] = useState<string>('');
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
 
   const fetchDashboard = () => {
     setLoading(true);
@@ -193,6 +195,14 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setQuickAddOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-[#16181D] text-[#F5F3EE] px-4 py-2 text-xs font-mono font-medium hover:opacity-90 transition-opacity"
+          >
+            <Zap className="w-3.5 h-3.5 text-[#E3EFE8]" />
+            <span>Quick Add</span>
+          </button>
           <Link
             href="/bad-day"
             className="inline-flex items-center gap-2 rounded-full border border-[var(--money-out)] bg-[var(--money-out-bg)] px-4 py-2 text-xs font-mono font-medium text-[var(--money-out)] hover:opacity-90 transition-opacity"
@@ -651,6 +661,15 @@ export default function DashboardPage() {
           invoiceId={drawerInvoiceId}
         />
       )}
+
+      {/* Quick Add Modal */}
+      <QuickAddModal
+        isOpen={quickAddOpen}
+        onClose={() => {
+          setQuickAddOpen(false);
+          fetchDashboard();
+        }}
+      />
     </div>
   );
 }

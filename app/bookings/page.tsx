@@ -9,8 +9,10 @@ import {
   AlertCircle, 
   Calendar, 
   ChevronRight,
-  Calculator
+  Calculator,
+  Zap
 } from 'lucide-react';
+import { QuickAddModal } from '@/components/quickadd/QuickAddModal';
 import { Booking, Client } from '@/lib/db/types';
 import { formatINR } from '@/lib/money';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -26,6 +28,7 @@ export default function BookingsPage() {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
 
@@ -203,14 +206,24 @@ export default function BookingsPage() {
             Wedding packages with automatic 30/50/20 milestone invoice generation
           </p>
         </div>
-        <button
-          onClick={openNewBookingModal}
-          type="button"
-          className="inline-flex items-center gap-2 rounded-full bg-[var(--text-primary)] text-[var(--bg-canvas)] px-4 py-2.5 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Booking</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={() => setIsQuickAddOpen(true)}
+            type="button"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#C8C2B5] bg-white px-4 py-2.5 text-xs font-mono uppercase tracking-wider font-semibold text-[#16181D] hover:bg-[#F5F3EE] transition-colors"
+          >
+            <Zap className="w-3.5 h-3.5 text-[#1D6B52]" />
+            <span>Quick Add</span>
+          </button>
+          <button
+            onClick={openNewBookingModal}
+            type="button"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--text-primary)] text-[var(--bg-canvas)] px-4 py-2.5 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Booking</span>
+          </button>
+        </div>
       </div>
 
       {/* Bookings List */}
@@ -542,6 +555,15 @@ export default function BookingsPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Quick Add Modal */}
+      <QuickAddModal
+        isOpen={isQuickAddOpen}
+        onClose={() => {
+          setIsQuickAddOpen(false);
+          fetchBookings();
+        }}
+      />
     </div>
   );
 }

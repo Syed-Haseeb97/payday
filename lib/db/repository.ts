@@ -62,6 +62,7 @@ export interface PaydayRepository {
     advanceDueDate?: string;
     midDueDate?: string;
     finalDueDate?: string;
+    customMilestones?: Array<{ label: 'advance' | 'mid' | 'final'; amount: number; due: string }>;
     notes?: string | null;
   }): Promise<{ booking: Booking; invoices: Invoice[] }>;
 
@@ -233,6 +234,7 @@ export class InMemoryRepository implements PaydayRepository {
     advanceDueDate?: string;
     midDueDate?: string;
     finalDueDate?: string;
+    customMilestones?: Array<{ label: 'advance' | 'mid' | 'final'; amount: number; due: string }>;
     notes?: string | null;
   }): Promise<{ booking: Booking; invoices: Invoice[] }> {
     const client = await this.getClientById(data.clientId);
@@ -278,11 +280,13 @@ export class InMemoryRepository implements PaydayRepository {
     const midDueDate = data.midDueDate || format(midDateObj, 'yyyy-MM-dd');
     const finalDueDate = data.finalDueDate || format(finalDateObj, 'yyyy-MM-dd');
 
-    const milestoneDefinitions = [
-      { label: 'advance', amount: splits[0].amount, due: advanceDueDate },
-      { label: 'mid', amount: splits[1].amount, due: midDueDate },
-      { label: 'final', amount: splits[2].amount, due: finalDueDate },
-    ];
+    const milestoneDefinitions = data.customMilestones && data.customMilestones.length === 3
+      ? data.customMilestones
+      : [
+          { label: 'advance' as const, amount: splits[0].amount, due: advanceDueDate },
+          { label: 'mid' as const, amount: splits[1].amount, due: midDueDate },
+          { label: 'final' as const, amount: splits[2].amount, due: finalDueDate },
+        ];
 
     const createdInvoices: Invoice[] = [];
 
@@ -709,6 +713,7 @@ export class SupabaseRepository implements PaydayRepository {
     advanceDueDate?: string;
     midDueDate?: string;
     finalDueDate?: string;
+    customMilestones?: Array<{ label: 'advance' | 'mid' | 'final'; amount: number; due: string }>;
     notes?: string | null;
   }): Promise<{ booking: Booking; invoices: Invoice[] }> {
     const advancePct = data.advancePercentage ?? 30;
@@ -746,11 +751,13 @@ export class SupabaseRepository implements PaydayRepository {
     const midDueDate = data.midDueDate || format(midDateObj, 'yyyy-MM-dd');
     const finalDueDate = data.finalDueDate || format(finalDateObj, 'yyyy-MM-dd');
 
-    const milestoneDefinitions = [
-      { label: 'advance', amount: splits[0].amount, due: advanceDueDate },
-      { label: 'mid', amount: splits[1].amount, due: midDueDate },
-      { label: 'final', amount: splits[2].amount, due: finalDueDate },
-    ];
+    const milestoneDefinitions = data.customMilestones && data.customMilestones.length === 3
+      ? data.customMilestones
+      : [
+          { label: 'advance' as const, amount: splits[0].amount, due: advanceDueDate },
+          { label: 'mid' as const, amount: splits[1].amount, due: midDueDate },
+          { label: 'final' as const, amount: splits[2].amount, due: finalDueDate },
+        ];
 
     const { count } = await this.client
       .from('invoices')
