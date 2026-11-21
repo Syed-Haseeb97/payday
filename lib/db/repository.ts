@@ -10,6 +10,9 @@ import {
   Invoice,
   Payment,
   RecurringExpense,
+  Reminder,
+  ReminderTone,
+  ReminderLanguage,
   Settings,
   DEMO_USER_ID,
   PaymentMethod,
@@ -19,6 +22,8 @@ import { splitMilestones } from '../milestones';
 import { deriveInvoiceStatus } from '../invoice-status';
 import { daysOverdue, buildAgingSummary, AgingInvoice } from '../aging';
 import { buildWhoOwesMe, WhoOwesRow, ClientRef } from '../receivables';
+import { BadDaySummary, rankBadDayActions } from '../ranking';
+import { GeneratedAlert, deriveAlerts } from '../alerts';
 
 export interface DashboardViewData {
   totalOutstanding: number;
@@ -77,6 +82,23 @@ export interface PaydayRepository {
   getSettings(): Promise<Settings>;
   getDashboardData(todayStr?: string): Promise<DashboardViewData>;
   getForecastInputs(todayStr?: string): Promise<ForecastInputs>;
+
+  // Bad Day & Alerts
+  getBadDaySummary(todayStr?: string): Promise<BadDaySummary>;
+  getAlerts(todayStr?: string): Promise<GeneratedAlert[]>;
+  dismissAlert(alertId: string): Promise<void>;
+  snoozeAlert(alertId: string, hours?: number): Promise<void>;
+
+  // Reminders
+  getReminders(invoiceId?: string): Promise<Reminder[]>;
+  recordReminder(data: {
+    invoiceId: string;
+    tone: ReminderTone;
+    language: ReminderLanguage;
+    text: string;
+    channel?: 'whatsapp' | 'sms' | 'email';
+  }): Promise<Reminder>;
+  getLastReminderSent(invoiceId: string): Promise<Reminder | null>;
 }
 
 // Global reference for in-memory persistence across hot module reloads in Next.js development
@@ -488,10 +510,110 @@ export class InMemoryRepository implements PaydayRepository {
       bookings,
     };
   }
+
+  async getBadDaySummary(todayStr?: string): Promise<BadDaySummary> {
+    const inputs = await this.getForecastInputs(todayStr);
+    return rankBadDayActions({ ...inputs, horizonDays: 90 });
+  }
+
+  async getAlerts(todayStr?: string): Promise<GeneratedAlert[]> {
+    const inputs = await this.getForecastInputs(todayStr);
+    const dismissedIds = new Set<string>();
+    const snoozedUntilMap = new Map<string, string>();
+
+    if (this.store.alertStates) {
+      for (const [id, state] of Object.entries(this.store.alertStates)) {
+        if (state.isDismissed) {
+          dismissedIds.add(id);
+        }
+        if (state.snoozedUntil) {
+          snoozedUntilMap.set(id, state.snoozedUntil);
+        }
+      }
+    }
+
+    return deriveAlerts(
+      { ...inputs, horizonDays: 90 },
+      {
+        dismissedIds,
+        snoozedUntilMap,
+        nowIso: new Date().toISOString(),
+      }
+    );
+  }
+
+  async dismissAlert(alertId: string): Promise<void> {
+    if (!this.store.alertStates) {
+      this.store.alertStates = {};
+    }
+    this.store.alertStates[alertId] = {
+      isDismissed: true,
+      snoozedUntil: null,
+    };
+  }
+
+  async snoozeAlert(alertId: string, hours: number = 24): Promise<void> {
+    if (!this.store.alertStates) {
+      this.store.alertStates = {};
+    }
+    const snoozedUntil = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+    this.store.alertStates[alertId] = {
+      isDismissed: false,
+      snoozedUntil,
+    };
+  }
+
+  async getReminders(invoiceId?: string): Promise<Reminder[]> {
+    if (!this.store.reminders) {
+      this.store.reminders = [];
+    }
+    if (invoiceId) {
+      return this.store.reminders.filter((r) => r.invoice_id === invoiceId);
+    }
+    return [...this.store.reminders];
+  }
+
+  async recordReminder(data: {
+    invoiceId: string;
+    tone: ReminderTone;
+    language: ReminderLanguage;
+    text: string;
+    channel?: 'whatsapp' | 'sms' | 'email';
+  }): Promise<Reminder> {
+    if (!this.store.reminders) {
+      this.store.reminders = [];
+    }
+    const reminder: Reminder = {
+      id: `rem-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      user_id: DEMO_USER_ID,
+      invoice_id: data.invoiceId,
+      tone: data.tone,
+      language: data.language,
+      text: data.text,
+      sent_at: new Date().toISOString(),
+      channel: data.channel || 'whatsapp',
+      created_at: new Date().toISOString(),
+    };
+    this.store.reminders.push(reminder);
+    return reminder;
+  }
+
+  async getLastReminderSent(invoiceId: string): Promise<Reminder | null> {
+    const list = await this.getReminders(invoiceId);
+    if (list.length === 0) return null;
+    const sorted = [...list].sort((a, b) => {
+      const timeA = a.sent_at || a.created_at;
+      const timeB = b.sent_at || b.created_at;
+      return timeB.localeCompare(timeA);
+    });
+    return sorted[0] || null;
+  }
 }
 
 export class SupabaseRepository implements PaydayRepository {
   private client: SupabaseClient;
+  private alertStates: Record<string, { isDismissed: boolean; snoozedUntil?: string | null }> = {};
+  private reminders: Reminder[] = [];
 
   constructor(url: string, serviceKey: string) {
     this.client = createSupabaseClient(url, serviceKey, {
@@ -901,6 +1023,90 @@ export class SupabaseRepository implements PaydayRepository {
       recurringExpenses,
       bookings,
     };
+  }
+
+  async getBadDaySummary(todayStr?: string): Promise<BadDaySummary> {
+    const inputs = await this.getForecastInputs(todayStr);
+    return rankBadDayActions({ ...inputs, horizonDays: 90 });
+  }
+
+  async getAlerts(todayStr?: string): Promise<GeneratedAlert[]> {
+    const inputs = await this.getForecastInputs(todayStr);
+    const dismissedIds = new Set<string>();
+    const snoozedUntilMap = new Map<string, string>();
+
+    for (const [id, state] of Object.entries(this.alertStates)) {
+      if (state.isDismissed) {
+        dismissedIds.add(id);
+      }
+      if (state.snoozedUntil) {
+        snoozedUntilMap.set(id, state.snoozedUntil);
+      }
+    }
+
+    return deriveAlerts(
+      { ...inputs, horizonDays: 90 },
+      {
+        dismissedIds,
+        snoozedUntilMap,
+        nowIso: new Date().toISOString(),
+      }
+    );
+  }
+
+  async dismissAlert(alertId: string): Promise<void> {
+    this.alertStates[alertId] = {
+      isDismissed: true,
+      snoozedUntil: null,
+    };
+  }
+
+  async snoozeAlert(alertId: string, hours: number = 24): Promise<void> {
+    const snoozedUntil = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+    this.alertStates[alertId] = {
+      isDismissed: false,
+      snoozedUntil,
+    };
+  }
+
+  async getReminders(invoiceId?: string): Promise<Reminder[]> {
+    if (invoiceId) {
+      return this.reminders.filter((r) => r.invoice_id === invoiceId);
+    }
+    return [...this.reminders];
+  }
+
+  async recordReminder(data: {
+    invoiceId: string;
+    tone: ReminderTone;
+    language: ReminderLanguage;
+    text: string;
+    channel?: 'whatsapp' | 'sms' | 'email';
+  }): Promise<Reminder> {
+    const reminder: Reminder = {
+      id: `rem-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      user_id: DEMO_USER_ID,
+      invoice_id: data.invoiceId,
+      tone: data.tone,
+      language: data.language,
+      text: data.text,
+      sent_at: new Date().toISOString(),
+      channel: data.channel || 'whatsapp',
+      created_at: new Date().toISOString(),
+    };
+    this.reminders.push(reminder);
+    return reminder;
+  }
+
+  async getLastReminderSent(invoiceId: string): Promise<Reminder | null> {
+    const list = await this.getReminders(invoiceId);
+    if (list.length === 0) return null;
+    const sorted = [...list].sort((a, b) => {
+      const timeA = a.sent_at || a.created_at;
+      const timeB = b.sent_at || b.created_at;
+      return timeB.localeCompare(timeA);
+    });
+    return sorted[0] || null;
   }
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -25,6 +25,24 @@ export const NAV_ITEMS = [
 
 export function AppNav() {
   const pathname = usePathname();
+  const [badDayCount, setBadDayCount] = useState<number>(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetch('/api/bad-day')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (isMounted && data?.success && data.summary) {
+          const count = data.summary.topRanked?.length || 0;
+          setBadDayCount(count);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pathname]);
 
   return (
     <nav className="hidden md:flex items-center gap-1 border-b border-[var(--border-line-subtle)] bg-[var(--bg-canvas)] px-4 sm:px-6 lg:px-8 py-2 overflow-x-auto">
@@ -46,6 +64,11 @@ export function AppNav() {
               >
                 <Icon className="w-3.5 h-3.5 text-[var(--money-out)]" />
                 <span>{item.label}</span>
+                {badDayCount > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-4 px-1.5 py-0.5 rounded-full font-mono text-[10px] font-bold bg-[#B53A26] text-white">
+                    {badDayCount}
+                  </span>
+                )}
               </Link>
             );
           }

@@ -20,6 +20,9 @@ import { WhoOwesRow } from '@/lib/receivables';
 import { AgingBucket } from '@/lib/aging';
 import { computeCashForecast, CashHealth } from '@/lib/forecast';
 import { format, parseISO } from 'date-fns';
+import { GeneratedAlert } from '@/lib/alerts';
+import { ReminderDrawer } from '@/components/reminders/ReminderDrawer';
+import { X, Bell, Send } from 'lucide-react';
 
 interface CashOutlook {
   lowestBalance: number;
@@ -41,8 +44,13 @@ interface DashboardResponse {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [cashOutlook, setCashOutlook] = useState<CashOutlook | null>(null);
+  const [alerts, setAlerts] = useState<GeneratedAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Reminder drawer state
+  const [reminderDrawerOpen, setReminderDrawerOpen] = useState(false);
+  const [drawerInvoiceId, setDrawerInvoiceId] = useState<string>('');
 
   const fetchDashboard = () => {
     setLoading(true);
@@ -55,10 +63,17 @@ export default function DashboardPage() {
       fetch('/api/forecast/inputs')
         .then((res) => (res.ok ? res.json() : null))
         .catch(() => null),
+      fetch('/api/alerts')
+        .then((res) => (res.ok ? res.json() : null))
+        .catch(() => null),
     ])
-      .then(([dashJson, forecastInputs]) => {
+      .then(([dashJson, forecastInputs, alertsJson]) => {
         if (!dashJson.success) throw new Error(dashJson.error || 'Failed to parse dashboard');
         setData(dashJson);
+
+        if (alertsJson?.success && Array.isArray(alertsJson.alerts)) {
+          setAlerts(alertsJson.alerts);
+        }
 
         if (forecastInputs) {
           const forecast = computeCashForecast({
@@ -83,6 +98,42 @@ export default function DashboardPage() {
       .finally(() => {
         setLoading(false);
       });
+  };
+
+  const handleDismissAlert = async (alertId: string) => {
+    setAlerts((prev) => prev.filter((a) => a.id !== alertId));
+    try {
+      await fetch('/api/alerts/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alertId, action: 'dismiss' }),
+      });
+    } catch (err) {
+      console.error('Failed to dismiss alert', err);
+    }
+  };
+
+  const handleSnoozeAlert = async (alertId: string) => {
+    setAlerts((prev) => prev.filter((a) => a.id !== alertId));
+    try {
+      await fetch('/api/alerts/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alertId, action: 'snooze', hours: 24 }),
+      });
+    } catch (err) {
+      console.error('Failed to snooze alert', err);
+    }
+  };
+
+  const handleAlertAction = (alert: GeneratedAlert) => {
+    if (alert.action.type === 'reminder' || alert.action.type === 'heads_up') {
+      const invId = alert.action.params?.invoiceId;
+      if (invId) {
+        setDrawerInvoiceId(invId);
+        setReminderDrawerOpen(true);
+      }
+    }
   };
 
   useEffect(() => {
@@ -158,6 +209,108 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Needs Attention / Alerts Section */}
+      {alerts.length > 0 && (
+        <div className="rounded-2xl bg-white border border-[#C8C2B5] p-5 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#C8C2B5]/40">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#B53A26]" />
+              <h2 className="font-serif italic text-xl font-bold text-[#16181D]">
+                Needs attention
+              </h2>
+              <span className="font-mono text-xs text-[#5F626A] font-semibold">
+                ({alerts.length} action{alerts.length === 1 ? '' : 's'})
+              </span>
+            </div>
+            <Link
+              href="/bad-day"
+              className="text-xs font-mono text-[#B53A26] hover:underline flex items-center gap-1 font-semibold"
+            >
+              <span>Open Bad Day Triage</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="space-y-3">
+            {alerts.slice(0, 5).map((alert) => {
+              const isCritical = alert.severity === 'critical';
+              const isWarning = alert.severity === 'warning';
+
+              const badgeClasses = isCritical
+                ? 'border-[#B53A26] bg-[#F8E9E4] text-[#B53A26]'
+                : isWarning
+                ? 'border-[#86560D] bg-[#F6ECD9] text-[#86560D]'
+                : 'border-[#1D6B52] bg-[#E3EFE8] text-[#1D6B52]';
+
+              return (
+                <div
+                  key={alert.id}
+                  className="p-4 rounded-xl border border-[#C8C2B5] bg-[#F5F3EE] flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1 max-w-2xl">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full border font-mono text-[10px] uppercase tracking-wider font-bold ${badgeClasses}`}
+                      >
+                        {alert.severity}
+                      </span>
+                      <h3 className="font-sans font-semibold text-sm text-[#16181D]">
+                        {alert.title}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-[#5F626A] font-sans leading-relaxed">
+                      {alert.message}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-start md:self-center flex-shrink-0">
+                    {/* Primary Action Button */}
+                    {alert.action.type === 'link' ? (
+                      <Link
+                        href={alert.action.href || '/forecast'}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[#16181D] text-[#F5F3EE] px-4 py-2 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity"
+                      >
+                        <span>{alert.action.label}</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleAlertAction(alert)}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[#16181D] text-[#F5F3EE] px-4 py-2 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity"
+                      >
+                        <Send className="w-3 h-3 text-[#E3EFE8]" />
+                        <span>{alert.action.label}</span>
+                      </button>
+                    )}
+
+                    {/* Snooze (24h) Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleSnoozeAlert(alert.id)}
+                      title="Snooze for 24 hours"
+                      className="px-3 py-2 rounded-full border border-[#C8C2B5] bg-white font-mono text-xs text-[#5F626A] hover:text-[#16181D] hover:bg-[#F5F3EE] transition-colors"
+                    >
+                      Snooze 24h
+                    </button>
+
+                    {/* Dismiss Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleDismissAlert(alert.id)}
+                      title="Dismiss"
+                      className="p-2 rounded-full text-[#5F626A] hover:text-[#16181D] hover:bg-white transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Top Level KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -486,6 +639,18 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Reminder Drawer Modal */}
+      {reminderDrawerOpen && drawerInvoiceId && (
+        <ReminderDrawer
+          isOpen={reminderDrawerOpen}
+          onClose={() => {
+            setReminderDrawerOpen(false);
+            setDrawerInvoiceId('');
+          }}
+          invoiceId={drawerInvoiceId}
+        />
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
   Invoice,
   Payment,
   RecurringExpense,
+  Reminder,
   Settings,
   DEMO_USER_ID,
 } from './types';
@@ -23,6 +24,8 @@ export interface SeedDataBundle {
   invoices: Invoice[];
   payments: Payment[];
   recurringExpenses: RecurringExpense[];
+  reminders: Reminder[];
+  alertStates: Record<string, { isDismissed: boolean; snoozedUntil?: string | null }>;
 }
 
 export function generateSeedData(baseDateStr?: string): SeedDataBundle {
@@ -121,7 +124,7 @@ export function generateSeedData(baseDateStr?: string): SeedDataBundle {
       phone: '+91 90000 00006',
       email: 'rohit.mehta@example.fake',
       payment_reliability: 'slow', // about 12 days
-      average_delay_days: 12,
+      average_delay_days: 13,
       notes: 'Habitual slow payer. Requires firm reminders; always delays until album delivery.',
       created_at: `${d(-90)}T00:00:00Z`,
       updated_at: `${d(0)}T00:00:00Z`,
@@ -264,8 +267,8 @@ export function generateSeedData(baseDateStr?: string): SeedDataBundle {
         } else if (m.label === 'mid') {
           paidAmount = m.amount; // paid
         } else {
-          // Final 50k unpaid, due in 14 days; with Singhania 22d delay -> expected in 36 days
-          m.due = d(14);
+          // Final 50k unpaid, due in 6 days (heads_up candidate); with Singhania 22d delay -> expected in 28 days
+          m.due = d(6);
           paidAmount = 0;
         }
       } else if (b.id === 'b1000000-0000-0000-0000-000000000016') {
@@ -283,7 +286,7 @@ export function generateSeedData(baseDateStr?: string): SeedDataBundle {
           paidAmount = 0; // Unpaid
         } else {
           m.amount = 95000; // ₹90,000+
-          m.due = d(11);   // Due in 11 days (< 12 days)
+          m.due = d(10);   // Due in 10 days (<= 10 days)
           paidAmount = 0;
         }
       } else if (b.id === 'b1000000-0000-0000-0000-000000000017') {
@@ -476,6 +479,8 @@ export function generateSeedData(baseDateStr?: string): SeedDataBundle {
     invoices,
     payments,
     recurringExpenses,
+    reminders: [],
+    alertStates: {},
   };
 }
 
