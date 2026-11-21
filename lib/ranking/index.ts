@@ -97,7 +97,9 @@ export function generateOneLineReason(
  * Evaluates all unpaid overdue and near-due invoices against the 90-day cash forecast.
  */
 export function rankBadDayActions(input: ForecastInput): BadDaySummary {
-  const { today, invoices, clients } = input;
+  const { today } = input;
+  const invoices = input.invoices || [];
+  const clients = input.clients || [];
   const clientMap = new Map<string, Client>(clients.map((c) => [c.id, c]));
 
   // 1. Run baseline forecast

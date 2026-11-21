@@ -131,6 +131,62 @@ export function buildWhatsAppDeepLink(
 }
 
 /**
+ * Builds server-side system and user prompts strictly using safe structured data.
+ * Guarantees no sensitive PII (notes, phone numbers, email addresses) ever enters prompt text.
+ */
+export function buildReminderPrompts(
+  tone: ReminderTone,
+  language: ReminderLanguage,
+  input: StructuredReminderInput
+): { systemPrompt: string; userPrompt: string } {
+  const safeClientFirstName = sanitizeClientData(
+    input.clientName.split(' ')[0] || 'Client',
+    30
+  );
+  const safeBusinessName = sanitizeClientData(
+    input.businessName || 'Arjun Visuals',
+    50
+  );
+  const safeEventName = sanitizeClientData(input.eventName, 50);
+  const safeMilestone = sanitizeClientData(input.milestoneLabel, 30);
+  const safeAmount = sanitizeClientData(input.amountFormatted, 20);
+  const safeDueDate = sanitizeClientData(input.dueDateFormatted, 25);
+  const safeUpiId = sanitizeClientData(input.upiId || 'arjunvisuals@okaxis', 35);
+
+  const systemPrompt = `You are an AI assistant for ${safeBusinessName}, a freelance wedding photography studio in India.
+Your job is to write a single WhatsApp payment reminder message.
+
+Rules:
+- Polite, specific, concise, and under 70 words. WhatsApp chat style.
+- ALWAYS include the exact amount: ${safeAmount}.
+- ALWAYS mention the due date: ${safeDueDate}.
+- Include UPI ID for payment: ${safeUpiId}.
+- Tone: ${tone}. (${
+    tone === 'final'
+      ? 'Clear, firm and urgent regarding the milestone, but courteous and respectful.'
+      : tone === 'firm'
+      ? 'Direct follow-up requesting settlement.'
+      : 'Friendly, warm check-in.'
+  })
+- Language: ${language}. (${
+    language === 'hinglish'
+      ? 'Natural conversational Hindi in the English/Roman script mixed with English. Respectful, professional.'
+      : 'Clear, polite English.'
+  })
+- NEVER threaten, shame, or mention legal action, courts, lawyers, police, penalties, fraud, or blacklisting.
+- Return ONLY the final message body. No subject line, no quotes, no conversational filler.`;
+
+  const userPrompt = `Client: ${safeClientFirstName}
+Milestone: ${safeMilestone} (${safeEventName})
+Amount: ${safeAmount}
+Due Date: ${safeDueDate}
+Days Overdue: ${input.daysOverdue}
+UPI ID: ${safeUpiId}`;
+
+  return { systemPrompt, userPrompt };
+}
+
+/**
  * Generates an AI-powered WhatsApp reminder draft with strict guardrails and
  * deterministic template fallback.
  */
@@ -144,10 +200,6 @@ export async function generateReminderDraft(
   const safeClientFirstName = sanitizeClientData(
     input.clientName.split(' ')[0] || 'Client',
     30
-  );
-  const safeBusinessName = sanitizeClientData(
-    input.businessName || 'Arjun Visuals',
-    50
   );
   const safeEventName = sanitizeClientData(input.eventName, 50);
   const safeMilestone = sanitizeClientData(input.milestoneLabel, 30);
@@ -178,36 +230,7 @@ export async function generateReminderDraft(
     };
   }
 
-  // Construct server-side system and user prompt with structured data only
-  const systemPrompt = `You are an AI assistant for ${safeBusinessName}, a freelance wedding photography studio in India.
-Your job is to write a single WhatsApp payment reminder message.
-
-Rules:
-- Polite, specific, concise, and under 70 words. WhatsApp chat style.
-- ALWAYS include the exact amount: ${safeAmount}.
-- ALWAYS mention the due date: ${safeDueDate}.
-- Include UPI ID for payment: ${safeUpiId}.
-- Tone: ${tone}. (${
-    tone === 'final'
-      ? 'Clear, firm and urgent regarding the milestone, but courteous and respectful.'
-      : tone === 'firm'
-      ? 'Direct follow-up requesting settlement.'
-      : 'Friendly, warm check-in.'
-  })
-- Language: ${language}. (${
-    language === 'hinglish'
-      ? 'Natural conversational Hindi in the English/Roman script mixed with English. Respectful, professional.'
-      : 'Clear, polite English.'
-  })
-- NEVER threaten, shame, or mention legal action, courts, lawyers, police, penalties, fraud, or blacklisting.
-- Return ONLY the final message body. No subject line, no quotes, no conversational filler.`;
-
-  const userPrompt = `Client: ${safeClientFirstName}
-Milestone: ${safeMilestone} (${safeEventName})
-Amount: ${safeAmount}
-Due Date: ${safeDueDate}
-Days Overdue: ${input.daysOverdue}
-UPI ID: ${safeUpiId}`;
+  const { systemPrompt, userPrompt } = buildReminderPrompts(tone, language, input);
 
   try {
     const completion = await executeCompletionWithFallback(

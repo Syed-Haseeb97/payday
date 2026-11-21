@@ -4,6 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { getRepository } from '@/lib/db/repository';
 import { generateReminderDraft } from '@/lib/ai';
 import { formatINR } from '@/lib/money';
+import { getIndiaTodayStr } from '@/lib/date';
 import { daysBetween } from '@/lib/forecast';
 import { DEMO_USER } from '@/lib/db/types';
 
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
     const client = invoice.client || (await repo.getClientById(invoice.client_id));
     const booking = invoice.booking || (await repo.getBookingById(invoice.booking_id));
 
-    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const todayStr = getIndiaTodayStr();
     const balance = invoice.amount - invoice.paid_amount;
     const diff = daysBetween(todayStr, invoice.due_date);
     const daysOverdue = diff < 0 ? Math.abs(diff) : 0;

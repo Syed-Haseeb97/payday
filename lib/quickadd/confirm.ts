@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { getRepository, PaydayRepository } from '../db/repository';
 import { Booking, Client, Invoice, Payment, PaymentMethod } from '../db/types';
-import { format } from 'date-fns';
+import { getIndiaTodayStr } from '../date';
 
 export const quickAddConfirmSchema = z
   .object({
@@ -131,7 +131,7 @@ export async function executeQuickAddConfirm(
           const paymentRes = await repo.recordPayment({
             invoiceId: advanceInv.id,
             amount: payAmount,
-            paymentDate: format(new Date(), 'yyyy-MM-dd'),
+            paymentDate: getIndiaTodayStr(),
             paymentMethod: validated.paymentMethod,
             referenceNumber: 'ADV-TOKEN',
             notes: 'Advance booking payment confirmed via Quick Add',

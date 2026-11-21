@@ -195,56 +195,56 @@ export default function BadDayPage() {
 
   const healthColorClasses =
     health === 'danger'
-      ? 'border-[#B53A26] bg-[#F8E9E4] text-[#B53A26]'
+      ? 'border-[var(--money-out)] bg-[var(--money-out-bg)] text-[var(--money-out)]'
       : health === 'tight'
-      ? 'border-[#86560D] bg-[#F6ECD9] text-[#86560D]'
-      : 'border-[#1D6B52] bg-[#E3EFE8] text-[#1D6B52]';
+      ? 'border-[var(--money-warn)] bg-[var(--money-warn-bg)] text-[var(--money-warn)]'
+      : 'border-[var(--money-in)] bg-[var(--money-in-bg)] text-[var(--money-in)]';
 
   return (
     <div className="space-y-8 pb-12">
       {/* 1. Header Strip */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#C8C2B5]/60 pb-6">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#B53A26] bg-[#F8E9E4] px-3.5 py-1 font-mono text-[11px] uppercase tracking-wider text-[#B53A26] font-semibold mb-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--money-out)] bg-[var(--money-out-bg)] px-3.5 py-1 font-mono text-[11px] uppercase tracking-wider text-[var(--money-out)] font-semibold mb-2">
             <Flame className="w-3.5 h-3.5" />
             <span>Signature Cash Triage</span>
           </div>
-          <h1 className="font-serif italic text-3xl sm:text-4xl font-bold tracking-tight text-[#16181D]">
+          <h1 className="font-serif italic text-3xl sm:text-4xl font-bold tracking-tight text-[var(--text-primary)]">
             Bad Day Mode
           </h1>
-          <p className="mt-1 text-sm text-[#5F626A] font-sans">
+          <p className="mt-1 text-sm text-[var(--text-muted)] font-sans">
             Ranked strictly by mathematical cash impact, overdue urgency, and client delay history.
           </p>
         </div>
 
         {/* Quick Cash Stats Pill */}
         <div className="flex flex-wrap items-center gap-3">
-          <div className="px-4 py-2 rounded-2xl bg-white border border-[#C8C2B5] text-left">
-            <span className="block font-mono text-[10px] uppercase tracking-wider text-[#5F626A]">
+          <div className="px-4 py-2 rounded-2xl app-card bg-surface border border-line text-left">
+            <span className="block font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)]">
               Cash Balance Today
             </span>
-            <span className="font-serif font-bold text-lg text-[#16181D]">
+            <span className="font-serif font-bold text-lg text-[var(--text-primary)]">
               {formatINR(cashToday)}
             </span>
           </div>
 
-          <div className="px-4 py-2 rounded-2xl bg-white border border-[#C8C2B5] text-left">
-            <span className="block font-mono text-[10px] uppercase tracking-wider text-[#5F626A]">
+          <div className="px-4 py-2 rounded-2xl app-card bg-surface border border-line text-left">
+            <span className="block font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)]">
               Lowest in 90 Days
             </span>
             <div className="flex items-center gap-2">
               <span
                 className={`font-serif font-bold text-lg ${
                   lowestBalance < 0
-                    ? 'text-[#B53A26]'
+                    ? 'text-[var(--money-out)]'
                     : health === 'tight'
-                    ? 'text-[#86560D]'
-                    : 'text-[#1D6B52]'
+                    ? 'text-[var(--money-warn)]'
+                    : 'text-[var(--money-in)]'
                 }`}
               >
                 {formatINR(lowestBalance)}
               </span>
-              <span className="text-xs text-[#5F626A] font-mono">
+              <span className="text-xs text-[var(--text-muted)] font-mono">
                 ({format(parseISO(lowestBalanceDate), 'd MMM')})
               </span>
             </div>
@@ -258,25 +258,25 @@ export default function BadDayPage() {
 
       {/* 2. Top Summary Impact Card */}
       {hasItems && (
-        <div className="p-6 rounded-2xl bg-white border border-[#C8C2B5] shadow-sm">
+        <div className="p-6 rounded-2xl app-card bg-surface border border-line shadow-sm">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
-              <span className="font-mono text-[11px] uppercase tracking-widest text-[#5F626A] font-semibold">
+              <span className="font-mono text-[11px] uppercase tracking-widest text-[var(--text-muted)] font-semibold">
                 Priority Cash Lift Potential
               </span>
-              <h2 className="font-serif italic text-2xl sm:text-3xl font-bold text-[#16181D]">
+              <h2 className="font-serif italic text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">
                 If you collect these {topRanked.length} items:
               </h2>
-              <p className="text-sm text-[#5F626A] font-sans">
+              <p className="text-sm text-[var(--text-muted)] font-sans">
                 Your lowest 90-day balance improves from{' '}
-                <span className="font-semibold text-[#B53A26] font-mono">
+                <span className="font-semibold text-[var(--money-out)] font-mono">
                   {formatINR(summary.lowestBalanceWithout)}
                 </span>{' '}
                 to{' '}
-                <span className="font-semibold text-[#1D6B52] font-mono">
+                <span className="font-semibold text-[var(--money-in)] font-mono">
                   {formatINR(summary.lowestBalanceWith)}
                 </span>{' '}
-                (a lift of <strong className="text-[#16181D]">{formatINR(summary.combinedCashImpact)}</strong>).
+                (a lift of <strong className="text-[var(--text-primary)]">{formatINR(summary.combinedCashImpact)}</strong>).
               </p>
             </div>
 
@@ -299,10 +299,10 @@ export default function BadDayPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#B53A26]" />
-              <h2 className="font-serif italic text-xl font-bold text-[#16181D]">
+              <h2 className="font-serif italic text-xl font-bold text-[var(--text-primary)]">
                 Do these today
               </h2>
-              <span className="font-mono text-xs text-[#5F626A] font-medium">
+              <span className="font-mono text-xs text-[var(--text-muted)] font-medium">
                 (Top priority collection targets)
               </span>
             </div>
@@ -316,22 +316,22 @@ export default function BadDayPage() {
               return (
                 <div
                   key={item.id}
-                  className="rounded-2xl bg-white border border-[#C8C2B5] p-5 flex flex-col justify-between space-y-5 hover:border-[#16181D] transition-colors"
+                  className="rounded-2xl app-card bg-surface border border-line p-5 flex flex-col justify-between space-y-5 hover:border-[var(--text-primary)] transition-colors"
                 >
                   <div className="space-y-3.5">
                     {/* Top Row: Action Badge + Rank + Reliability */}
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-[#16181D] text-[#F5F3EE] flex items-center justify-center font-mono text-xs font-bold">
+                        <span className="w-6 h-6 rounded-full bg-[var(--text-primary)] text-[var(--bg-canvas)] flex items-center justify-center font-mono text-xs font-bold">
                           #{item.rank}
                         </span>
                         {item.actionType === 'chase' ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[10px] uppercase tracking-wider font-bold bg-[#F8E9E4] text-[#B53A26]">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[10px] uppercase tracking-wider font-bold bg-[var(--money-out-bg)] text-[var(--money-out)]">
                             <Flame className="w-3 h-3" />
                             <span>Chase Overdue</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[10px] uppercase tracking-wider font-bold bg-[#F6ECD9] text-[#86560D]">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[10px] uppercase tracking-wider font-bold bg-[var(--money-warn-bg)] text-[var(--money-warn)]">
                             <Clock className="w-3 h-3" />
                             <span>Heads-up Nudge</span>
                           </span>
@@ -342,24 +342,24 @@ export default function BadDayPage() {
 
                     {/* Client & Amount */}
                     <div>
-                      <h3 className="font-serif font-bold text-xl text-[#16181D] truncate">
+                      <h3 className="font-serif font-bold text-xl text-[var(--text-primary)] truncate">
                         {item.client.name}
                       </h3>
                       <div className="mt-1 flex items-baseline justify-between">
-                        <span className="font-mono text-xs uppercase tracking-wider text-[#5F626A]">
+                        <span className="font-mono text-xs uppercase tracking-wider text-[var(--text-muted)]">
                           {item.invoice.milestone_label}
                         </span>
-                        <span className="font-serif font-bold text-xl text-[#16181D]">
+                        <span className="font-serif font-bold text-xl text-[var(--text-primary)]">
                           {formatINR(item.balance)}
                         </span>
                       </div>
                     </div>
 
                     {/* Overdue / Due in Status */}
-                    <div className="rounded-xl bg-[#F5F3EE] p-3 text-xs font-mono space-y-1">
-                      <div className="flex items-center justify-between text-[#5F626A]">
+                    <div className="rounded-xl bg-[var(--bg-surface-subtle)] p-3 text-xs font-mono space-y-1">
+                      <div className="flex items-center justify-between text-[var(--text-muted)]">
                         <span>Timing</span>
-                        <span className="font-semibold text-[#16181D]">
+                        <span className="font-semibold text-[var(--text-primary)]">
                           {item.daysOverdue > 0
                             ? `${item.daysOverdue} days overdue`
                             : item.daysUntilDue === 0
@@ -367,16 +367,16 @@ export default function BadDayPage() {
                             : `Due in ${item.daysUntilDue} days`}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between text-[#5F626A]">
+                      <div className="flex items-center justify-between text-[var(--text-muted)]">
                         <span>Cash Lift</span>
-                        <span className="font-semibold text-[#1D6B52]">
+                        <span className="font-semibold text-[var(--money-in)]">
                           +{formatINR(item.components.cashImpact)}
                         </span>
                       </div>
                     </div>
 
                     {/* One-Line Reason */}
-                    <p className="text-xs text-[#5F626A] leading-relaxed italic border-l-2 border-[#C8C2B5] pl-2.5">
+                    <p className="text-xs text-[var(--text-muted)] leading-relaxed italic border-l-2 border-[var(--border-line)] pl-2.5">
                       {item.oneLineReason}
                     </p>
                   </div>
@@ -447,10 +447,10 @@ export default function BadDayPage() {
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#5F626A]" />
-            <h2 className="font-serif italic text-xl font-bold text-[#16181D]">
+            <h2 className="font-serif italic text-xl font-bold text-[var(--text-primary)]">
               Also on your list
             </h2>
-            <span className="font-mono text-xs text-[#5F626A]">
+            <span className="font-mono text-xs text-[var(--text-muted)]">
               (Secondary follow-ups)
             </span>
           </div>
@@ -462,22 +462,22 @@ export default function BadDayPage() {
               return (
                 <div
                   key={item.id}
-                  className="rounded-2xl bg-white border border-[#C8C2B5] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="rounded-2xl app-card bg-surface border border-line p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-[#5F626A]">
+                      <span className="font-mono text-xs font-bold text-[var(--text-muted)]">
                         #{item.rank}
                       </span>
-                      <span className="font-serif font-bold text-base text-[#16181D]">
+                      <span className="font-serif font-bold text-base text-[var(--text-primary)]">
                         {item.client.name}
                       </span>
-                      <span className="font-mono text-[11px] text-[#5F626A]">
+                      <span className="font-mono text-[11px] text-[var(--text-muted)]">
                         ({item.invoice.milestone_label})
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-xs font-mono text-[#5F626A]">
-                      <span className="font-bold text-[#16181D]">
+                    <div className="flex items-center gap-3 text-xs font-mono text-[var(--text-muted)]">
+                      <span className="font-bold text-[var(--text-primary)]">
                         {formatINR(item.balance)}
                       </span>
                       <span>•</span>
@@ -487,7 +487,7 @@ export default function BadDayPage() {
                           : `due in ${item.daysUntilDue}d`}
                       </span>
                       <span>•</span>
-                      <span className="text-[#1D6B52]">
+                      <span className="text-[var(--money-in)]">
                         +{formatINR(item.components.cashImpact)} lift
                       </span>
                     </div>
@@ -497,15 +497,15 @@ export default function BadDayPage() {
                     <button
                       onClick={() => handleOpenReminder(item)}
                       type="button"
-                      className="inline-flex items-center gap-1 rounded-full bg-[#16181D] text-[#F5F3EE] px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity"
+                      className="inline-flex items-center gap-1 rounded-full bg-[var(--text-primary)] text-[var(--bg-canvas)] px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity"
                     >
-                      <Send className="w-3 h-3 text-[#E3EFE8]" />
+                      <Send className="w-3 h-3 text-[var(--money-in)]" />
                       <span>Remind</span>
                     </button>
                     {cleanPhone && (
                       <a
                         href={`tel:${cleanPhone}`}
-                        className="inline-flex items-center gap-1 rounded-full border border-[#C8C2B5] bg-white text-[#16181D] px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold hover:bg-[#F5F3EE] transition-colors"
+                        className="inline-flex items-center gap-1 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] text-[var(--text-primary)] px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold hover:bg-[var(--bg-surface-subtle)] transition-colors"
                       >
                         <Phone className="w-3 h-3" />
                         <span>Call</span>
@@ -520,15 +520,15 @@ export default function BadDayPage() {
       )}
 
       {/* 5. "Bills going out in the next 7 days" strip */}
-      <div className="p-5 rounded-2xl bg-white border border-[#C8C2B5] space-y-3">
+      <div className="p-5 rounded-2xl app-card bg-surface border border-line space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TrendingDown className="w-4 h-4 text-[#B53A26]" />
-            <h3 className="font-serif italic text-lg font-bold text-[#16181D]">
+            <h3 className="font-serif italic text-lg font-bold text-[var(--text-primary)]">
               Bills going out in the next 7 days
             </h3>
           </div>
-          <span className="font-mono text-xs text-[#5F626A]">
+          <span className="font-mono text-xs text-[var(--text-muted)]">
             Fixed outflows you must cover
           </span>
         </div>
@@ -541,21 +541,21 @@ export default function BadDayPage() {
                 className="py-2.5 flex items-center justify-between text-xs font-mono"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-[#5F626A]">
+                  <span className="text-[var(--text-muted)]">
                     {format(parseISO(bill.date), 'EEE, d MMM')}
                   </span>
-                  <span className="font-sans font-medium text-[#16181D] text-sm">
+                  <span className="font-sans font-medium text-[var(--text-primary)] text-sm">
                     {bill.label}
                   </span>
                 </div>
-                <span className="font-serif font-bold text-sm text-[#B53A26]">
+                <span className="font-serif font-bold text-sm text-[var(--money-out)]">
                   -{formatINR(bill.amount)}
                 </span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-xs text-[#5F626A] font-mono py-2">
+          <p className="text-xs text-[var(--text-muted)] font-mono py-2">
             No recurring bills or scheduled expenses falling within the next 7 calendar days.
           </p>
         )}

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getRepository } from '@/lib/db/repository';
 import { parseQuickAdd } from '@/lib/quickadd/ai';
 import { buildBookingProposal } from '@/lib/quickadd/builder';
-import { format } from 'date-fns';
+import { getIndiaTodayStr } from '@/lib/date';
 
 const parseRequestSchema = z.object({
   text: z.string().min(1, 'Text cannot be empty').max(1500, 'Text must be at most 1,500 characters'),
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     const { text } = parsed.data;
     const repo = getRepository();
-    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const todayStr = getIndiaTodayStr();
 
     // Parse text using AI with deterministic rules fallback & reconciliation
     const parseResult = await parseQuickAdd(text, todayStr);
@@ -68,9 +68,9 @@ export async function POST(req: NextRequest) {
       parseResult,
     });
   } catch (error: unknown) {
-    const err = error as Error;
+    console.error('Error parsing booking text:', error);
     return NextResponse.json(
-      { error: err.message || 'Failed to parse booking text' },
+      { error: 'Failed to parse booking text' },
       { status: 500 }
     );
   }

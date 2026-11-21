@@ -13,7 +13,7 @@
     /* Ink & Typography */
     --text-primary: #16181D;
     --text-muted: #5F626A;
-    --text-faint: #8E929B;
+    --text-faint: #595D66;
     
     /* Money In (Academic Forest Green) */
     --money-in: #1D6B52;
@@ -44,28 +44,23 @@
 
     /* Text & Inks */
     --text-primary: #F3F4F7;
-    --text-muted: #9BA1AD;
-    --text-faint: #626877;
+    --text-muted: #B6BCC8;
+    --text-faint: #A8AFBD;
     
     /* Status Inks (WCAG AA compliant against dark surfaces) */
     --money-in: #34D399;
-    --money-in-bg: rgba(6, 78, 59, 0.42);
+    --money-in-bg: #0D2A1F;
     
     --money-out: #F87171;
-    --money-out-bg: rgba(127, 29, 29, 0.42);
+    --money-out-bg: #2E1413;
     
     --money-warn: #FBBF24;
-    --money-warn-bg: rgba(120, 53, 15, 0.42);
+    --money-warn-bg: #2A1D0A;
 
-    /* Dark Glass Card Tokens */
-    --card-bg: linear-gradient(
-      165deg,
-      rgba(28, 30, 38, 0.72) 0%,
-      rgba(20, 22, 29, 0.64) 50%,
-      rgba(15, 17, 23, 0.74) 100%
-    );
+    /* Dark Card Tokens */
+    --card-bg: #14161E;
     --card-border: rgba(255, 255, 255, 0.16);
-    --card-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.22);
+    --card-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
     --focus-ring: #F3F4F7;
   }
 }
@@ -110,17 +105,19 @@ body {
 
 .dark .app-card {
   position: relative;
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  background: #14161E;
 }
 
-@supports not ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
-  .dark .app-card {
-    background: #14161E;
-  }
+/* Hairline borders and surface utilities */
+.bg-surface {
+  background-color: var(--bg-surface) !important;
 }
-
-/* Hairline borders */
+.bg-surface-subtle {
+  background-color: var(--bg-surface-subtle) !important;
+}
+.border-line {
+  border-color: var(--border-line) !important;
+}
 .hairline-border {
   border: 1px solid var(--border-line);
 }

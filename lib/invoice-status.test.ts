@@ -85,4 +85,28 @@ describe('deriveInvoiceStatus', () => {
       }),
     ).toBe('sent');
   });
+
+  it('handles an invoice paid to exactly zero balance', () => {
+    expect(
+      deriveInvoiceStatus({
+        amount: 35000,
+        paidAmount: 35000,
+        dueDate: '2025-01-01', // even if due date was in the past
+        sent: true,
+        today: '2025-01-05',
+      }),
+    ).toBe('paid');
+  });
+
+  it('handles partial payment with due date of today as partially_paid', () => {
+    expect(
+      deriveInvoiceStatus({
+        amount: 50000,
+        paidAmount: 20000,
+        dueDate: '2025-01-05',
+        sent: true,
+        today: '2025-01-05',
+      }),
+    ).toBe('partially_paid');
+  });
 });

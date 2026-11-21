@@ -252,7 +252,7 @@ export default function DashboardPage() {
         <div className="flex items-center gap-3 self-start md:self-center flex-shrink-0">
           <Link
             href="/bad-day"
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--money-out)] text-white px-5 py-2.5 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity touch-target"
+            className="inline-flex items-center gap-2 rounded-full bg-[#B53A26] text-white px-5 py-2.5 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity touch-target"
           >
             <Flame className="w-4 h-4" />
             <span>Bad Day Triage</span>

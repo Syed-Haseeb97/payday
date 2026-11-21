@@ -332,6 +332,8 @@ function InvoicesContent() {
                             </button>
                           )}
                           <button
+                            type="button"
+                            aria-label={`View details for invoice ${inv.invoice_number}`}
                             onClick={() => openDetailModal(inv.id)}
                             className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                           >
@@ -559,7 +561,7 @@ function InvoicesContent() {
         maxWidth="md"
       >
         {paymentInvoice && (
-          <form onSubmit={handleRecordPayment} className="space-y-4">
+          <form onSubmit={handleRecordPayment} noValidate className="space-y-4">
             <div className="p-3 rounded-xl bg-[var(--bg-surface-subtle)] text-xs font-mono flex justify-between">
               <span className="text-[var(--text-muted)]">Remaining Balance:</span>
               <strong className="text-[var(--text-primary)]">

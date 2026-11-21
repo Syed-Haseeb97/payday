@@ -423,16 +423,16 @@ export default function ForecastPage() {
         <div className="w-12 h-12 mx-auto rounded-full bg-[#F8E9E4] flex items-center justify-center">
           <AlertCircle className="w-6 h-6 text-[#B53A26]" />
         </div>
-        <h2 className="font-serif italic text-2xl font-bold text-[#16181D]">
+        <h2 className="font-serif italic text-2xl font-bold text-[var(--text-primary)]">
           Unable to Load Cash Forecast
         </h2>
-        <p className="text-sm text-[#5F626A] max-w-md mx-auto">
+        <p className="text-sm text-[var(--text-muted)] max-w-md mx-auto">
           {error || 'Could not retrieve forecast inputs.'}
         </p>
         <button
           onClick={fetchInputs}
           type="button"
-          className="inline-flex items-center gap-2 rounded-full bg-[#16181D] text-[#F5F3EE] px-5 py-2.5 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity"
+          className="inline-flex items-center gap-2 rounded-full bg-[var(--text-primary)] text-[var(--bg-canvas)] px-5 py-2.5 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity"
         >
           <span>Retry</span>
         </button>
@@ -447,13 +447,13 @@ export default function ForecastPage() {
       {/* Top Header & Horizon Toggle */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#C8C2B5] bg-white px-3.5 py-1 font-mono text-[11px] uppercase tracking-wider text-[#1D6B52]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-3.5 py-1 font-mono text-[11px] uppercase tracking-wider text-[var(--money-in)]">
             <span>Financial Modeling &amp; Runway Engine</span>
           </div>
-          <h1 className="mt-2 font-serif italic text-3xl sm:text-4xl font-bold tracking-tight text-[#16181D]">
+          <h1 className="mt-2 font-serif italic text-3xl sm:text-4xl font-bold tracking-tight text-[var(--text-primary)]">
             90-Day Cash Forecast
           </h1>
-          <p className="mt-1 text-sm text-[#5F626A] font-sans">
+          <p className="mt-1 text-sm text-[var(--text-muted)] font-sans">
             Opening cash + Expected milestone receipts − Fixed studio EMIs, rent &amp; bills
           </p>
         </div>
@@ -547,7 +547,7 @@ export default function ForecastPage() {
                 </div>
               </div>
             </div>
-            <div className="text-[11px] font-mono uppercase tracking-wider text-[#86560D]/80 self-end sm:self-auto">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-[#5E3B06] font-semibold self-end sm:self-auto">
               Reserve &lt; 20%
             </div>
           </div>
@@ -590,39 +590,39 @@ export default function ForecastPage() {
       {/* Summary Metrics Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Lowest Balance */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#C8C2B5]">
-          <span className="text-[10px] sm:text-xs font-mono uppercase tracking-wider text-[#5F626A]">
+        <div className="p-4 sm:p-5 rounded-2xl app-card bg-surface border border-line">
+          <span className="text-[10px] sm:text-xs font-mono uppercase tracking-wider text-[var(--text-muted)]">
             Lowest Balance
           </span>
           <div
             className={`mt-2 text-xl sm:text-2xl font-serif font-bold ${
               summary.lowestBalance < 0
-                ? 'text-[#B53A26]'
+                ? 'text-[var(--money-out)]'
                 : summary.lowestBalance < rawInputs.openingCash * 0.2
-                ? 'text-[#86560D]'
-                : 'text-[#16181D]'
+                ? 'text-[var(--money-warn)]'
+                : 'text-[var(--text-primary)]'
             }`}
           >
             {formatINR(summary.lowestBalance)}
           </div>
-          <span className="text-[11px] text-[#5F626A] font-mono block mt-1">
+          <span className="text-[11px] text-[var(--text-muted)] font-mono block mt-1">
             on {format(parseISO(summary.lowestBalanceDate), 'd MMM yyyy')}
           </span>
         </div>
 
         {/* Runway Days */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#C8C2B5]">
-          <span className="text-[10px] sm:text-xs font-mono uppercase tracking-wider text-[#5F626A]">
+        <div className="p-4 sm:p-5 rounded-2xl app-card bg-surface border border-line">
+          <span className="text-[10px] sm:text-xs font-mono uppercase tracking-wider text-[var(--text-muted)]">
             Cash Runway
           </span>
           <div
             className={`mt-2 text-xl sm:text-2xl font-serif font-bold ${
-              summary.runwayDays !== null ? 'text-[#B53A26]' : 'text-[#1D6B52]'
+              summary.runwayDays !== null ? 'text-[var(--money-out)]' : 'text-[var(--money-in)]'
             }`}
           >
             {summary.runwayDays !== null ? `${summary.runwayDays} Days` : `Safe (>${horizonDays}d)`}
           </div>
-          <span className="text-[11px] text-[#5F626A] font-mono block mt-1">
+          <span className="text-[11px] text-[var(--text-muted)] font-mono block mt-1">
             {summary.firstNegativeDate
               ? `Deficit on ${format(parseISO(summary.firstNegativeDate), 'd MMM')}`
               : 'Zero cash day not reached'}
@@ -630,27 +630,27 @@ export default function ForecastPage() {
         </div>
 
         {/* Total Projected Receipts */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#C8C2B5]">
-          <span className="text-[10px] sm:text-xs font-mono uppercase tracking-wider text-[#1D6B52]">
+        <div className="p-4 sm:p-5 rounded-2xl app-card bg-surface border border-line">
+          <span className="text-[10px] sm:text-xs font-mono uppercase tracking-wider text-[var(--money-in)]">
             Projected Receipts
           </span>
-          <div className="mt-2 text-xl sm:text-2xl font-serif font-bold text-[#1D6B52]">
+          <div className="mt-2 text-xl sm:text-2xl font-serif font-bold text-[var(--money-in)]">
             +{formatINR(summary.totalIn)}
           </div>
-          <span className="text-[11px] text-[#5F626A] font-mono block mt-1">
+          <span className="text-[11px] text-[var(--text-muted)] font-mono block mt-1">
             Milestone inflows
           </span>
         </div>
 
         {/* Total Projected Outflows */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#C8C2B5]">
-          <span className="text-[10px] sm:text-xs font-mono uppercase tracking-wider text-[#B53A26]">
+        <div className="p-4 sm:p-5 rounded-2xl app-card bg-surface border border-line">
+          <span className="text-[10px] sm:text-xs font-mono uppercase tracking-wider text-[var(--money-out)]">
             Projected Outflows
           </span>
-          <div className="mt-2 text-xl sm:text-2xl font-serif font-bold text-[#B53A26]">
+          <div className="mt-2 text-xl sm:text-2xl font-serif font-bold text-[var(--money-out)]">
             −{formatINR(summary.totalOut)}
           </div>
-          <span className="text-[11px] text-[#5F626A] font-mono block mt-1">
+          <span className="text-[11px] text-[var(--text-muted)] font-mono block mt-1">
             Rent, EMIs, salaries
           </span>
         </div>
@@ -661,25 +661,25 @@ export default function ForecastPage() {
         {/* Left Column: Recharts Chart + Events List (8 cols on desktop) */}
         <div className="lg:col-span-8 space-y-6">
           {/* Recharts Card */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-[#C8C2B5] space-y-4">
+          <div className="p-5 sm:p-6 rounded-2xl app-card bg-surface border border-line space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#C8C2B5]/40 pb-4">
               <div>
-                <h3 className="font-serif italic text-lg sm:text-xl font-bold text-[#16181D]">
+                <h3 className="font-serif italic text-lg sm:text-xl font-bold text-[var(--text-primary)]">
                   Daily Cash Trajectory
                 </h3>
-                <p className="text-xs text-[#5F626A] font-mono mt-0.5">
-                  Opening cash ₹{formatCompactINR(rawInputs.openingCash)} · Adjusted by client delay patterns
+                <p className="text-xs text-[var(--text-muted)] font-mono mt-0.5">
+                  Opening cash {formatCompactINR(rawInputs.openingCash)} · Adjusted by client delay patterns
                 </p>
               </div>
 
               {scenarios.length > 0 && (
                 <div className="flex items-center gap-3 text-xs font-mono">
-                  <div className="flex items-center gap-1.5 text-[#5F626A]">
+                  <div className="flex items-center gap-1.5 text-[var(--text-muted)]">
                     <span className="w-3 h-0.5 border-t border-dashed border-[#8A8680]" />
                     <span>Baseline</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[#16181D] font-medium">
-                    <span className="w-3 h-0.5 bg-[#16181D]" />
+                  <div className="flex items-center gap-1.5 text-[var(--text-primary)] font-medium">
+                    <span className="w-3 h-0.5 bg-[var(--text-primary)]" />
                     <span>What-If Scenario</span>
                   </div>
                 </div>
@@ -794,29 +794,29 @@ export default function ForecastPage() {
                         const isLowest = data.date === summary.lowestBalanceDate;
 
                         return (
-                          <div className="rounded-xl border border-[#C8C2B5] bg-white p-3.5 shadow-sm text-xs font-sans space-y-2 max-w-xs z-50">
-                            <div className="flex items-center justify-between gap-2 border-b border-[#C8C2B5]/50 pb-1.5">
-                              <span className="font-mono text-[11px] text-[#5F626A]">
+                          <div className="rounded-xl border border-[var(--border-line)] bg-surface p-3.5 shadow-sm text-xs font-sans space-y-2 max-w-xs z-50">
+                            <div className="flex items-center justify-between gap-2 border-b border-[var(--border-line)] pb-1.5">
+                              <span className="font-mono text-[11px] text-[var(--text-muted)]">
                                 {dateFormatted}
                               </span>
                               {isLowest && (
-                                <span className="inline-block rounded-full bg-[#F6ECD9] text-[#86560D] px-2 py-0.5 font-mono text-[9px] uppercase font-bold">
+                                <span className="inline-block rounded-full bg-[var(--money-warn-bg)] text-[var(--money-warn)] px-2 py-0.5 font-mono text-[9px] uppercase font-bold">
                                   Lowest Day
                                 </span>
                               )}
                             </div>
 
                             <div className="flex items-baseline justify-between gap-3">
-                              <span className="text-[#5F626A] font-mono text-[11px]">
+                              <span className="text-[var(--text-muted)] font-mono text-[11px]">
                                 Projected Balance:
                               </span>
                               <span
                                 className={`font-mono font-bold text-sm ${
                                   data.balance < 0
-                                    ? 'text-[#B53A26]'
+                                    ? 'text-[var(--money-out)]'
                                     : data.balance < rawInputs.openingCash * 0.2
-                                    ? 'text-[#86560D]'
-                                    : 'text-[#16181D]'
+                                    ? 'text-[var(--money-warn)]'
+                                    : 'text-[var(--text-primary)]'
                                 }`}
                               >
                                 {formatINR(data.balance)}
@@ -824,7 +824,7 @@ export default function ForecastPage() {
                             </div>
 
                             {scenarios.length > 0 && (
-                              <div className="flex items-baseline justify-between gap-3 text-[11px] text-[#5F626A] font-mono">
+                              <div className="flex items-baseline justify-between gap-3 text-[11px] text-[var(--text-muted)] font-mono">
                                 <span>Baseline:</span>
                                 <span>{formatINR(data.baselineBalance)}</span>
                               </div>
@@ -832,8 +832,8 @@ export default function ForecastPage() {
 
                             {/* Events on this day */}
                             {data.events && data.events.length > 0 && (
-                              <div className="pt-1.5 border-t border-[#C8C2B5]/40 space-y-1">
-                                <span className="text-[10px] font-mono uppercase tracking-wider text-[#5F626A] block">
+                              <div className="pt-1.5 border-t border-[var(--border-line)] space-y-1">
+                                <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] block">
                                   Cash Movements:
                                 </span>
                                 {data.events.map((ev: ForecastEvent) => (
@@ -844,8 +844,8 @@ export default function ForecastPage() {
                                     <span
                                       className={`truncate ${
                                         ev.type === 'inflow'
-                                          ? 'text-[#1D6B52]'
-                                          : 'text-[#B53A26]'
+                                          ? 'text-[var(--money-in)]'
+                                          : 'text-[var(--money-out)]'
                                       }`}
                                     >
                                       {ev.label}
@@ -853,8 +853,8 @@ export default function ForecastPage() {
                                     <span
                                       className={`font-mono font-semibold flex-shrink-0 ${
                                         ev.type === 'inflow'
-                                          ? 'text-[#1D6B52]'
-                                          : 'text-[#B53A26]'
+                                          ? 'text-[var(--money-in)]'
+                                          : 'text-[var(--money-out)]'
                                       }`}
                                     >
                                       {ev.type === 'inflow' ? '+' : '−'}
@@ -871,32 +871,32 @@ export default function ForecastPage() {
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-xs font-mono text-[#5F626A]">
+                <div className="h-full flex items-center justify-center text-xs font-mono text-[var(--text-muted)]">
                   Loading chart engine...
                 </div>
               )}
             </div>
 
             {/* Mandatory Disclaimer */}
-            <div className="pt-3 border-t border-[#C8C2B5]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-[#5F626A] font-mono">
+            <div className="pt-3 border-t border-[var(--border-line)] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-[var(--text-muted)] font-mono">
               <div className="flex items-center gap-1.5">
-                <Info className="w-3.5 h-3.5 text-[#5F626A]" />
+                <Info className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                 <span>Estimates based on the data you entered. Real bank balances may differ.</span>
               </div>
-              <span className="text-[10px] uppercase tracking-wider text-[#5F626A]/70">
+              <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-medium">
                 Deterministic Model
               </span>
             </div>
           </div>
 
           {/* Upcoming Events List */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-[#C8C2B5] space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#C8C2B5]/40 pb-4">
+          <div className="p-5 sm:p-6 rounded-2xl app-card bg-surface border border-line space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border-line)] pb-4">
               <div>
-                <h3 className="font-serif italic text-lg sm:text-xl font-bold text-[#16181D]">
+                <h3 className="font-serif italic text-lg sm:text-xl font-bold text-[var(--text-primary)]">
                   Upcoming Cash Movements
                 </h3>
-                <p className="text-xs text-[#5F626A] font-mono mt-0.5">
+                <p className="text-xs text-[var(--text-muted)] font-mono mt-0.5">
                   Chronological schedule within {horizonDays}-day horizon ({filteredEvents.length} events)
                 </p>
               </div>
@@ -944,40 +944,40 @@ export default function ForecastPage() {
 
             {/* Grouped Chronological Schedule */}
             {eventsByDate.length === 0 ? (
-              <div className="py-12 text-center text-xs font-mono text-[#5F626A]">
+              <div className="py-12 text-center text-xs font-mono text-[var(--text-muted)]">
                 No cash events scheduled within this horizon.
               </div>
             ) : (
-              <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
+              <div tabIndex={0} role="region" aria-label="Upcoming cash movements schedule" className="space-y-4 max-h-[480px] overflow-y-auto pr-1 focus:outline-none focus:ring-1 focus:ring-[var(--border-line)]">
                 {eventsByDate.map(([dateStr, dayEvents]) => (
                   <div key={dateStr} className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-[#16181D]">
+                      <span className="font-mono text-xs font-bold text-[var(--text-primary)]">
                         {format(parseISO(dateStr), 'd MMM yyyy')}
                       </span>
-                      <span className="text-[10px] font-mono text-[#5F626A]">
+                      <span className="text-[10px] font-mono text-[var(--text-muted)]">
                         ({format(parseISO(dateStr), 'EEEE')})
                       </span>
-                      <div className="flex-1 h-px bg-[#C8C2B5]/30" />
+                      <div className="flex-1 h-px bg-[var(--border-line)] opacity-30" />
                     </div>
 
                     <div className="space-y-1.5 pl-2">
                       {dayEvents.map((ev) => (
                         <div
                           key={ev.id}
-                          className="flex items-center justify-between p-2.5 rounded-xl border border-[#C8C2B5]/60 bg-[#F5F3EE]/50 hover:bg-[#F5F3EE] transition-colors"
+                          className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface-subtle)] hover:bg-[var(--bg-surface)] transition-colors"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             <span
                               className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                                ev.type === 'inflow' ? 'bg-[#1D6B52]' : 'bg-[#B53A26]'
+                                ev.type === 'inflow' ? 'bg-[var(--money-in)]' : 'bg-[var(--money-out)]'
                               }`}
                             />
                             <div className="truncate">
-                              <span className="text-xs font-sans font-medium text-[#16181D] block truncate">
+                              <span className="text-xs font-sans font-medium text-[var(--text-primary)] block truncate">
                                 {ev.label}
                               </span>
-                              <span className="text-[10px] font-mono uppercase tracking-wider text-[#5F626A]">
+                              <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)]">
                                 {ev.source.replace('_', ' ')}
                               </span>
                             </div>
@@ -986,7 +986,7 @@ export default function ForecastPage() {
                           <div className="text-right flex-shrink-0 pl-2">
                             <span
                               className={`text-xs font-mono font-bold block ${
-                                ev.type === 'inflow' ? 'text-[#1D6B52]' : 'text-[#B53A26]'
+                                ev.type === 'inflow' ? 'text-[var(--money-in)]' : 'text-[var(--money-out)]'
                               }`}
                             >
                               {ev.type === 'inflow' ? '+' : '−'}
@@ -1010,13 +1010,13 @@ export default function ForecastPage() {
           }`}
         >
           {/* What-If Panel Card */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-[#C8C2B5] space-y-6 sticky top-6">
-            <div className="flex items-center justify-between border-b border-[#C8C2B5]/40 pb-4">
+          <div className="p-5 sm:p-6 rounded-2xl app-card bg-surface border border-line space-y-6 sticky top-6">
+            <div className="flex items-center justify-between border-b border-[var(--border-line)] pb-4">
               <div>
-                <h3 className="font-serif italic text-lg sm:text-xl font-bold text-[#16181D]">
+                <h3 className="font-serif italic text-lg sm:text-xl font-bold text-[var(--text-primary)]">
                   What-If Simulator
                 </h3>
-                <p className="text-xs text-[#5F626A] font-mono mt-0.5">
+                <p className="text-xs text-[var(--text-muted)] font-mono mt-0.5">
                   Stress-test delays, lost bookings &amp; expenses
                 </p>
               </div>
@@ -1025,7 +1025,7 @@ export default function ForecastPage() {
                 <button
                   type="button"
                   onClick={resetAllScenarios}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#C8C2B5] bg-white px-2.5 py-1 text-[11px] font-mono font-semibold text-[#5F626A] hover:text-[#16181D] hover:bg-[#F5F3EE] transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-line)] bg-surface px-2.5 py-1 text-[11px] font-mono font-semibold text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-subtle)] transition-colors"
                 >
                   <RotateCcw className="w-3 h-3" />
                   <span>Reset</span>
@@ -1035,20 +1035,20 @@ export default function ForecastPage() {
 
             {/* Quick Preset Stress Tests */}
             <div className="space-y-2">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-[#5F626A] block font-semibold">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--text-muted)] block font-semibold">
                 One-Tap Stress Presets
               </span>
               <div className="flex flex-col gap-2">
                 <button
                   type="button"
                   onClick={applySlowestClientPreset}
-                  className="text-left p-2.5 rounded-xl border border-[#C8C2B5]/80 bg-[#F5F3EE]/60 hover:bg-[#F5F3EE] transition-all text-xs font-sans group"
+                  className="text-left p-2.5 rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface-subtle)] hover:bg-[var(--bg-surface)] transition-all text-xs font-sans group"
                 >
-                  <div className="font-semibold text-[#16181D] flex items-center justify-between">
+                  <div className="font-semibold text-[var(--text-primary)] flex items-center justify-between">
                     <span>Slowest client pays 15 days late</span>
-                    <ArrowRight className="w-3 h-3 text-[#5F626A] group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight className="w-3 h-3 text-[var(--text-muted)] group-hover:translate-x-0.5 transition-transform" />
                   </div>
-                  <span className="text-[10px] text-[#5F626A] font-mono block mt-0.5">
+                  <span className="text-[10px] text-[var(--text-muted)] font-mono block mt-0.5">
                     Delays Rohit Mehta (slowest history) by 15 extra days
                   </span>
                 </button>
@@ -1056,13 +1056,13 @@ export default function ForecastPage() {
                 <button
                   type="button"
                   onClick={applyBiggestBookingPreset}
-                  className="text-left p-2.5 rounded-xl border border-[#C8C2B5]/80 bg-[#F5F3EE]/60 hover:bg-[#F5F3EE] transition-all text-xs font-sans group"
+                  className="text-left p-2.5 rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface-subtle)] hover:bg-[var(--bg-surface)] transition-all text-xs font-sans group"
                 >
-                  <div className="font-semibold text-[#16181D] flex items-center justify-between">
+                  <div className="font-semibold text-[var(--text-primary)] flex items-center justify-between">
                     <span>Biggest unpaid booking cancelled</span>
-                    <ArrowRight className="w-3 h-3 text-[#5F626A] group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight className="w-3 h-3 text-[var(--text-muted)] group-hover:translate-x-0.5 transition-transform" />
                   </div>
-                  <span className="text-[10px] text-[#5F626A] font-mono block mt-0.5">
+                  <span className="text-[10px] text-[var(--text-muted)] font-mono block mt-0.5">
                     Simulates zero receipts from largest upcoming booking
                   </span>
                 </button>
@@ -1070,13 +1070,13 @@ export default function ForecastPage() {
                 <button
                   type="button"
                   onClick={applySurpriseExpensePreset}
-                  className="text-left p-2.5 rounded-xl border border-[#C8C2B5]/80 bg-[#F5F3EE]/60 hover:bg-[#F5F3EE] transition-all text-xs font-sans group"
+                  className="text-left p-2.5 rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface-subtle)] hover:bg-[var(--bg-surface)] transition-all text-xs font-sans group"
                 >
-                  <div className="font-semibold text-[#16181D] flex items-center justify-between">
+                  <div className="font-semibold text-[var(--text-primary)] flex items-center justify-between">
                     <span>Surprise ₹30,000 expense next week</span>
-                    <ArrowRight className="w-3 h-3 text-[#5F626A] group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight className="w-3 h-3 text-[var(--text-muted)] group-hover:translate-x-0.5 transition-transform" />
                   </div>
-                  <span className="text-[10px] text-[#5F626A] font-mono block mt-0.5">
+                  <span className="text-[10px] text-[var(--text-muted)] font-mono block mt-0.5">
                     Adds emergency gear repair outflow on {format(parseISO(addDays(rawInputs.today, 7)), 'd MMM')}
                   </span>
                 </button>
@@ -1085,9 +1085,9 @@ export default function ForecastPage() {
 
             {/* Before-and-After Comparison Card (shown when scenarios active) */}
             {comparison && (
-              <div className="p-4 rounded-xl border border-[#C8C2B5] bg-[#F5F3EE] space-y-3">
+              <div className="p-4 rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface-subtle)] space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs uppercase tracking-wider font-bold text-[#16181D]">
+                  <span className="font-mono text-xs uppercase tracking-wider font-bold text-[var(--text-primary)]">
                     Scenario Impact
                   </span>
                   <span
@@ -1102,18 +1102,18 @@ export default function ForecastPage() {
                 </div>
 
                 <div className="space-y-2 text-xs font-sans">
-                  <div className="flex justify-between items-baseline border-b border-[#C8C2B5]/40 pb-1.5">
-                    <span className="text-[#5F626A]">Lowest Point:</span>
+                  <div className="flex justify-between items-baseline border-b border-[var(--border-line)] pb-1.5">
+                    <span className="text-[var(--text-muted)]">Lowest Point:</span>
                     <div className="font-mono text-right">
-                      <span className="text-[#5F626A]">
+                      <span className="text-[var(--text-muted)]">
                         {formatINR(baseResult.summary.lowestBalance)}
                       </span>
-                      <span className="text-[#5F626A] mx-1">→</span>
+                      <span className="text-[var(--text-muted)] mx-1">→</span>
                       <span
                         className={`font-bold ${
                           activeResult.summary.lowestBalance < 0
                             ? 'text-[#B53A26]'
-                            : 'text-[#16181D]'
+                            : 'text-[var(--text-primary)]'
                         }`}
                       >
                         {formatINR(activeResult.summary.lowestBalance)}
@@ -1121,15 +1121,15 @@ export default function ForecastPage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-baseline border-b border-[#C8C2B5]/40 pb-1.5">
-                    <span className="text-[#5F626A]">Runway:</span>
+                  <div className="flex justify-between items-baseline border-b border-[var(--border-line)] pb-1.5">
+                    <span className="text-[var(--text-muted)]">Runway:</span>
                     <div className="font-mono text-right">
-                      <span className="text-[#5F626A]">
+                      <span className="text-[var(--text-muted)]">
                         {baseResult.summary.runwayDays !== null
                           ? `${baseResult.summary.runwayDays}d`
                           : '>90d'}
                       </span>
-                      <span className="text-[#5F626A] mx-1">→</span>
+                      <span className="text-[var(--text-muted)] mx-1">→</span>
                       <span
                         className={`font-bold ${
                           activeResult.summary.runwayDays !== null
@@ -1145,20 +1145,20 @@ export default function ForecastPage() {
                   </div>
 
                   <div className="flex justify-between items-baseline">
-                    <span className="text-[#5F626A]">Ending Balance:</span>
+                    <span className="text-[var(--text-muted)]">Ending Balance:</span>
                     <div className="font-mono text-right">
-                      <span className="text-[#5F626A]">
+                      <span className="text-[var(--text-muted)]">
                         {formatCompactINR(baseResult.summary.endingBalance)}
                       </span>
-                      <span className="text-[#5F626A] mx-1">→</span>
-                      <span className="font-bold text-[#16181D]">
+                      <span className="text-[var(--text-muted)] mx-1">→</span>
+                      <span className="font-bold text-[var(--text-primary)]">
                         {formatCompactINR(activeResult.summary.endingBalance)}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <p className="text-[11px] font-mono text-[#5F626A] pt-1 border-t border-[#C8C2B5]/30">
+                <p className="text-[11px] font-mono text-[var(--text-muted)] pt-1 border-t border-[var(--border-line)]">
                   {comparison.summaryText}
                 </p>
               </div>
@@ -1167,7 +1167,7 @@ export default function ForecastPage() {
             {/* Active Scenarios List */}
             {scenarios.length > 0 && (
               <div className="space-y-2">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-[#5F626A] block font-semibold">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--text-muted)] block font-semibold">
                   Active What-If Scenarios ({scenarios.length})
                 </span>
                 <div className="space-y-1.5">
@@ -1188,15 +1188,15 @@ export default function ForecastPage() {
                     return (
                       <div
                         key={idx}
-                        className="flex items-center justify-between p-2 rounded-xl border border-[#C8C2B5] bg-white text-xs font-mono"
+                        className="flex items-center justify-between p-2 rounded-xl border border-[var(--border-line)] bg-surface text-xs font-mono"
                       >
-                        <span className="truncate pr-2 font-medium text-[#16181D]">
+                        <span className="truncate pr-2 font-medium text-[var(--text-primary)]">
                           {desc}
                         </span>
                         <button
                           type="button"
                           onClick={() => removeScenarioAtIndex(idx)}
-                          className="text-[#5F626A] hover:text-[#B53A26] p-1 transition-colors"
+                          className="text-[var(--text-muted)] hover:text-[#B53A26] p-1 transition-colors"
                           title="Remove scenario"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -1212,13 +1212,15 @@ export default function ForecastPage() {
             <div className="space-y-4 pt-2 border-t border-[#C8C2B5]/40">
               {/* 1. Client Delay Slider */}
               <div className="space-y-2">
-                <label className="text-xs font-mono uppercase tracking-wider text-[#16181D] font-semibold block">
+                <label htmlFor="simulate-client-delay" className="text-xs font-mono uppercase tracking-wider text-[var(--text-primary)] font-semibold block">
                   Simulate Client Delay
                 </label>
                 <select
+                  id="simulate-client-delay"
+                  aria-label="Simulate Client Delay"
                   value={selectedClientId}
                   onChange={(e) => setSelectedClientId(e.target.value)}
-                  className="w-full text-xs font-sans rounded-xl border border-[#C8C2B5] bg-white px-3 py-2 text-[#16181D] focus:outline-none focus:ring-1 focus:ring-[#16181D]"
+                  className="w-full text-xs font-sans rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface)] px-3 py-2 text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--text-primary)]"
                 >
                   {rawInputs.clients.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -1228,25 +1230,26 @@ export default function ForecastPage() {
                 </select>
 
                 <div className="space-y-1">
-                  <div className="flex justify-between text-xs font-mono text-[#5F626A]">
+                  <div className="flex justify-between text-xs font-mono text-[var(--text-muted)]">
                     <span>Additional delay:</span>
-                    <span className="font-bold text-[#16181D]">+{clientDelayDays} days</span>
+                    <span className="font-bold text-[var(--text-primary)]">+{clientDelayDays} days</span>
                   </div>
                   <input
                     type="range"
+                    aria-label="Additional delay days"
                     min="1"
                     max="45"
                     step="1"
                     value={clientDelayDays}
                     onChange={(e) => setClientDelayDays(Number(e.target.value))}
-                    className="w-full accent-[#16181D]"
+                    className="w-full accent-[var(--text-primary)]"
                   />
                 </div>
 
                 <button
                   type="button"
                   onClick={handleAddClientDelay}
-                  className="w-full rounded-full border border-[#C8C2B5] bg-white px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold text-[#16181D] hover:bg-[#F5F3EE] transition-colors"
+                  className="w-full rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-surface-subtle)] transition-colors"
                 >
                   Apply Delay
                 </button>
@@ -1254,13 +1257,15 @@ export default function ForecastPage() {
 
               {/* 2. Cancel a Booking */}
               <div className="space-y-2 pt-3 border-t border-[#C8C2B5]/30">
-                <label className="text-xs font-mono uppercase tracking-wider text-[#16181D] font-semibold block">
+                <label htmlFor="simulate-lost-booking" className="text-xs font-mono uppercase tracking-wider text-[var(--text-primary)] font-semibold block">
                   Simulate Lost Booking
                 </label>
                 <select
+                  id="simulate-lost-booking"
+                  aria-label="Simulate Lost Booking"
                   value={selectedBookingId}
                   onChange={(e) => setSelectedBookingId(e.target.value)}
-                  className="w-full text-xs font-sans rounded-xl border border-[#C8C2B5] bg-white px-3 py-2 text-[#16181D] focus:outline-none focus:ring-1 focus:ring-[#16181D]"
+                  className="w-full text-xs font-sans rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface)] px-3 py-2 text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--text-primary)]"
                 >
                   {rawInputs.bookings.map((b) => (
                     <option key={b.id} value={b.id}>
@@ -1271,7 +1276,7 @@ export default function ForecastPage() {
                 <button
                   type="button"
                   onClick={() => handleToggleLoseBooking(selectedBookingId)}
-                  className="w-full rounded-full border border-[#C8C2B5] bg-white px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold text-[#16181D] hover:bg-[#F5F3EE] transition-colors"
+                  className="w-full rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-surface-subtle)] transition-colors"
                 >
                   Toggle Booking Cancellation
                 </button>
@@ -1279,34 +1284,38 @@ export default function ForecastPage() {
 
               {/* 3. Add One-Off Expense */}
               <form onSubmit={handleAddOneOffExpense} className="space-y-2 pt-3 border-t border-[#C8C2B5]/30">
-                <label className="text-xs font-mono uppercase tracking-wider text-[#16181D] font-semibold block">
+                <label htmlFor="one-off-expense-name" className="text-xs font-mono uppercase tracking-wider text-[var(--text-primary)] font-semibold block">
                   Add One-Off Outflow
                 </label>
                 <input
+                  id="one-off-expense-name"
+                  aria-label="Add One-Off Outflow description"
                   type="text"
                   placeholder="e.g. Lens Calibration / Travel"
                   value={expenseName}
                   onChange={(e) => setExpenseName(e.target.value)}
-                  className="w-full text-xs font-sans rounded-xl border border-[#C8C2B5] bg-white px-3 py-1.5 text-[#16181D] focus:outline-none focus:ring-1 focus:ring-[#16181D]"
+                  className="w-full text-xs font-sans rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface)] px-3 py-1.5 text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--text-primary)]"
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="number"
+                    aria-label="One-Off Outflow Amount in Rupees"
                     placeholder="Amount (₹)"
                     value={expenseAmount}
                     onChange={(e) => setExpenseAmount(e.target.value)}
-                    className="w-full text-xs font-mono rounded-xl border border-[#C8C2B5] bg-white px-3 py-1.5 text-[#16181D] focus:outline-none focus:ring-1 focus:ring-[#16181D]"
+                    className="w-full text-xs font-mono rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface)] px-3 py-1.5 text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--text-primary)]"
                   />
                   <input
                     type="date"
+                    aria-label="One-Off Outflow Date"
                     value={expenseDate}
                     onChange={(e) => setExpenseDate(e.target.value)}
-                    className="w-full text-xs font-mono rounded-xl border border-[#C8C2B5] bg-white px-2 py-1.5 text-[#16181D] focus:outline-none focus:ring-1 focus:ring-[#16181D]"
+                    className="w-full text-xs font-mono rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface)] px-2 py-1.5 text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--text-primary)]"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full rounded-full bg-[#16181D] text-[#F5F3EE] px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity"
+                  className="w-full rounded-full bg-[var(--text-primary)] text-[var(--bg-canvas)] px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity"
                 >
                   Add Outflow
                 </button>

@@ -28,7 +28,7 @@ export async function POST() {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to reset demo data',
+        error: 'Failed to reset demo data',
       },
       { status: 500 }
     );

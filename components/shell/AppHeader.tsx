@@ -25,7 +25,7 @@ export function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-[var(--bg-canvas)]/90 backdrop-blur-md border-b border-[var(--border-line)]">
+      <header className="sticky top-0 z-40 w-full bg-[var(--bg-canvas)] border-b border-[var(--border-line)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Brand & Studio Info */}
           <div className="flex items-center gap-4">
@@ -46,7 +46,7 @@ export function AppHeader() {
             {/* Pricing link in header */}
             <Link
               href="/pricing"
-              className="hidden lg:inline-flex items-center px-3 py-1 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] text-xs font-mono text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--text-primary)] transition-colors"
+              className="hidden lg:inline-flex items-center px-3 py-1 rounded-full border border-line bg-surface text-xs font-mono font-medium text-[var(--text-primary)] hover:border-[var(--text-primary)] transition-colors"
             >
               <span>Pricing</span>
             </Link>
@@ -58,7 +58,7 @@ export function AppHeader() {
             <button
               type="button"
               onClick={() => setGuidedDemoOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] text-xs font-mono font-medium text-[var(--text-primary)] hover:bg-[var(--bg-surface-subtle)] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line bg-surface text-xs font-mono font-medium text-[var(--text-primary)] hover:bg-surface-subtle transition-colors"
             >
               <HelpCircle className="w-3.5 h-3.5 text-[var(--text-muted)]" />
               <span>Guided Demo</span>

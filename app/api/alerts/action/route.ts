@@ -31,9 +31,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    const err = error as Error;
+    console.error('Failed to update alert state:', error);
     return NextResponse.json(
-      { error: err.message || 'Failed to update alert state' },
+      { error: 'Failed to update alert state' },
       { status: 500 }
     );
   }

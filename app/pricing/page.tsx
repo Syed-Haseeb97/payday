@@ -50,7 +50,7 @@ export default function PricingPage() {
     <div className="space-y-12 max-w-5xl mx-auto pb-12">
       {/* 1. Hero Section */}
       <div className="space-y-4 pt-2">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-3.5 py-1 font-mono text-[11px] uppercase tracking-wider text-[var(--text-muted)] font-medium">
+        <div className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1 font-mono text-[11px] uppercase tracking-wider text-[var(--text-muted)] font-medium">
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--money-in)]" />
           <span>Business Case &amp; Proposed Pricing</span>
         </div>
@@ -63,7 +63,7 @@ export default function PricingPage() {
       </div>
 
       {/* 2. The Problem in Three Plain Sentences */}
-      <div className="p-6 sm:p-8 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] space-y-4">
+      <div className="p-6 sm:p-8 rounded-2xl app-card bg-surface border border-line space-y-4">
         <h2 className="text-xs font-mono uppercase tracking-widest text-[var(--text-muted)] font-semibold">
           The Core Problem
         </h2>
@@ -90,7 +90,7 @@ export default function PricingPage() {
       </div>
 
       {/* 3. Your Numbers (Live Delay Cost Calculator) */}
-      <div className="p-6 sm:p-8 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] space-y-6">
+      <div className="p-6 sm:p-8 rounded-2xl app-card bg-surface border border-line space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[var(--border-line-subtle)]">
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[var(--money-out)] font-semibold">
@@ -176,7 +176,7 @@ export default function PricingPage() {
                   Solo Plan Monthly Cost
                 </span>
                 <span className="text-xl font-serif font-bold text-[var(--text-primary)] tabular-nums">
-                  ₹{selectedPlanPrice}
+                  {formatINR(selectedPlanPrice)}
                 </span>
                 <span className="text-[10px] font-mono text-[var(--text-faint)] block">
                   per month (proposed)
@@ -217,10 +217,10 @@ export default function PricingPage() {
           {/* Milestone Invoices */}
           <Link
             href="/invoices"
-            className="p-5 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] hover:border-[var(--text-primary)] transition-colors group flex flex-col justify-between"
+            className="p-5 rounded-2xl app-card bg-surface border border-line hover:border-[var(--text-primary)] transition-colors group flex flex-col justify-between"
           >
             <div className="space-y-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[var(--bg-surface-subtle)] border border-[var(--border-line)] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-[var(--bg-surface-subtle)] border border-line flex items-center justify-center">
                 <Receipt className="w-4 h-4 text-[var(--text-primary)]" />
               </div>
               <h3 className="font-serif italic text-lg font-bold text-[var(--text-primary)] group-hover:underline">
@@ -239,7 +239,7 @@ export default function PricingPage() {
           {/* Bad Day Chase List */}
           <Link
             href="/bad-day"
-            className="p-5 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] hover:border-[var(--money-out)] transition-colors group flex flex-col justify-between"
+            className="p-5 rounded-2xl app-card bg-surface border border-line hover:border-[var(--money-out)] transition-colors group flex flex-col justify-between"
           >
             <div className="space-y-2.5">
               <div className="w-8 h-8 rounded-xl bg-[var(--money-out-bg)] border border-[var(--money-out)]/30 flex items-center justify-center">
@@ -252,19 +252,19 @@ export default function PricingPage() {
                 Deterministic mathematical scoring ranks exactly which 3 invoices to chase today for maximum cash relief.
               </p>
             </div>
-            <div className="mt-4 pt-3 border-t border-[var(--border-line-subtle)] flex items-center justify-between text-xs font-mono text-[var(--money-out)] font-semibold">
+            <div className="mt-4 pt-3 border-t border-[var(--border-line-subtle)] flex items-center justify-between text-xs font-mono text-[var(--text-primary)] font-semibold">
               <span>Open Bad Day Mode</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 text-[var(--money-out)]" />
             </div>
           </Link>
 
           {/* 90-Day Forecast */}
           <Link
             href="/forecast"
-            className="p-5 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] hover:border-[var(--text-primary)] transition-colors group flex flex-col justify-between"
+            className="p-5 rounded-2xl app-card bg-surface border border-line hover:border-[var(--text-primary)] transition-colors group flex flex-col justify-between"
           >
             <div className="space-y-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[var(--bg-surface-subtle)] border border-[var(--border-line)] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-[var(--bg-surface-subtle)] border border-line flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 text-[var(--text-primary)]" />
               </div>
               <h3 className="font-serif italic text-lg font-bold text-[var(--text-primary)] group-hover:underline">
@@ -283,10 +283,10 @@ export default function PricingPage() {
           {/* What-If Simulator */}
           <Link
             href="/forecast"
-            className="p-5 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] hover:border-[var(--text-primary)] transition-colors group flex flex-col justify-between"
+            className="p-5 rounded-2xl app-card bg-surface border border-line hover:border-[var(--text-primary)] transition-colors group flex flex-col justify-between"
           >
             <div className="space-y-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[var(--bg-surface-subtle)] border border-[var(--border-line)] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-[var(--bg-surface-subtle)] border border-line flex items-center justify-center">
                 <Sliders className="w-4 h-4 text-[var(--text-primary)]" />
               </div>
               <h3 className="font-serif italic text-lg font-bold text-[var(--text-primary)] group-hover:underline">
@@ -303,9 +303,9 @@ export default function PricingPage() {
           </Link>
 
           {/* Quick Add WhatsApp Parser */}
-          <div className="p-5 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] flex flex-col justify-between">
+          <div className="p-5 rounded-2xl app-card bg-surface border border-line flex flex-col justify-between">
             <div className="space-y-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[var(--bg-surface-subtle)] border border-[var(--border-line)] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-[var(--bg-surface-subtle)] border border-line flex items-center justify-center">
                 <Zap className="w-4 h-4 text-[var(--money-in)]" />
               </div>
               <h3 className="font-serif italic text-lg font-bold text-[var(--text-primary)]">
@@ -339,7 +339,7 @@ export default function PricingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Free Tier */}
-          <div className="p-6 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] flex flex-col justify-between space-y-6">
+          <div className="p-6 rounded-2xl app-card bg-surface border border-line flex flex-col justify-between space-y-6">
             <div className="space-y-4">
               <div>
                 <span className="font-mono text-xs uppercase tracking-wider text-[var(--text-muted)] font-semibold">
@@ -378,7 +378,7 @@ export default function PricingPage() {
           </div>
 
           {/* Solo Tier (Featured) */}
-          <div className="p-6 rounded-2xl app-card bg-[var(--bg-surface)] border-2 border-[var(--text-primary)] shadow-md flex flex-col justify-between space-y-6 relative">
+          <div className="p-6 rounded-2xl app-card bg-surface border-2 border-[var(--text-primary)] shadow-md flex flex-col justify-between space-y-6 relative">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="font-mono text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">
@@ -431,7 +431,7 @@ export default function PricingPage() {
           </div>
 
           {/* Studio Tier */}
-          <div className="p-6 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] flex flex-col justify-between space-y-6">
+          <div className="p-6 rounded-2xl app-card bg-surface border border-line flex flex-col justify-between space-y-6">
             <div className="space-y-4">
               <div>
                 <span className="font-mono text-xs uppercase tracking-wider text-[var(--text-muted)] font-semibold">
@@ -475,7 +475,7 @@ export default function PricingPage() {
       </div>
 
       {/* 6. Who Pays and How it Grows (Go-to-market plan) */}
-      <div className="p-6 sm:p-8 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] space-y-5">
+      <div className="p-6 sm:p-8 rounded-2xl app-card bg-surface border border-line space-y-5">
         <div className="flex items-center gap-2">
           <span className="inline-flex px-2 py-0.5 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface-subtle)] font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-semibold">
             Go-To-Market Plan

@@ -23,9 +23,9 @@ export async function POST(req: NextRequest) {
       payment: result.payment,
     });
   } catch (error: unknown) {
-    const err = error as Error;
+    console.error('Failed to confirm booking:', error);
     return NextResponse.json(
-      { error: err.message || 'Failed to confirm booking' },
+      { error: 'Failed to confirm booking' },
       { status: 500 }
     );
   }

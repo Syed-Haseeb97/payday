@@ -27,7 +27,7 @@ export function MobileNav() {
   }, [pathname]);
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--bg-canvas)]/95 backdrop-blur-md border-t border-[var(--border-line)] pb-safe">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--bg-canvas)]/95 backdrop-blur-md border-t border-[var(--border-line)] pb-safe">
       <div className="flex items-center justify-around px-2 py-2">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;

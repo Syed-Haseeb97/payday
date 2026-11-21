@@ -30,9 +30,9 @@ export async function POST(req: NextRequest) {
       reminder,
     });
   } catch (error: unknown) {
-    const err = error as Error;
+    console.error('Failed to record reminder:', error);
     return NextResponse.json(
-      { error: err.message || 'Failed to record reminder' },
+      { error: 'Failed to record reminder' },
       { status: 500 }
     );
   }

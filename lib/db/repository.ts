@@ -19,6 +19,8 @@ import {
 } from './types';
 import { generateSeedData, SeedDataBundle } from './seed-data';
 import { splitMilestones } from '../milestones';
+import { getIndiaTodayStr } from '../date';
+import { formatINR } from '../money';
 import { deriveInvoiceStatus } from '../invoice-status';
 import { daysOverdue, buildAgingSummary, AgingInvoice } from '../aging';
 import { buildWhoOwesMe, WhoOwesRow, ClientRef } from '../receivables';
@@ -126,7 +128,7 @@ export class InMemoryRepository implements PaydayRepository {
   }
 
   private getTodayStr(): string {
-    return format(new Date(), 'yyyy-MM-dd');
+    return getIndiaTodayStr();
   }
 
   private enrichInvoice(inv: Invoice, todayStr?: string): Invoice {
@@ -390,7 +392,7 @@ export class InMemoryRepository implements PaydayRepository {
     const remainingBalance = invoice.amount - invoice.paid_amount;
     if (data.amount > remainingBalance + 0.001) {
       throw new Error(
-        `Payment amount (₹${data.amount}) cannot exceed remaining balance (₹${remainingBalance})`
+        `Payment amount (${formatINR(data.amount)}) cannot exceed remaining balance (${formatINR(remainingBalance)})`
       );
     }
 
@@ -640,7 +642,7 @@ export class SupabaseRepository implements PaydayRepository {
   }
 
   private getTodayStr(): string {
-    return format(new Date(), 'yyyy-MM-dd');
+    return getIndiaTodayStr();
   }
 
   async getClients(): Promise<Client[]> {
@@ -895,7 +897,9 @@ export class SupabaseRepository implements PaydayRepository {
 
     const remaining = inv.amount - inv.paid_amount;
     if (data.amount > remaining + 0.001) {
-      throw new Error(`Payment cannot exceed remaining balance of ₹${remaining}`);
+      throw new Error(
+        `Payment amount (${formatINR(data.amount)}) cannot exceed remaining balance (${formatINR(remaining)})`
+      );
     }
 
     const paymentDate = data.paymentDate || this.getTodayStr();

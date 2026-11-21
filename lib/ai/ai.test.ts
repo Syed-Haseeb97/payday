@@ -7,6 +7,7 @@ import {
   generateReminderDraft,
   executeCompletionWithFallback,
   getTemplateReminder,
+  buildReminderPrompts,
   ReminderContext,
 } from './index';
 
@@ -267,5 +268,41 @@ describe('AI Client - executeCompletionWithFallback (Mocked fetch)', () => {
     expect(result.modelUsed).not.toContain(secretKey);
     const jsonString = JSON.stringify(result);
     expect(jsonString).not.toContain(secretKey);
+  });
+
+  it('guarantees personal data (notes, phone number, email) never reaches the LLM prompt', () => {
+    const sensitiveClient = {
+      name: 'Priya Khurana',
+      phone: '+91-98765-43210',
+      email: 'priya.khurana.personal@gmail.com',
+      notes: 'High net worth family, lives in Vasant Vihar, father is a judge, strictly private wedding',
+    };
+
+    const { systemPrompt, userPrompt } = buildReminderPrompts(
+      'firm',
+      'en',
+      {
+        clientName: sensitiveClient.name,
+        eventName: 'Beachside Wedding',
+        milestoneLabel: 'Final Payment',
+        amountFormatted: '₹40,000',
+        dueDateFormatted: '15 Dec 2026',
+        daysOverdue: 6,
+        businessName: 'Arjun Visuals',
+        upiId: 'arjun@okaxis',
+      }
+    );
+
+    const combinedPrompts = `${systemPrompt}\n${userPrompt}`;
+
+    // Assert that personal sensitive data does NOT appear
+    expect(combinedPrompts).not.toContain(sensitiveClient.phone);
+    expect(combinedPrompts).not.toContain('9876543210');
+    expect(combinedPrompts).not.toContain(sensitiveClient.email);
+    expect(combinedPrompts).not.toContain(sensitiveClient.notes);
+    expect(combinedPrompts).not.toContain('Khurana'); // Surname omitted, only first name Priya allowed
+    expect(combinedPrompts).toContain('Priya');
+    expect(combinedPrompts).toContain('₹40,000');
+    expect(combinedPrompts).toContain('15 Dec 2026');
   });
 });

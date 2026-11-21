@@ -299,4 +299,24 @@ describe('What-If Engine - compareForecasts Deltas & Health Comparison', () => {
     expect(comp.healthWorsened).toBe(false);
     expect(comp.summaryText).toContain('improves by ₹60,000');
   });
+
+  it('safely handles scenarios for non-existent clients or bookings without crashing', () => {
+    const baseInput: ForecastInput = {
+      today,
+      horizonDays: 30,
+      openingCash: 50000,
+      invoices: [],
+      clients: [],
+      recurringExpenses: [],
+    };
+
+    const modified = applyScenarios(baseInput, [
+      { type: 'clientLate', clientId: 'non-existent-client', extraDays: 14 },
+      { type: 'loseBooking', bookingId: 'non-existent-booking' },
+    ]);
+
+    expect(() => computeCashForecast(modified)).not.toThrow();
+    const result = computeCashForecast(modified);
+    expect(result.summary.lowestBalance).toBe(50000);
+  });
 });
