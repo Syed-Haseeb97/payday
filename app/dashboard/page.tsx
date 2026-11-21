@@ -18,6 +18,15 @@ import { formatINR } from '@/lib/money';
 import { ReliabilityBadge } from '@/components/ui/ReliabilityBadge';
 import { WhoOwesRow } from '@/lib/receivables';
 import { AgingBucket } from '@/lib/aging';
+import { computeCashForecast, CashHealth } from '@/lib/forecast';
+import { format, parseISO } from 'date-fns';
+
+interface CashOutlook {
+  lowestBalance: number;
+  lowestBalanceDate: string;
+  health: CashHealth;
+  runwayDays: number | null;
+}
 
 interface DashboardResponse {
   success: boolean;
@@ -31,20 +40,42 @@ interface DashboardResponse {
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardResponse | null>(null);
+  const [cashOutlook, setCashOutlook] = useState<CashOutlook | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchDashboard = () => {
     setLoading(true);
     setError(null);
-    fetch('/api/dashboard')
-      .then((res) => {
+    Promise.all([
+      fetch('/api/dashboard').then((res) => {
         if (!res.ok) throw new Error('Failed to load dashboard data');
         return res.json();
-      })
-      .then((json) => {
-        if (!json.success) throw new Error(json.error || 'Failed to parse dashboard');
-        setData(json);
+      }),
+      fetch('/api/forecast/inputs')
+        .then((res) => (res.ok ? res.json() : null))
+        .catch(() => null),
+    ])
+      .then(([dashJson, forecastInputs]) => {
+        if (!dashJson.success) throw new Error(dashJson.error || 'Failed to parse dashboard');
+        setData(dashJson);
+
+        if (forecastInputs) {
+          const forecast = computeCashForecast({
+            today: forecastInputs.today,
+            horizonDays: 90,
+            openingCash: forecastInputs.openingCash,
+            invoices: forecastInputs.invoices,
+            clients: forecastInputs.clients,
+            recurringExpenses: forecastInputs.recurringExpenses,
+          });
+          setCashOutlook({
+            lowestBalance: forecast.summary.lowestBalance,
+            lowestBalanceDate: forecast.summary.lowestBalanceDate,
+            health: forecast.summary.health,
+            runwayDays: forecast.summary.runwayDays,
+          });
+        }
       })
       .catch((err) => {
         setError(err.message || 'Error loading dashboard');
@@ -61,13 +92,13 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-10 w-48 bg-[var(--bg-surface-subtle)] rounded-xl animate-pulse" />
+        <div className="h-10 w-48 bg-[#E3EFE8]/40 rounded-xl" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-line)] p-5 animate-pulse" />
+            <div key={i} className="h-32 rounded-2xl bg-white border border-[#C8C2B5] p-5" />
           ))}
         </div>
-        <div className="h-72 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-line)] p-6 animate-pulse" />
+        <div className="h-72 rounded-2xl bg-white border border-[#C8C2B5] p-6" />
       </div>
     );
   }
@@ -171,6 +202,71 @@ export default function DashboardPage() {
             Collected via UPI &amp; transfers
           </p>
         </div>
+      </div>
+
+      {/* Cash Outlook Teaser Card */}
+      <div className="p-5 rounded-2xl bg-white border border-[#C8C2B5] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+              cashOutlook?.health === 'danger'
+                ? 'bg-[#F8E9E4] text-[#B53A26]'
+                : cashOutlook?.health === 'tight'
+                ? 'bg-[#F6ECD9] text-[#86560D]'
+                : 'bg-[#E3EFE8] text-[#1D6B52]'
+            }`}
+          >
+            <TrendingUp className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#5F626A] font-semibold">
+                90-Day Cash Outlook
+              </span>
+              {cashOutlook && (
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[10px] uppercase tracking-wider font-bold ${
+                    cashOutlook.health === 'danger'
+                      ? 'bg-[#F8E9E4] text-[#B53A26]'
+                      : cashOutlook.health === 'tight'
+                      ? 'bg-[#F6ECD9] text-[#86560D]'
+                      : 'bg-[#E3EFE8] text-[#1D6B52]'
+                  }`}
+                >
+                  {cashOutlook.health}
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-sm font-sans text-[#16181D]">
+              {cashOutlook ? (
+                <>
+                  Lowest projected cash in 90 days is{' '}
+                  <span className="font-semibold">{formatINR(cashOutlook.lowestBalance)}</span> on{' '}
+                  <span className="font-semibold">
+                    {format(parseISO(cashOutlook.lowestBalanceDate), 'd MMM yyyy')}
+                  </span>
+                  .
+                  {cashOutlook.health === 'tight' &&
+                    ' Reserve falls below 20% around rent & salary due dates.'}
+                  {cashOutlook.health === 'danger' &&
+                    ' Cash deficit projected before high-season receipts arrive.'}
+                  {cashOutlook.health === 'safe' &&
+                    ' Runway remains healthy with strong advance collections.'}
+                </>
+              ) : (
+                'Analyzing cash trajectory and upcoming fixed expenses...'
+              )}
+            </p>
+          </div>
+        </div>
+
+        <Link
+          href="/forecast"
+          className="inline-flex items-center gap-2 rounded-full border border-[#C8C2B5] bg-white px-4 py-2 text-xs font-mono uppercase tracking-wider font-semibold text-[#16181D] hover:bg-[#F5F3EE] transition-colors self-start md:self-auto flex-shrink-0"
+        >
+          <span>Open 90D Forecast</span>
+          <ChevronRight className="w-3.5 h-3.5" />
+        </Link>
       </div>
 
       {/* Aging Receivables Breakdown */}

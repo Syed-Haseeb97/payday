@@ -262,19 +262,18 @@ export function generateSeedData(baseDateStr?: string): SeedDataBundle {
         if (m.label === 'advance') {
           paidAmount = m.amount; // paid
         } else if (m.label === 'mid') {
-          paidAmount = 75000; // partially paid (50k remaining, overdue by ~35 days!)
+          paidAmount = m.amount; // paid
         } else {
-          // Final 50k unpaid, due d(-33) -> severely overdue 30+ days
+          // Final 50k unpaid, due in 14 days; with Singhania 22d delay -> expected in 36 days
+          m.due = d(14);
           paidAmount = 0;
         }
       } else if (b.id === 'b1000000-0000-0000-0000-000000000016') {
-        // Mehta Grand Regal (Total 180k: Adv 54k, Mid 90k, Final 36k)
-        // SCRIPTED: Let's adjust amounts so Final is ₹90,000+ per prompt specification!
-        // Prompt requirement: "Mehta Weddings (slow payer) has a large final milestone (₹90,000+) due within the next 12 days, and a smaller invoice already 12 days overdue."
-        // Let's set Mehta milestones:
+        // Mehta Grand Regal (Total 180k: Adv 50k, Mid 35k, Final 95k)
+        // SCRIPTED BAD MONTH:
         // Mid invoice: ₹35,000 due 12 days ago (due d(-12)), unpaid -> 12 days overdue!
-        // Final milestone: ₹95,000 due in 8 days (due d(8)), unpaid -> due within 12 days!
-        // Advance: ₹50,000 paid at booking.
+        // Final milestone: ₹95,000 due in 11 days (due d(11)), unpaid -> due within 12 days!
+        // With Mehta's 12-day delay, expected receipt lands on Day 23 (d(23)).
         if (m.label === 'advance') {
           m.amount = 50000;
           paidAmount = 50000;
@@ -284,50 +283,59 @@ export function generateSeedData(baseDateStr?: string): SeedDataBundle {
           paidAmount = 0; // Unpaid
         } else {
           m.amount = 95000; // ₹90,000+
-          m.due = d(8);   // Due in 8 days (< 12 days)
+          m.due = d(11);   // Due in 11 days (< 12 days)
           paidAmount = 0;
         }
       } else if (b.id === 'b1000000-0000-0000-0000-000000000017') {
-        // Sharma Winter Nuptials (Adv paid, Mid due in 10 days = large receipt due in next 3 weeks)
+        // Sharma Winter Nuptials (Adv paid, Mid due in 24 days)
         if (m.label === 'advance') {
           paidAmount = m.amount;
         } else if (m.label === 'mid') {
-          m.due = d(10); // Due in 10 days: ₹107,500
+          m.due = d(24); // Due in 24 days: ₹107,500 (delay 1 -> Day 25)
           paidAmount = 0;
         } else {
-          m.due = d(22);
+          m.due = d(35);
           paidAmount = 0;
         }
       } else if (b.id === 'b1000000-0000-0000-0000-000000000018') {
-        // Kapoor Udaipur Sangeet (Adv paid, Mid due in 18 days = second large receipt in next 3 weeks)
+        // Kapoor Udaipur Sangeet (Adv paid, Mid due in 19 days)
         if (m.label === 'advance') {
           paidAmount = m.amount;
         } else if (m.label === 'mid') {
-          m.due = d(18); // Due in 18 days: ₹87,500
+          m.due = d(19); // Due in 19 days: ₹87,500 (delay 6 -> Day 25)
           paidAmount = 0;
         } else {
-          m.due = d(32);
+          m.due = d(38);
           paidAmount = 0;
         }
       } else if (b.id === 'b1000000-0000-0000-0000-000000000019') {
-        // Ananya Iyer (New client: advance paid, mid due in 5 days)
+        // Ananya Iyer (New client: advance and mid paid, final due later)
         if (m.label === 'advance') {
           paidAmount = m.amount;
+        } else if (m.label === 'mid') {
+          paidAmount = m.amount;
         } else {
+          m.due = d(26);
+          paidAmount = 0;
+        }
+      } else if (b.id === 'b1000000-0000-0000-0000-000000000020') {
+        // Malhotra Anniversary Gala
+        if (m.label === 'advance') {
+          paidAmount = m.amount;
+        } else if (m.label === 'mid') {
+          m.due = d(25); // delay 2 -> Day 27
+          paidAmount = 0;
+        } else {
+          m.due = d(45);
           paidAmount = 0;
         }
       } else {
-        // Future bookings (+38 days to +145 days)
+        // Future bookings (+52 days to +145 days)
         if (m.label === 'advance') {
-          // Some future bookings have advances paid, some pending
-          if (b.offsetDays < 60) {
-            paidAmount = m.amount;
-          } else {
-            sent = true;
-            paidAmount = 0;
-          }
+          // Confirmed wedding booking advances are paid upon signing
+          paidAmount = m.amount;
         } else {
-          // Mid and Final for distant future bookings
+          // Mid and Final for future bookings
           sent = b.offsetDays < 90;
           paidAmount = 0;
         }
@@ -378,7 +386,7 @@ export function generateSeedData(baseDateStr?: string): SeedDataBundle {
       id: 'e1000000-0000-0000-0000-000000000001',
       user_id: user.id,
       name: 'Studio Rent (Indiranagar)',
-      amount: 45000,
+      amount: 47000,
       frequency: 'monthly',
       next_due_date: d(20), // Exactly in window (~3 weeks out)
       category: 'rent',
@@ -425,8 +433,20 @@ export function generateSeedData(baseDateStr?: string): SeedDataBundle {
     {
       id: 'e1000000-0000-0000-0000-000000000005',
       user_id: user.id,
-      name: 'Adobe CC & Cloud Backup',
-      amount: 4500,
+      name: 'Drone Kit Lease EMI',
+      amount: 18000,
+      frequency: 'monthly',
+      next_due_date: d(10), // mid-month
+      category: 'emi',
+      is_active: true,
+      created_at: `${d(-180)}T00:00:00Z`,
+      updated_at: `${d(0)}T00:00:00Z`,
+    },
+    {
+      id: 'e1000000-0000-0000-0000-000000000006',
+      user_id: user.id,
+      name: 'Adobe CC & Cloud Storage',
+      amount: 6500,
       frequency: 'monthly',
       next_due_date: d(15),
       category: 'software',
@@ -435,7 +455,7 @@ export function generateSeedData(baseDateStr?: string): SeedDataBundle {
       updated_at: `${d(0)}T00:00:00Z`,
     },
     {
-      id: 'e1000000-0000-0000-0000-000000000006',
+      id: 'e1000000-0000-0000-0000-000000000007',
       user_id: user.id,
       name: 'Studio & Gear Insurance (Annual)',
       amount: 36000,

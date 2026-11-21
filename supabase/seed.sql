@@ -247,10 +247,10 @@ INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milest
 VALUES ('i1000000-0000-0000-0000-000000000043', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000015', 'c1000000-0000-0000-0000-000000000007', 'INV-0043', 'advance', 75000, 75000, '2026-09-12', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=0&cu=INR', 'ADVANCE milestone for Singhania Grand Palace Wedding', '2026-09-12T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000044', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000015', 'c1000000-0000-0000-0000-000000000007', 'INV-0044', 'mid', 125000, 75000, '2026-09-12', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=50000&cu=INR', 'MID milestone for Singhania Grand Palace Wedding', '2026-09-12T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000044', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000015', 'c1000000-0000-0000-0000-000000000007', 'INV-0044', 'mid', 125000, 125000, '2026-09-12', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=0&cu=INR', 'MID milestone for Singhania Grand Palace Wedding', '2026-09-12T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000045', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000015', 'c1000000-0000-0000-0000-000000000007', 'INV-0045', 'final', 50000, 0, '2026-10-19', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=50000&cu=INR', 'FINAL milestone for Singhania Grand Palace Wedding', '2026-09-12T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000045', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000015', 'c1000000-0000-0000-0000-000000000007', 'INV-0045', 'final', 50000, 0, '2026-12-05', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=50000&cu=INR', 'FINAL milestone for Singhania Grand Palace Wedding', '2026-09-12T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
 VALUES ('i1000000-0000-0000-0000-000000000046', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000016', 'c1000000-0000-0000-0000-000000000006', 'INV-0046', 'advance', 50000, 50000, '2026-10-07', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=0&cu=INR', 'ADVANCE milestone for Mehta Grand Regal Wedding', '2026-10-07T00:00:00Z', '2026-11-21T00:00:00Z')
@@ -259,40 +259,40 @@ INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milest
 VALUES ('i1000000-0000-0000-0000-000000000047', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000016', 'c1000000-0000-0000-0000-000000000006', 'INV-0047', 'mid', 35000, 0, '2026-11-09', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=35000&cu=INR', 'MID milestone for Mehta Grand Regal Wedding', '2026-10-07T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000048', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000016', 'c1000000-0000-0000-0000-000000000006', 'INV-0048', 'final', 95000, 0, '2026-11-29', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=95000&cu=INR', 'FINAL milestone for Mehta Grand Regal Wedding', '2026-10-07T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000048', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000016', 'c1000000-0000-0000-0000-000000000006', 'INV-0048', 'final', 95000, 0, '2026-12-02', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=95000&cu=INR', 'FINAL milestone for Mehta Grand Regal Wedding', '2026-10-07T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
 VALUES ('i1000000-0000-0000-0000-000000000049', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000017', 'c1000000-0000-0000-0000-000000000001', 'INV-0049', 'advance', 64500, 64500, '2026-10-22', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=0&cu=INR', 'ADVANCE milestone for Sharma Winter Nuptials', '2026-10-22T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000017', 'c1000000-0000-0000-0000-000000000001', 'INV-0050', 'mid', 107500, 0, '2026-12-01', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=107500&cu=INR', 'MID milestone for Sharma Winter Nuptials', '2026-10-22T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000017', 'c1000000-0000-0000-0000-000000000001', 'INV-0050', 'mid', 107500, 0, '2026-12-15', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=107500&cu=INR', 'MID milestone for Sharma Winter Nuptials', '2026-10-22T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000017', 'c1000000-0000-0000-0000-000000000001', 'INV-0051', 'final', 43000, 0, '2026-12-13', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=43000&cu=INR', 'FINAL milestone for Sharma Winter Nuptials', '2026-10-22T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000017', 'c1000000-0000-0000-0000-000000000001', 'INV-0051', 'final', 43000, 0, '2026-12-26', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=43000&cu=INR', 'FINAL milestone for Sharma Winter Nuptials', '2026-10-22T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
 VALUES ('i1000000-0000-0000-0000-000000000052', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000018', 'c1000000-0000-0000-0000-000000000003', 'INV-0052', 'advance', 52500, 52500, '2026-11-01', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=0&cu=INR', 'ADVANCE milestone for Kapoor Udaipur Sangeet', '2026-11-01T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000053', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000018', 'c1000000-0000-0000-0000-000000000003', 'INV-0053', 'mid', 87500, 0, '2026-12-09', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=87500&cu=INR', 'MID milestone for Kapoor Udaipur Sangeet', '2026-11-01T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000053', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000018', 'c1000000-0000-0000-0000-000000000003', 'INV-0053', 'mid', 87500, 0, '2026-12-10', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=87500&cu=INR', 'MID milestone for Kapoor Udaipur Sangeet', '2026-11-01T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000054', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000018', 'c1000000-0000-0000-0000-000000000003', 'INV-0054', 'final', 35000, 0, '2026-12-23', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=35000&cu=INR', 'FINAL milestone for Kapoor Udaipur Sangeet', '2026-11-01T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000054', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000018', 'c1000000-0000-0000-0000-000000000003', 'INV-0054', 'final', 35000, 0, '2026-12-29', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=35000&cu=INR', 'FINAL milestone for Kapoor Udaipur Sangeet', '2026-11-01T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
 VALUES ('i1000000-0000-0000-0000-000000000055', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000019', 'c1000000-0000-0000-0000-000000000008', 'INV-0055', 'advance', 19500, 19500, '2026-11-13', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=0&cu=INR', 'ADVANCE milestone for Iyer South Indian Engagement', '2026-11-13T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000056', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000019', 'c1000000-0000-0000-0000-000000000008', 'INV-0056', 'mid', 32500, 0, '2026-11-13', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=32500&cu=INR', 'MID milestone for Iyer South Indian Engagement', '2026-11-13T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000056', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000019', 'c1000000-0000-0000-0000-000000000008', 'INV-0056', 'mid', 32500, 32500, '2026-11-13', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=0&cu=INR', 'MID milestone for Iyer South Indian Engagement', '2026-11-13T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000057', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000019', 'c1000000-0000-0000-0000-000000000008', 'INV-0057', 'final', 13000, 0, '2026-12-10', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=13000&cu=INR', 'FINAL milestone for Iyer South Indian Engagement', '2026-11-13T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000057', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000019', 'c1000000-0000-0000-0000-000000000008', 'INV-0057', 'final', 13000, 0, '2026-12-17', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=13000&cu=INR', 'FINAL milestone for Iyer South Indian Engagement', '2026-11-13T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
 VALUES ('i1000000-0000-0000-0000-000000000058', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000020', 'c1000000-0000-0000-0000-000000000002', 'INV-0058', 'advance', 25500, 25500, '2026-11-06', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=0&cu=INR', 'ADVANCE milestone for Malhotra Anniversary Gala', '2026-11-06T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000059', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000020', 'c1000000-0000-0000-0000-000000000002', 'INV-0059', 'mid', 42500, 0, '2026-11-29', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=42500&cu=INR', 'MID milestone for Malhotra Anniversary Gala', '2026-11-06T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000059', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000020', 'c1000000-0000-0000-0000-000000000002', 'INV-0059', 'mid', 42500, 0, '2026-12-16', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=42500&cu=INR', 'MID milestone for Malhotra Anniversary Gala', '2026-11-06T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
 VALUES ('i1000000-0000-0000-0000-000000000060', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000020', 'c1000000-0000-0000-0000-000000000002', 'INV-0060', 'final', 17000, 0, '2027-01-05', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=17000&cu=INR', 'FINAL milestone for Malhotra Anniversary Gala', '2026-11-06T00:00:00Z', '2026-11-21T00:00:00Z')
@@ -307,7 +307,7 @@ INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milest
 VALUES ('i1000000-0000-0000-0000-000000000063', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000021', 'c1000000-0000-0000-0000-000000000004', 'INV-0063', 'final', 46000, 0, '2027-01-19', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=46000&cu=INR', 'FINAL milestone for Verma Delhi Royal Wedding', '2026-11-11T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000064', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000022', 'c1000000-0000-0000-0000-000000000005', 'INV-0064', 'advance', 36000, 0, '2026-11-16', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=36000&cu=INR', 'ADVANCE milestone for Gupta Spring Reception', '2026-11-16T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000064', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000022', 'c1000000-0000-0000-0000-000000000005', 'INV-0064', 'advance', 36000, 36000, '2026-11-16', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=0&cu=INR', 'ADVANCE milestone for Gupta Spring Reception', '2026-11-16T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
 VALUES ('i1000000-0000-0000-0000-000000000065', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000022', 'c1000000-0000-0000-0000-000000000005', 'INV-0065', 'mid', 60000, 0, '2026-12-31', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=60000&cu=INR', 'MID milestone for Gupta Spring Reception', '2026-11-16T00:00:00Z', '2026-11-21T00:00:00Z')
@@ -316,7 +316,7 @@ INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milest
 VALUES ('i1000000-0000-0000-0000-000000000066', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000022', 'c1000000-0000-0000-0000-000000000005', 'INV-0066', 'final', 24000, 0, '2027-02-06', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=24000&cu=INR', 'FINAL milestone for Gupta Spring Reception', '2026-11-16T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000067', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000023', 'c1000000-0000-0000-0000-000000000008', 'INV-0067', 'advance', 57000, 0, '2026-11-18', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=57000&cu=INR', 'ADVANCE milestone for Iyer Traditional Wedding', '2026-11-18T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000067', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000023', 'c1000000-0000-0000-0000-000000000008', 'INV-0067', 'advance', 57000, 57000, '2026-11-18', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=0&cu=INR', 'ADVANCE milestone for Iyer Traditional Wedding', '2026-11-18T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
 VALUES ('i1000000-0000-0000-0000-000000000068', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000023', 'c1000000-0000-0000-0000-000000000008', 'INV-0068', 'mid', 95000, 0, '2027-01-25', false, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=95000&cu=INR', 'MID milestone for Iyer Traditional Wedding', '2026-11-18T00:00:00Z', '2026-11-21T00:00:00Z')
@@ -325,7 +325,7 @@ INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milest
 VALUES ('i1000000-0000-0000-0000-000000000069', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000023', 'c1000000-0000-0000-0000-000000000008', 'INV-0069', 'final', 38000, 0, '2027-03-03', false, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=38000&cu=INR', 'FINAL milestone for Iyer Traditional Wedding', '2026-11-18T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000070', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000024', 'c1000000-0000-0000-0000-000000000001', 'INV-0070', 'advance', 66000, 0, '2026-11-19', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=66000&cu=INR', 'ADVANCE milestone for Sharma Destination Vows', '2026-11-19T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000070', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000024', 'c1000000-0000-0000-0000-000000000001', 'INV-0070', 'advance', 66000, 66000, '2026-11-19', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=0&cu=INR', 'ADVANCE milestone for Sharma Destination Vows', '2026-11-19T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
 VALUES ('i1000000-0000-0000-0000-000000000071', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000024', 'c1000000-0000-0000-0000-000000000001', 'INV-0071', 'mid', 110000, 0, '2027-02-19', false, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=110000&cu=INR', 'MID milestone for Sharma Destination Vows', '2026-11-19T00:00:00Z', '2026-11-21T00:00:00Z')
@@ -334,7 +334,7 @@ INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milest
 VALUES ('i1000000-0000-0000-0000-000000000072', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000024', 'c1000000-0000-0000-0000-000000000001', 'INV-0072', 'final', 44000, 0, '2027-03-28', false, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=44000&cu=INR', 'FINAL milestone for Sharma Destination Vows', '2026-11-19T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES ('i1000000-0000-0000-0000-000000000073', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000025', 'c1000000-0000-0000-0000-000000000003', 'INV-0073', 'advance', 28500, 0, '2026-11-20', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=28500&cu=INR', 'ADVANCE milestone for Kapoor Summer Reception', '2026-11-20T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('i1000000-0000-0000-0000-000000000073', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000025', 'c1000000-0000-0000-0000-000000000003', 'INV-0073', 'advance', 28500, 28500, '2026-11-20', true, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=0&cu=INR', 'ADVANCE milestone for Kapoor Summer Reception', '2026-11-20T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
 VALUES ('i1000000-0000-0000-0000-000000000074', '00000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000025', 'c1000000-0000-0000-0000-000000000003', 'INV-0074', 'mid', 47500, 0, '2027-03-16', false, 'sent', 'upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=47500&cu=INR', 'MID milestone for Kapoor Summer Reception', '2026-11-20T00:00:00Z', '2026-11-21T00:00:00Z')
@@ -474,7 +474,7 @@ INSERT INTO payments (id, user_id, invoice_id, amount, payment_date, payment_met
 VALUES ('p1000000-0000-0000-0000-000000000043', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000043', 75000, '2026-09-12', 'UPI', 'UPI-100044', 'Payment for INV-0043 (advance)', '2026-09-12T12:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO payments (id, user_id, invoice_id, amount, payment_date, payment_method, reference_number, notes, created_at)
-VALUES ('p1000000-0000-0000-0000-000000000044', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000044', 75000, '2026-09-12', 'UPI', 'UPI-100045', 'Payment for INV-0044 (mid)', '2026-09-12T12:00:00Z')
+VALUES ('p1000000-0000-0000-0000-000000000044', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000044', 125000, '2026-09-12', 'UPI', 'UPI-100045', 'Payment for INV-0044 (mid)', '2026-09-12T12:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO payments (id, user_id, invoice_id, amount, payment_date, payment_method, reference_number, notes, created_at)
 VALUES ('p1000000-0000-0000-0000-000000000045', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000046', 50000, '2026-10-07', 'UPI', 'UPI-100046', 'Payment for INV-0046 (advance)', '2026-10-07T12:00:00Z')
@@ -489,15 +489,30 @@ INSERT INTO payments (id, user_id, invoice_id, amount, payment_date, payment_met
 VALUES ('p1000000-0000-0000-0000-000000000048', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000055', 19500, '2026-11-13', 'UPI', 'UPI-100049', 'Payment for INV-0055 (advance)', '2026-11-13T12:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO payments (id, user_id, invoice_id, amount, payment_date, payment_method, reference_number, notes, created_at)
-VALUES ('p1000000-0000-0000-0000-000000000049', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000058', 25500, '2026-11-06', 'UPI', 'UPI-100050', 'Payment for INV-0058 (advance)', '2026-11-06T12:00:00Z')
+VALUES ('p1000000-0000-0000-0000-000000000049', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000056', 32500, '2026-11-13', 'UPI', 'UPI-100050', 'Payment for INV-0056 (mid)', '2026-11-13T12:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO payments (id, user_id, invoice_id, amount, payment_date, payment_method, reference_number, notes, created_at)
-VALUES ('p1000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000061', 69000, '2026-11-11', 'UPI', 'UPI-100051', 'Payment for INV-0061 (advance)', '2026-11-11T12:00:00Z')
+VALUES ('p1000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000058', 25500, '2026-11-06', 'UPI', 'UPI-100051', 'Payment for INV-0058 (advance)', '2026-11-06T12:00:00Z')
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO payments (id, user_id, invoice_id, amount, payment_date, payment_method, reference_number, notes, created_at)
+VALUES ('p1000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000061', 69000, '2026-11-11', 'UPI', 'UPI-100052', 'Payment for INV-0061 (advance)', '2026-11-11T12:00:00Z')
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO payments (id, user_id, invoice_id, amount, payment_date, payment_method, reference_number, notes, created_at)
+VALUES ('p1000000-0000-0000-0000-000000000052', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000064', 36000, '2026-11-16', 'UPI', 'UPI-100053', 'Payment for INV-0064 (advance)', '2026-11-16T12:00:00Z')
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO payments (id, user_id, invoice_id, amount, payment_date, payment_method, reference_number, notes, created_at)
+VALUES ('p1000000-0000-0000-0000-000000000053', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000067', 57000, '2026-11-18', 'UPI', 'UPI-100054', 'Payment for INV-0067 (advance)', '2026-11-18T12:00:00Z')
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO payments (id, user_id, invoice_id, amount, payment_date, payment_method, reference_number, notes, created_at)
+VALUES ('p1000000-0000-0000-0000-000000000054', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000070', 66000, '2026-11-19', 'UPI', 'UPI-100055', 'Payment for INV-0070 (advance)', '2026-11-19T12:00:00Z')
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO payments (id, user_id, invoice_id, amount, payment_date, payment_method, reference_number, notes, created_at)
+VALUES ('p1000000-0000-0000-0000-000000000055', '00000000-0000-0000-0000-000000000001', 'i1000000-0000-0000-0000-000000000073', 28500, '2026-11-20', 'UPI', 'UPI-100056', 'Payment for INV-0073 (advance)', '2026-11-20T12:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 
 -- 7. Insert Recurring Expenses
 INSERT INTO recurring_expenses (id, user_id, name, amount, frequency, next_due_date, category, is_active, created_at, updated_at)
-VALUES ('e1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Studio Rent (Indiranagar)', 45000, 'monthly', '2026-12-11', 'rent', true, '2026-05-25T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('e1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Studio Rent (Indiranagar)', 47000, 'monthly', '2026-12-11', 'rent', true, '2026-05-25T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO recurring_expenses (id, user_id, name, amount, frequency, next_due_date, category, is_active, created_at, updated_at)
 VALUES ('e1000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Sony FX3 Cinema Kit EMI', 28000, 'monthly', '2026-12-12', 'emi', true, '2026-05-25T00:00:00Z', '2026-11-21T00:00:00Z')
@@ -509,10 +524,13 @@ INSERT INTO recurring_expenses (id, user_id, name, amount, frequency, next_due_d
 VALUES ('e1000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'Godox Studio Lighting EMI', 14000, 'monthly', '2026-11-26', 'emi', true, '2026-05-25T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO recurring_expenses (id, user_id, name, amount, frequency, next_due_date, category, is_active, created_at, updated_at)
-VALUES ('e1000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'Adobe CC & Cloud Backup', 4500, 'monthly', '2026-12-06', 'software', true, '2026-05-25T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('e1000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'Drone Kit Lease EMI', 18000, 'monthly', '2026-12-01', 'emi', true, '2026-05-25T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO recurring_expenses (id, user_id, name, amount, frequency, next_due_date, category, is_active, created_at, updated_at)
-VALUES ('e1000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000001', 'Studio & Gear Insurance (Annual)', 36000, 'yearly', '2026-12-14', 'insurance', true, '2026-05-25T00:00:00Z', '2026-11-21T00:00:00Z')
+VALUES ('e1000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000001', 'Adobe CC & Cloud Storage', 6500, 'monthly', '2026-12-06', 'software', true, '2026-05-25T00:00:00Z', '2026-11-21T00:00:00Z')
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO recurring_expenses (id, user_id, name, amount, frequency, next_due_date, category, is_active, created_at, updated_at)
+VALUES ('e1000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000001', 'Studio & Gear Insurance (Annual)', 36000, 'yearly', '2026-12-14', 'insurance', true, '2026-05-25T00:00:00Z', '2026-11-21T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 
 COMMIT;

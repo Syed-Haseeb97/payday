@@ -28,6 +28,15 @@ export interface DashboardViewData {
   whoOwesRows: WhoOwesRow[];
 }
 
+export interface ForecastInputs {
+  today: string;
+  openingCash: number;
+  invoices: Invoice[];
+  clients: Client[];
+  recurringExpenses: RecurringExpense[];
+  bookings: Booking[];
+}
+
 export interface PaydayRepository {
   isDemoMode(): boolean;
   getClients(): Promise<Client[]>;
@@ -67,6 +76,7 @@ export interface PaydayRepository {
   getRecurringExpenses(): Promise<RecurringExpense[]>;
   getSettings(): Promise<Settings>;
   getDashboardData(todayStr?: string): Promise<DashboardViewData>;
+  getForecastInputs(todayStr?: string): Promise<ForecastInputs>;
 }
 
 // Global reference for in-memory persistence across hot module reloads in Next.js development
@@ -457,6 +467,25 @@ export class InMemoryRepository implements PaydayRepository {
       thisMonthReceived,
       agingBuckets,
       whoOwesRows,
+    };
+  }
+
+  async getForecastInputs(todayStr?: string): Promise<ForecastInputs> {
+    const today = todayStr || this.getTodayStr();
+    const settings = await this.getSettings();
+    const clients = await this.getClients();
+    const bookings = await this.getBookings();
+    const recurringExpenses = await this.getRecurringExpenses();
+    const allInvoices = await this.getInvoices();
+    const unpaidInvoices = allInvoices.filter((inv) => (inv.amount - inv.paid_amount) > 0);
+
+    return {
+      today,
+      openingCash: settings.opening_cash_balance,
+      invoices: unpaidInvoices,
+      clients,
+      recurringExpenses,
+      bookings,
     };
   }
 }
@@ -852,6 +881,25 @@ export class SupabaseRepository implements PaydayRepository {
       thisMonthReceived,
       agingBuckets,
       whoOwesRows,
+    };
+  }
+
+  async getForecastInputs(todayStr?: string): Promise<ForecastInputs> {
+    const today = todayStr || this.getTodayStr();
+    const settings = await this.getSettings();
+    const clients = await this.getClients();
+    const bookings = await this.getBookings();
+    const recurringExpenses = await this.getRecurringExpenses();
+    const allInvoices = await this.getInvoices();
+    const unpaidInvoices = allInvoices.filter((inv) => (inv.amount - inv.paid_amount) > 0);
+
+    return {
+      today,
+      openingCash: settings.opening_cash_balance,
+      invoices: unpaidInvoices,
+      clients,
+      recurringExpenses,
+      bookings,
     };
   }
 }
