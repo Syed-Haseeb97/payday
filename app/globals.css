@@ -1,156 +1,392 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+:root,
+[data-theme='dark'],
+.dark {
+  color-scheme: dark;
+
+  --bg: #07142e;
+  --bg-tint: #0a1b3d;
+  --surface: #0d2149;
+  --surface-2: #132b5c;
+  --surface-3: #1b376f;
+  --border: #20407f;
+  --border-strong: #31559b;
+
+  --ink: #ffffff;
+  --ink-2: #c5d5f5;
+  --ink-3: #9db4e3;
+
+  --primary: #3b82f6;
+  --on-primary: #ffffff;
+  --primary-text: #8fbaff;
+
+  --in: #7dd3fc;
+  --on-in: #03162b;
+  --out: #ffffff;
+  --on-out: #07142e;
+  --warn: #bfdbfe;
+  --on-warn: #07142e;
+
+  --ring: #8fbaff;
+
+  --shadow-card: inset 0 1px 0 0 rgb(255 255 255 / 0.06), inset 0 0 0 1px rgb(255 255 255 / 0.02);
+  --shadow-pop: 0 30px 80px -20px rgb(0 5 20 / 0.75), inset 0 1px 0 0 rgb(255 255 255 / 0.08);
+  --shadow-fab: 0 10px 30px -8px rgb(59 130 246 / 0.6);
+  --backdrop: rgb(2 8 24 / 0.66);
+
+  /* Compatibility aliases for existing components */
+  --bg-canvas: var(--bg);
+  --bg-surface: var(--surface);
+  --bg-surface-subtle: var(--surface-2);
+  --border-line: var(--border);
+  --border-line-subtle: var(--border);
+  --text-primary: var(--ink);
+  --text-muted: var(--ink-2);
+  --text-faint: var(--ink-3);
+  --money-in: #7dd3fc;
+  --money-in-bg: rgba(125, 211, 252, 0.15);
+  --money-out: #f87171;
+  --money-out-bg: rgba(248, 113, 113, 0.15);
+  --money-warn: #bfdbfe;
+  --money-warn-bg: rgba(191, 219, 254, 0.15);
+  --card-bg: var(--surface);
+  --card-border: var(--border);
+  --card-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  --focus-ring: var(--ring);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f5f9ff;
+  --bg-tint: #eaf2ff;
+  --surface: #ffffff;
+  --surface-2: #eef4ff;
+  --surface-3: #dde9fd;
+  --border: #d3e1f8;
+  --border-strong: #b3c9ee;
+
+  --ink: #0b1f44;
+  --ink-2: #33496f;
+  --ink-3: #50658c;
+
+  --primary: #1d4ed8;
+  --on-primary: #ffffff;
+  --primary-text: #1d4ed8;
+
+  --in: #0369a1;
+  --on-in: #ffffff;
+  --out: #1e3a8a;
+  --on-out: #ffffff;
+  --warn: #2563eb;
+  --on-warn: #ffffff;
+
+  --ring: #2563eb;
+
+  --shadow-card: 0 1px 2px rgb(29 78 216 / 0.05), 0 10px 30px -14px rgb(29 78 216 / 0.18);
+  --shadow-pop: 0 30px 80px -20px rgb(11 31 68 / 0.35);
+  --shadow-fab: 0 10px 26px -8px rgb(29 78 216 / 0.55);
+  --backdrop: rgb(11 31 68 / 0.45);
+
+  /* Compatibility aliases for existing components */
+  --bg-canvas: var(--bg);
+  --bg-surface: var(--surface);
+  --bg-surface-subtle: var(--surface-2);
+  --border-line: var(--border);
+  --border-line-subtle: var(--border);
+  --text-primary: var(--ink);
+  --text-muted: var(--ink-2);
+  --text-faint: var(--ink-3);
+  --money-in: #0369a1;
+  --money-in-bg: rgba(3, 105, 161, 0.12);
+  --money-out: #b53a26;
+  --money-out-bg: rgba(181, 58, 38, 0.12);
+  --money-warn: #2563eb;
+  --money-warn-bg: rgba(37, 99, 235, 0.12);
+  --card-bg: var(--surface);
+  --card-border: var(--border);
+  --card-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+  --focus-ring: var(--ring);
+}
+
+:root {
+  --font-ui: Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'Segoe UI Variable Text', 'Segoe UI', 'DejaVu Sans',
+    source-sans-pro, system-ui, sans-serif;
+  --font-num: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', 'JetBrains Mono', 'Roboto Mono', Menlo,
+    Consolas, 'DejaVu Sans Mono', monospace;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.22, 1.25, 0.36, 1);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-tint: var(--bg-tint);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-text: var(--primary-text);
+  --color-in: var(--in);
+  --color-on-in: var(--on-in);
+  --color-out: var(--out);
+  --color-on-out: var(--on-out);
+  --color-warn: var(--warn);
+  --color-on-warn: var(--on-warn);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-num);
+}
+
 @layer base {
-  :root {
-    /* Canvas & Surfaces */
-    --bg-canvas: #F5F3EE;
-    --bg-surface: #FFFFFF;
-    --bg-surface-subtle: #ECE8E1;
-    --border-line: #C8C2B5;
-    --border-line-subtle: #E2DDD5;
-
-    /* Ink & Typography */
-    --text-primary: #16181D;
-    --text-muted: #5F626A;
-    --text-faint: #595D66;
-    
-    /* Money In (Academic Forest Green) */
-    --money-in: #1D6B52;
-    --money-in-bg: #E3EFE8;
-    
-    /* Money Out & Overdue (Terracotta Brick Red) */
-    --money-out: #B53A26;
-    --money-out-bg: #F8E9E4;
-    
-    /* Warning / Pending (Warm Bronze Amber) */
-    --money-warn: #86560D;
-    --money-warn-bg: #F6ECD9;
-
-    /* Card Tokens */
-    --card-bg: #FFFFFF;
-    --card-border: #C8C2B5;
-    --card-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
-    --focus-ring: #16181D;
+  html {
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-tap-highlight-color: transparent;
   }
-
-  .dark {
-    /* Dark Obsidian & Slate */
-    --bg-canvas: #0C0D11;
-    --bg-surface: #14161E;
-    --bg-surface-subtle: #1C1F2A;
-    --border-line: rgba(255, 255, 255, 0.16);
-    --border-line-subtle: rgba(255, 255, 255, 0.08);
-
-    /* Text & Inks */
-    --text-primary: #F3F4F7;
-    --text-muted: #B6BCC8;
-    --text-faint: #A8AFBD;
-    
-    /* Status Inks (WCAG AA compliant against dark surfaces) */
-    --money-in: #34D399;
-    --money-in-bg: #0D2A1F;
-    
-    --money-out: #F87171;
-    --money-out-bg: #2E1413;
-    
-    --money-warn: #FBBF24;
-    --money-warn-bg: #2A1D0A;
-
-    /* Dark Card Tokens */
-    --card-bg: #14161E;
-    --card-border: rgba(255, 255, 255, 0.16);
-    --card-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-    --focus-ring: #F3F4F7;
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
-}
-
-body {
-  background-color: var(--bg-canvas);
-  color: var(--text-primary);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  margin: 0;
-  padding: 0;
-  -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
-}
-
-.dark body {
-  background: radial-gradient(130% 90% at 50% 0%, #151822 0%, #0C0D11 100%);
-  background-attachment: fixed;
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 35%, transparent);
+  }
+  input[type='range'] {
+    accent-color: var(--primary);
+  }
 }
 
 .font-serif {
-  font-family: 'Instrument Serif', Georgia, Cambria, "Times New Roman", Times, serif;
+  font-family: Georgia, Cambria, 'Times New Roman', Times, serif;
 }
 
-::selection {
-  background-color: var(--money-in-bg);
-  color: var(--text-primary);
+/* One reusable card style */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
 }
 
-/* Tabular Numerals for money and counters */
-.tabular-nums {
+/* Every number: tabular monospace */
+.num {
+  font-family: var(--font-num);
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
+  font-feature-settings: 'tnum' 1, 'zero' 0;
+  letter-spacing: -0.02em;
 }
 
-/* Restrained Glass Card Treatment */
-.app-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  box-shadow: var(--card-highlight);
-  border-radius: 1rem;
+/* Rolling digits. The real digit stays in the DOM (for copy, screen readers and tests);
+   the visible digit is a CSS strip that rolls into place. */
+.odo-wrap {
+  display: inline-flex;
+  align-items: flex-start;
 }
-
-.dark .app-card {
+.odo {
   position: relative;
-  background: #14161E;
+  display: inline-block;
+  overflow: hidden;
+  -webkit-text-fill-color: transparent;
+}
+.odo::before {
+  content: '0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9';
+  white-space: pre;
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  text-align: center;
+  -webkit-text-fill-color: currentColor;
+  transform: translateY(calc(var(--d) * -10%));
+  transition: transform 900ms var(--ease-out) calc(var(--i, 0) * 30ms);
+  animation: odo-in 1100ms var(--ease-out) calc(var(--i, 0) * 45ms) backwards;
+}
+@keyframes odo-in {
+  from {
+    transform: translateY(0);
+  }
 }
 
-/* Hairline borders and surface utilities */
-.bg-surface {
-  background-color: var(--bg-surface) !important;
+/* Runway chart */
+.runway-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: runway-draw 1400ms var(--ease-out) 120ms backwards;
+  transition: d 750ms var(--ease-out);
 }
-.bg-surface-subtle {
-  background-color: var(--bg-surface-subtle) !important;
+.runway-morph {
+  transition:
+    d 750ms var(--ease-out),
+    opacity 400ms ease;
 }
-.border-line {
-  border-color: var(--border-line) !important;
+.runway-area {
+  animation: fade-in 900ms ease 500ms backwards;
+  transition: d 750ms var(--ease-out);
 }
-.hairline-border {
-  border: 1px solid var(--border-line);
+.runway-band {
+  transition:
+    y 750ms var(--ease-out),
+    height 750ms var(--ease-out);
 }
-
-.hairline-border-b {
-  border-bottom: 1px solid var(--border-line);
+.runway-pin {
+  transition: transform 750ms var(--ease-out);
 }
-
-.hairline-border-t {
-  border-top: 1px solid var(--border-line);
+.runway-pin-pop {
+  animation: pin-pop 600ms var(--ease-spring) 1200ms backwards;
 }
-
-/* Hidden scrollbars while maintaining full scrolling */
-.no-scrollbar::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  background: transparent !important;
+@keyframes runway-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
 }
-
-.no-scrollbar {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
-}
-
-/* Interactive touch target guarantee (min 44px) */
-.touch-target {
-  min-height: 44px;
-  min-width: 44px;
+@keyframes pin-pop {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
 }
 
-/* Focus visible styles */
-*:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
+/* Sheets */
+.sheet {
+  margin: auto 0 0;
+  width: 100%;
+  max-width: 100%;
+  max-height: 94dvh;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  overflow: visible;
+}
+@media (min-width: 640px) {
+  .sheet {
+    margin: auto;
+    width: calc(100% - 2rem);
+    max-width: 34rem;
+  }
+}
+.sheet::backdrop {
+  background: var(--backdrop);
+  backdrop-filter: blur(6px);
+  animation: fade-in 220ms ease;
+}
+.sheet[open] .sheet-panel {
+  animation: sheet-up 560ms var(--ease-spring) both;
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(48px);
+    opacity: 0;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes check-pop {
+  0% {
+    scale: 0.2;
+    opacity: 0;
+  }
+  60% {
+    scale: 1.2;
+  }
+  100% {
+    scale: 1;
+  }
+}
+@keyframes ring-out {
+  from {
+    scale: 0.6;
+    opacity: 0.7;
+  }
+  to {
+    scale: 1.8;
+    opacity: 0;
+  }
+}
+.anim-rise {
+  animation: rise-in 420ms var(--ease-out) backwards;
+}
+.anim-check {
+  animation: check-pop 480ms var(--ease-spring) backwards;
+}
+.anim-ring {
+  animation: ring-out 900ms var(--ease-out) forwards;
+}
+.anim-fade {
+  animation: fade-in 300ms ease backwards;
+}
+
+/* Shimmer for loading skeletons */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface-3) 50%, var(--surface-2) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 12px;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Ambient page glows */
+.glow-primary {
+  background-image: radial-gradient(60rem 28rem at 10% -10%, color-mix(in oklab, var(--primary) 9%, transparent), transparent 60%);
+}
+.glow-danger {
+  background-image:
+    radial-gradient(50rem 26rem at 90% -10%, color-mix(in oklab, var(--out) 16%, transparent), transparent 60%),
+    linear-gradient(180deg, color-mix(in oklab, var(--out) 5%, transparent), transparent 40rem);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Hide scrollbars everywhere (scrolling still works) */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
