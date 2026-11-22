@@ -13,11 +13,14 @@ import {
   AlertCircle, 
   ExternalLink,
   ChevronRight,
-  Filter
+  Filter,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Invoice, PaymentMethod } from '@/lib/db/types';
 import { formatINR } from '@/lib/money';
+import { getPayLinkUrl } from '@/lib/pay/token';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { ReliabilityBadge } from '@/components/ui/ReliabilityBadge';
 import { Modal } from '@/components/ui/Modal';
@@ -52,6 +55,32 @@ function InvoicesContent() {
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [learningFeedback, setLearningFeedback] = useState<string | null>(null);
+  const [payLinkCopied, setPayLinkCopied] = useState(false);
+
+  const handleCopyPayLink = (token?: string) => {
+    if (!token) return;
+    navigator.clipboard.writeText(getPayLinkUrl(token));
+    setPayLinkCopied(true);
+    setTimeout(() => setPayLinkCopied(false), 2000);
+  };
+
+  const handleResolveClaim = async (claimId: string, action: 'confirm' | 'reject') => {
+    try {
+      const res = await fetch(`/api/claims/${claimId}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      if (res.ok) {
+        fetchInvoices();
+        if (selectedInvoice) {
+          openDetailModal(selectedInvoice.id);
+        }
+      }
+    } catch (err) {
+      console.error('Error resolving claim:', err);
+    }
+  };
 
   const fetchInvoices = () => {
     setLoading(true);
@@ -333,7 +362,14 @@ function InvoicesContent() {
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-center">
-                        <StatusBadge status={inv.status} daysOverdue={inv.days_overdue} />
+                        <div className="flex flex-col items-center gap-1">
+                          <StatusBadge status={inv.status} daysOverdue={inv.days_overdue} />
+                          {inv.payment_claims?.some((c) => c.status === 'pending') && (
+                            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider bg-[#F6ECD9] text-[#86560D] border border-[#86560D]/20">
+                              Payment claimed: {formatINR(inv.payment_claims.find((c) => c.status === 'pending')!.claimed_amount)}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1.5">
@@ -393,6 +429,13 @@ function InvoicesContent() {
                       <div className="mt-1">
                         <StatusBadge status={inv.status} daysOverdue={inv.days_overdue} />
                       </div>
+                      {inv.payment_claims?.some((c) => c.status === 'pending') && (
+                        <div className="mt-1">
+                          <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider bg-[#F6ECD9] text-[#86560D] border border-[#86560D]/20">
+                            Payment claimed: {formatINR(inv.payment_claims.find((c) => c.status === 'pending')!.claimed_amount)}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -465,6 +508,45 @@ function InvoicesContent() {
               </div>
             </div>
 
+            {/* Payment Claim Review Section if pending */}
+            {(() => {
+              const pendingClaim = selectedInvoice.payment_claims?.find((c) => c.status === 'pending');
+              if (!pendingClaim) return null;
+              return (
+                <div className="p-4 rounded-xl border border-[#86560D]/30 bg-[#F6ECD9]/40 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs font-mono">
+                    <span className="font-semibold text-[#86560D] uppercase tracking-wider">
+                      Client Reported Payment
+                    </span>
+                    <strong className="text-sm font-bold text-[#16181D]">
+                      {formatINR(pendingClaim.claimed_amount)}
+                    </strong>
+                  </div>
+                  {pendingClaim.reference && (
+                    <div className="text-xs font-mono text-[#5F626A]">
+                      Reference / UTR: {pendingClaim.reference}
+                    </div>
+                  )}
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#86560D]/20">
+                    <button
+                      type="button"
+                      onClick={() => handleResolveClaim(pendingClaim.id, 'reject')}
+                      className="px-3.5 py-1.5 rounded-full border border-[#C8C2B5] bg-white font-mono text-xs uppercase tracking-wider font-semibold text-[#5F626A] hover:bg-[#F5F3EE]"
+                    >
+                      Reject
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleResolveClaim(pendingClaim.id, 'confirm')}
+                      className="px-4 py-1.5 rounded-full bg-[#16181D] text-[#F5F3EE] font-mono text-xs uppercase tracking-wider font-semibold hover:opacity-90"
+                    >
+                      Confirm Payment
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* UPI Payment Link & QR Section */}
             {selectedInvoice.amount - selectedInvoice.paid_amount > 0 ? (
               <div className="p-4 rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface)] space-y-3">
@@ -513,6 +595,25 @@ function InvoicesContent() {
                       >
                         Record Payment
                       </button>
+                      {selectedInvoice.pay_token && (
+                        <button
+                          type="button"
+                          onClick={() => handleCopyPayLink(selectedInvoice.pay_token)}
+                          className="px-3.5 py-1.5 rounded-full border border-[#C8C2B5] bg-white text-xs font-mono text-[#16181D] hover:bg-[#F5F3EE] inline-flex items-center gap-1.5"
+                        >
+                          {payLinkCopied ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-[#1D6B52]" />
+                              <span className="text-[#1D6B52]">Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5 text-[#5F626A]" />
+                              <span>Copy Pay Link</span>
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

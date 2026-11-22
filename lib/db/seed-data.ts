@@ -9,12 +9,14 @@ import {
   Booking,
   Invoice,
   Payment,
+  PaymentClaim,
   RecurringExpense,
   Reminder,
   Settings,
   DEMO_USER_ID,
 } from './types';
 import { splitMilestones } from '../milestones';
+import { generateDeterministicPayToken } from '../pay/token';
 
 export interface SeedDataBundle {
   user: User;
@@ -23,6 +25,7 @@ export interface SeedDataBundle {
   bookings: Booking[];
   invoices: Invoice[];
   payments: Payment[];
+  paymentClaims: PaymentClaim[];
   recurringExpenses: RecurringExpense[];
   reminders: Reminder[];
   alertStates: Record<string, { isDismissed: boolean; snoozedUntil?: string | null }>;
@@ -373,6 +376,7 @@ export function generateSeedData(baseDateStr?: string): SeedDataBundle {
         due_date: m.due,
         sent,
         status: 'sent', // derived at runtime
+        pay_token: generateDeterministicPayToken(invId),
         upi_link: `upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=${m.amount - paidAmount}&cu=INR`,
         upi_qr_placeholder: null,
         notes: `${m.label.toUpperCase()} milestone for ${b.title}`,
@@ -478,6 +482,7 @@ export function generateSeedData(baseDateStr?: string): SeedDataBundle {
     bookings,
     invoices,
     payments,
+    paymentClaims: [],
     recurringExpenses,
     reminders: [],
     alertStates: {},
@@ -528,8 +533,8 @@ ON CONFLICT (id) DO NOTHING;`
     '-- 5. Insert Invoices',
     ...seed.invoices.map(
       (inv) =>
-        `INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, upi_link, notes, created_at, updated_at)
-VALUES (${escapeStr(inv.id)}, ${escapeStr(inv.user_id)}, ${escapeStr(inv.booking_id)}, ${escapeStr(inv.client_id)}, ${escapeStr(inv.invoice_number)}, ${escapeStr(inv.milestone_label)}, ${inv.amount}, ${inv.paid_amount}, ${escapeStr(inv.due_date)}, ${inv.sent}, ${escapeStr(inv.status)}, ${escapeStr(inv.upi_link)}, ${escapeStr(inv.notes)}, ${escapeStr(inv.created_at)}, ${escapeStr(inv.updated_at)})
+        `INSERT INTO invoices (id, user_id, booking_id, client_id, invoice_number, milestone_label, amount, paid_amount, due_date, sent, status, pay_token, upi_link, notes, created_at, updated_at)
+VALUES (${escapeStr(inv.id)}, ${escapeStr(inv.user_id)}, ${escapeStr(inv.booking_id)}, ${escapeStr(inv.client_id)}, ${escapeStr(inv.invoice_number)}, ${escapeStr(inv.milestone_label)}, ${inv.amount}, ${inv.paid_amount}, ${escapeStr(inv.due_date)}, ${inv.sent}, ${escapeStr(inv.status)}, ${escapeStr(inv.pay_token)}, ${escapeStr(inv.upi_link)}, ${escapeStr(inv.notes)}, ${escapeStr(inv.created_at)}, ${escapeStr(inv.updated_at)})
 ON CONFLICT (id) DO NOTHING;`
     ),
     '',
@@ -546,6 +551,14 @@ ON CONFLICT (id) DO NOTHING;`
       (e) =>
         `INSERT INTO recurring_expenses (id, user_id, name, amount, frequency, next_due_date, category, is_active, created_at, updated_at)
 VALUES (${escapeStr(e.id)}, ${escapeStr(e.user_id)}, ${escapeStr(e.name)}, ${e.amount}, ${escapeStr(e.frequency)}, ${escapeStr(e.next_due_date)}, ${escapeStr(e.category)}, ${e.is_active}, ${escapeStr(e.created_at)}, ${escapeStr(e.updated_at)})
+ON CONFLICT (id) DO NOTHING;`
+    ),
+    '',
+    '-- 8. Insert Payment Claims',
+    ...seed.paymentClaims.map(
+      (pc) =>
+        `INSERT INTO payment_claims (id, invoice_id, claimed_amount, reference, status, created_at, resolved_at)
+VALUES (${escapeStr(pc.id)}, ${escapeStr(pc.invoice_id)}, ${pc.claimed_amount}, ${escapeStr(pc.reference)}, ${escapeStr(pc.status)}, ${escapeStr(pc.created_at)}, ${escapeStr(pc.resolved_at)})
 ON CONFLICT (id) DO NOTHING;`
     ),
     '',

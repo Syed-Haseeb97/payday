@@ -76,6 +76,36 @@ export function deriveAlerts(
     const daysOverdue = isOverdue ? Math.abs(diff) : 0;
     const daysUntilDue = !isOverdue ? diff : 0;
 
+    // Rule: Payment Claim Reported by Client -> Warning Priority
+    const pendingClaim = inv.payment_claims?.find((c) => c.status === 'pending');
+    if (pendingClaim) {
+      const clientFirstName = client.name.split(' ')[0] || 'Client';
+      const milestoneFormatted =
+        inv.milestone_label.charAt(0).toUpperCase() + inv.milestone_label.slice(1);
+      let eventTitle = '';
+      const matchParen = client.name.match(/\((.*?)\)/);
+      if (matchParen) {
+        eventTitle = matchParen[1].trim();
+      } else {
+        eventTitle = client.name;
+      }
+
+      alerts.push({
+        id: `payment_claimed_${inv.id}_${pendingClaim.id}`,
+        ruleName: 'payment_claimed',
+        entityId: inv.id,
+        severity: 'warning',
+        title: 'Payment Reported',
+        message: `${clientFirstName} reported paying ${formatINR(pendingClaim.claimed_amount)} for ${eventTitle} ${milestoneFormatted}`,
+        action: {
+          type: 'link',
+          label: 'Review claim',
+          href: `/invoices/${inv.id}`,
+          params: { invoiceId: inv.id },
+        },
+      });
+    }
+
     // Rule 1: Invoice 1-7 days overdue -> Warning, Action "Send reminder"
     if (daysOverdue >= 1 && daysOverdue <= 7) {
       alerts.push({

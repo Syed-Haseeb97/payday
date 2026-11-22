@@ -50,6 +50,18 @@ function parseMigrationSchema(migrationsDir: string): Map<string, Set<string>> {
         }
       }
     }
+
+    // Match ALTER TABLE <table> ADD COLUMN [IF NOT EXISTS] <col> ...
+    const alterRegex = /ALTER\s+TABLE\s+([a-zA-Z0-9_]+)\s+ADD\s+COLUMN(?:\s+IF\s+NOT\s+EXISTS)?\s+([a-zA-Z0-9_]+)/gi;
+    let alterMatch: RegExpExecArray | null;
+    while ((alterMatch = alterRegex.exec(content)) !== null) {
+      const tableName = alterMatch[1].toLowerCase();
+      const colName = alterMatch[2].toLowerCase();
+      if (!schema.has(tableName)) {
+        schema.set(tableName, new Set<string>());
+      }
+      schema.get(tableName)!.add(colName);
+    }
   }
 
   return schema;
@@ -60,7 +72,7 @@ describe('Supabase Parity & Schema Consistency Verification', () => {
   const schema = parseMigrationSchema(migrationsDir);
 
   it('successfully parsed migration tables from SQL files', () => {
-    expect(schema.size).toBeGreaterThanOrEqual(8);
+    expect(schema.size).toBeGreaterThanOrEqual(9);
     expect(schema.has('users')).toBe(true);
     expect(schema.has('clients')).toBe(true);
     expect(schema.has('bookings')).toBe(true);
@@ -71,6 +83,7 @@ describe('Supabase Parity & Schema Consistency Verification', () => {
     expect(schema.has('alerts')).toBe(true);
     expect(schema.has('settings')).toBe(true);
     expect(schema.has('usage_counters')).toBe(true);
+    expect(schema.has('payment_claims')).toBe(true);
   });
 
   it('verifies all table and column references in SupabaseRepository match migration schema', () => {
@@ -126,6 +139,7 @@ describe('Supabase Parity & Schema Consistency Verification', () => {
       Alert: 'alerts',
       Settings: 'settings',
       User: 'users',
+      PaymentClaim: 'payment_claims',
     };
 
     const typesFile = path.resolve(__dirname, 'types.ts');
@@ -139,6 +153,7 @@ describe('Supabase Parity & Schema Consistency Verification', () => {
       'booking',
       'invoices',
       'payments',
+      'payment_claims',
       'days_overdue',
       'invoice',
     ]);

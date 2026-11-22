@@ -12,6 +12,7 @@ export interface ReminderContext {
   daysOverdue?: number;
   upiId?: string;
   upiLink?: string;
+  payLink?: string;
 }
 
 /**

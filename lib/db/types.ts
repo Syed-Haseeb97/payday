@@ -16,9 +16,21 @@ export type ReminderTone = 'friendly' | 'firm' | 'final';
 
 export type ReminderLanguage = 'en' | 'hinglish';
 
-export type AlertType = 'overdue_invoice' | 'cash_dip' | 'upcoming_expense' | 'unconfirmed_booking' | 'general';
+export type AlertType = 'overdue_invoice' | 'cash_dip' | 'upcoming_expense' | 'unconfirmed_booking' | 'general' | 'payment_claimed';
 
 export type AlertSeverity = 'info' | 'warning' | 'critical';
+
+export type PaymentClaimStatus = 'pending' | 'confirmed' | 'rejected';
+
+export interface PaymentClaim {
+  id: string;
+  invoice_id: string;
+  claimed_amount: number;
+  reference?: string | null;
+  status: PaymentClaimStatus;
+  created_at: string;
+  resolved_at?: string | null;
+}
 
 export interface User {
   id: string;
@@ -75,6 +87,7 @@ export interface Invoice {
   due_date: string; // YYYY-MM-DD
   sent: boolean;
   status: InvoiceStatus;
+  pay_token?: string;
   upi_link?: string | null;
   upi_qr_placeholder?: string | null;
   notes?: string | null;
@@ -84,6 +97,7 @@ export interface Invoice {
   client?: Client;
   booking?: Booking;
   payments?: Payment[];
+  payment_claims?: PaymentClaim[];
   days_overdue?: number;
 }
 

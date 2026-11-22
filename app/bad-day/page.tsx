@@ -103,6 +103,21 @@ export default function BadDayPage() {
     setIsPaymentOpen(true);
   };
 
+  const handleResolveClaim = async (claimId: string, action: 'confirm' | 'reject') => {
+    try {
+      const res = await fetch(`/api/claims/${claimId}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      if (res.ok) {
+        await fetchBadDayData();
+      }
+    } catch (err) {
+      console.error('Error resolving claim:', err);
+    }
+  };
+
   const handleSubmitPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!paymentItem) return;
@@ -367,6 +382,13 @@ export default function BadDayPage() {
                           {formatINR(item.balance)}
                         </span>
                       </div>
+                      {item.invoice.payment_claims?.some((c) => c.status === 'pending') && (
+                        <div className="mt-1.5">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[10px] uppercase tracking-wider font-semibold bg-[#F6ECD9] text-[#86560D] border border-[#86560D]/20">
+                            Payment claimed: {formatINR(item.invoice.payment_claims.find((c) => c.status === 'pending')!.claimed_amount)}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Overdue / Due in Status */}
@@ -394,6 +416,49 @@ export default function BadDayPage() {
                       {item.oneLineReason}
                     </p>
                   </div>
+
+                  {/* Claim Review if client reported payment */}
+                  {item.invoice.payment_claims?.find((c) => c.status === 'pending') && (
+                    <div className="p-3 rounded-xl border border-[#86560D]/30 bg-[#F6ECD9]/40 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <span className="font-semibold text-[#86560D]">Reported Payment</span>
+                        <strong className="font-bold text-[#16181D]">
+                          {formatINR(item.invoice.payment_claims.find((c) => c.status === 'pending')!.claimed_amount)}
+                        </strong>
+                      </div>
+                      {item.invoice.payment_claims.find((c) => c.status === 'pending')!.reference && (
+                        <div className="text-[11px] font-mono text-[#5F626A]">
+                          Ref: {item.invoice.payment_claims.find((c) => c.status === 'pending')!.reference}
+                        </div>
+                      )}
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleResolveClaim(
+                              item.invoice.payment_claims!.find((c) => c.status === 'pending')!.id,
+                              'reject'
+                            )
+                          }
+                          className="px-3 py-1 rounded-full border border-[#C8C2B5] bg-white font-mono text-[11px] uppercase tracking-wider font-semibold text-[#5F626A] hover:bg-[#F5F3EE]"
+                        >
+                          Reject
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleResolveClaim(
+                              item.invoice.payment_claims!.find((c) => c.status === 'pending')!.id,
+                              'confirm'
+                            )
+                          }
+                          className="px-3.5 py-1 rounded-full bg-[#16181D] text-[#F5F3EE] font-mono text-[11px] uppercase tracking-wider font-semibold hover:opacity-90"
+                        >
+                          Confirm Payment
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Primary 1-Tap Action Buttons */}
                   <div className="pt-2 border-t border-[#C8C2B5]/40 space-y-2">

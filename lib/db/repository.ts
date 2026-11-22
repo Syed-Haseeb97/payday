@@ -9,6 +9,8 @@ import {
   Booking,
   Invoice,
   Payment,
+  PaymentClaim,
+  PaymentClaimStatus,
   RecurringExpense,
   Reminder,
   ReminderTone,
@@ -23,6 +25,7 @@ import { splitMilestones } from '../milestones';
 import { getIndiaTodayStr } from '../date';
 import { formatINR } from '../money';
 import { deriveInvoiceStatus } from '../invoice-status';
+import { generatePayToken } from '../pay/token';
 import { daysOverdue, buildAgingSummary, AgingInvoice } from '../aging';
 import { buildWhoOwesMe, WhoOwesRow, ClientRef } from '../receivables';
 import { BadDaySummary, rankBadDayActions } from '../ranking';
@@ -122,6 +125,17 @@ export interface PaydayRepository {
   }): Promise<Reminder>;
   getLastReminderSent(invoiceId: string): Promise<Reminder | null>;
 
+  // Pay Links & Payment Claims
+  getInvoiceByPayToken(token: string): Promise<Invoice | null>;
+  createPaymentClaim(data: {
+    invoiceId: string;
+    claimedAmount: number;
+    reference?: string | null;
+  }): Promise<PaymentClaim>;
+  getPaymentClaims(invoiceId: string): Promise<PaymentClaim[]>;
+  getPaymentClaimById(claimId: string): Promise<PaymentClaim | null>;
+  resolvePaymentClaim(claimId: string, status: 'confirmed' | 'rejected'): Promise<PaymentClaim>;
+
   // Demo Reset
   resetDemoData(): Promise<void>;
 }
@@ -164,6 +178,7 @@ export class InMemoryRepository implements PaydayRepository {
     const client = this.store.clients.find((c) => c.id === inv.client_id);
     const booking = this.store.bookings.find((b) => b.id === inv.booking_id);
     const payments = this.store.payments.filter((p) => p.invoice_id === inv.id);
+    const paymentClaims = (this.store.paymentClaims || []).filter((c) => c.invoice_id === inv.id);
 
     return {
       ...inv,
@@ -172,6 +187,7 @@ export class InMemoryRepository implements PaydayRepository {
       client,
       booking,
       payments,
+      payment_claims: paymentClaims,
     };
   }
 
@@ -339,6 +355,7 @@ export class InMemoryRepository implements PaydayRepository {
         due_date: m.due,
         sent: true,
         status: 'sent',
+        pay_token: generatePayToken(),
         upi_link: `upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=${m.amount}&cu=INR`,
         upi_qr_placeholder: null,
         notes: `${m.label.toUpperCase()} milestone for ${data.title}`,
@@ -689,6 +706,85 @@ export class InMemoryRepository implements PaydayRepository {
     return sorted[0] || null;
   }
 
+  // Pay links & Payment Claims
+  async getInvoiceByPayToken(token: string): Promise<Invoice | null> {
+    const invoice = this.store.invoices.find((i) => i.pay_token === token);
+    if (!invoice) return null;
+    return this.enrichInvoice(invoice);
+  }
+
+  async createPaymentClaim(data: {
+    invoiceId: string;
+    claimedAmount: number;
+    reference?: string | null;
+  }): Promise<PaymentClaim> {
+    const invoice = this.store.invoices.find((i) => i.id === data.invoiceId);
+    if (!invoice) {
+      throw new Error(`Invoice not found: ${data.invoiceId}`);
+    }
+    const balance = invoice.amount - invoice.paid_amount;
+    if (data.claimedAmount <= 0) {
+      throw new Error('Claimed amount must be greater than zero');
+    }
+    if (data.claimedAmount > balance) {
+      throw new Error(`Claimed amount (₹${data.claimedAmount}) exceeds remaining balance (₹${balance})`);
+    }
+
+    if (!this.store.paymentClaims) {
+      this.store.paymentClaims = [];
+    }
+
+    const existingPending = this.store.paymentClaims.find(
+      (c) => c.invoice_id === data.invoiceId && c.status === 'pending'
+    );
+    if (existingPending) {
+      throw new Error('A pending claim already exists for this invoice');
+    }
+
+    const claim: PaymentClaim = {
+      id: `claim-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      invoice_id: data.invoiceId,
+      claimed_amount: data.claimedAmount,
+      reference: data.reference || null,
+      status: 'pending',
+      created_at: new Date().toISOString(),
+      resolved_at: null,
+    };
+
+    this.store.paymentClaims.push(claim);
+    return claim;
+  }
+
+  async getPaymentClaims(invoiceId: string): Promise<PaymentClaim[]> {
+    return (this.store.paymentClaims || [])
+      .filter((c) => c.invoice_id === invoiceId)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  }
+
+  async getPaymentClaimById(claimId: string): Promise<PaymentClaim | null> {
+    const claim = (this.store.paymentClaims || []).find((c) => c.id === claimId);
+    return claim || null;
+  }
+
+  async resolvePaymentClaim(
+    claimId: string,
+    status: 'confirmed' | 'rejected'
+  ): Promise<PaymentClaim> {
+    if (!this.store.paymentClaims) {
+      this.store.paymentClaims = [];
+    }
+    const claim = this.store.paymentClaims.find((c) => c.id === claimId);
+    if (!claim) {
+      throw new Error(`Payment claim not found: ${claimId}`);
+    }
+    if (claim.status === status) {
+      return claim;
+    }
+    claim.status = status;
+    claim.resolved_at = new Date().toISOString();
+    return claim;
+  }
+
   async resetDemoData(): Promise<void> {
     global.__payday_in_memory_store = generateSeedData();
     this.store = global.__payday_in_memory_store;
@@ -880,6 +976,7 @@ export class SupabaseRepository implements PaydayRepository {
         due_date: m.due,
         sent: true,
         status: 'sent',
+        pay_token: generatePayToken(),
         upi_link: `upi://pay?pa=arjunvisuals@okaxis&pn=Arjun%20Visuals&am=${m.amount}&cu=INR`,
       };
     });
@@ -924,7 +1021,7 @@ export class SupabaseRepository implements PaydayRepository {
   async getInvoices(filter?: { status?: string; clientId?: string }): Promise<Invoice[]> {
     let query = this.client
       .from('invoices')
-      .select('*, client:clients(*), booking:bookings(*)')
+      .select('*, client:clients(*), booking:bookings(*), payments(*), payment_claims(*)')
       .eq('user_id', DEMO_USER_ID)
       .order('due_date', { ascending: false });
 
@@ -965,7 +1062,7 @@ export class SupabaseRepository implements PaydayRepository {
   async getInvoiceById(id: string): Promise<Invoice | null> {
     const { data, error } = await this.client
       .from('invoices')
-      .select('*, client:clients(*), booking:bookings(*), payments(*)')
+      .select('*, client:clients(*), booking:bookings(*), payments(*), payment_claims(*)')
       .eq('id', id)
       .maybeSingle();
 
@@ -1278,6 +1375,130 @@ export class SupabaseRepository implements PaydayRepository {
     return sorted[0] || null;
   }
 
+  // Pay links & Payment Claims
+  async getInvoiceByPayToken(token: string): Promise<Invoice | null> {
+    const { data, error } = await this.client
+      .from('invoices')
+      .select('*, client:clients(*), booking:bookings(*), payments(*), payment_claims(*)')
+      .eq('pay_token', token)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) return null;
+
+    const today = this.getTodayStr();
+    const status = deriveInvoiceStatus({
+      amount: data.amount,
+      paidAmount: data.paid_amount,
+      dueDate: data.due_date,
+      sent: data.sent,
+      today,
+    });
+
+    return {
+      ...data,
+      status,
+      days_overdue: daysOverdue(data.due_date, today),
+    };
+  }
+
+  async createPaymentClaim(data: {
+    invoiceId: string;
+    claimedAmount: number;
+    reference?: string | null;
+  }): Promise<PaymentClaim> {
+    const invoice = await this.getInvoiceById(data.invoiceId);
+    if (!invoice) {
+      throw new Error(`Invoice not found: ${data.invoiceId}`);
+    }
+    const balance = invoice.amount - invoice.paid_amount;
+    if (data.claimedAmount <= 0) {
+      throw new Error('Claimed amount must be greater than zero');
+    }
+    if (data.claimedAmount > balance) {
+      throw new Error(`Claimed amount (₹${data.claimedAmount}) exceeds remaining balance (₹${balance})`);
+    }
+
+    const { data: existingPending } = await this.client
+      .from('payment_claims')
+      .select('id')
+      .eq('invoice_id', data.invoiceId)
+      .eq('status', 'pending')
+      .maybeSingle();
+
+    if (existingPending) {
+      throw new Error('A pending claim already exists for this invoice');
+    }
+
+    const { data: created, error } = await this.client
+      .from('payment_claims')
+      .insert({
+        invoice_id: data.invoiceId,
+        claimed_amount: data.claimedAmount,
+        reference: data.reference || null,
+        status: 'pending',
+      })
+      .select('*')
+      .single();
+
+    if (error) throw error;
+    return created;
+  }
+
+  async getPaymentClaims(invoiceId: string): Promise<PaymentClaim[]> {
+    const { data, error } = await this.client
+      .from('payment_claims')
+      .select('*')
+      .eq('invoice_id', invoiceId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  async getPaymentClaimById(claimId: string): Promise<PaymentClaim | null> {
+    const { data, error } = await this.client
+      .from('payment_claims')
+      .select('*')
+      .eq('id', claimId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data || null;
+  }
+
+  async resolvePaymentClaim(
+    claimId: string,
+    status: 'confirmed' | 'rejected'
+  ): Promise<PaymentClaim> {
+    const { data: existing, error: fetchErr } = await this.client
+      .from('payment_claims')
+      .select('*')
+      .eq('id', claimId)
+      .single();
+
+    if (fetchErr || !existing) {
+      throw new Error(`Payment claim not found: ${claimId}`);
+    }
+
+    if (existing.status === status) {
+      return existing; // Idempotent
+    }
+
+    const { data: updated, error: updateErr } = await this.client
+      .from('payment_claims')
+      .update({
+        status,
+        resolved_at: new Date().toISOString(),
+      })
+      .eq('id', claimId)
+      .select('*')
+      .single();
+
+    if (updateErr) throw updateErr;
+    return updated;
+  }
+
   async resetDemoData(): Promise<void> {
     const seed = generateSeedData();
     this.alertStates = {};
@@ -1286,6 +1507,7 @@ export class SupabaseRepository implements PaydayRepository {
     // Delete in strict foreign-key dependency order
     await this.client.from('reminders').delete().eq('user_id', DEMO_USER_ID);
     await this.client.from('alerts').delete().eq('user_id', DEMO_USER_ID);
+    await this.client.from('payment_claims').delete().neq('id', '00000000-0000-0000-0000-000000000000');
     await this.client.from('payments').delete().eq('user_id', DEMO_USER_ID);
     await this.client.from('invoices').delete().eq('user_id', DEMO_USER_ID);
     await this.client.from('bookings').delete().eq('user_id', DEMO_USER_ID);

@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
         daysOverdue,
         businessName: DEMO_USER.business_name || 'Arjun Visuals',
         upiId: DEMO_USER.upi_id || 'arjunvisuals@okaxis',
+        payToken: invoice.pay_token,
       },
       client?.phone
     );

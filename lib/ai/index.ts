@@ -6,6 +6,7 @@ import { PaymentReliability, ReminderLanguage, ReminderTone } from '../db/types'
 import { executeCompletionWithFallback } from './client';
 import { getTemplateReminder, ReminderContext } from './fallbacks';
 import { getLLMConfig, isLLMConfigured } from './config';
+import { getPayLinkUrl } from '../pay/token';
 
 export * from './config';
 export * from './fallbacks';
@@ -34,6 +35,8 @@ export interface StructuredReminderInput {
   businessName: string;
   upiId?: string;
   upiLink?: string;
+  payLink?: string;
+  payToken?: string;
 }
 
 export interface ReminderDraftResult {
@@ -208,6 +211,9 @@ export async function generateReminderDraft(
   const safeDueDate = sanitizeClientData(input.dueDateFormatted, 25);
   const safeUpiId = sanitizeClientData(input.upiId || 'arjunvisuals@okaxis', 35);
 
+  const resolvedPayLink =
+    input.payLink || (input.payToken ? getPayLinkUrl(input.payToken) : undefined);
+
   const fallbackContext: ReminderContext = {
     clientName: safeClientFirstName,
     eventName: safeEventName,
@@ -217,9 +223,16 @@ export async function generateReminderDraft(
     daysOverdue: input.daysOverdue,
     upiId: safeUpiId,
     upiLink: input.upiLink,
+    payLink: resolvedPayLink,
   };
 
-  const templateText = getTemplateReminder(tone, language, fallbackContext);
+  const ensurePayLink = (text: string): string => {
+    if (!resolvedPayLink) return text;
+    if (text.includes(resolvedPayLink)) return text;
+    return `${text.trim()}\n\nPay online: ${resolvedPayLink}`;
+  };
+
+  const templateText = ensurePayLink(getTemplateReminder(tone, language, fallbackContext));
 
   // If LLM is not configured, return deterministic template immediately
   if (!isLLMConfigured()) {
@@ -258,11 +271,13 @@ export async function generateReminderDraft(
       };
     }
 
+    const finalAiText = ensurePayLink(completion.content);
+
     return {
-      text: completion.content,
+      text: finalAiText,
       source: 'ai',
       model: completion.modelUsed,
-      whatsappDeepLink: buildWhatsAppDeepLink(clientPhone, completion.content),
+      whatsappDeepLink: buildWhatsAppDeepLink(clientPhone, finalAiText),
     };
   } catch {
     // Zero-throw policy for the UI
