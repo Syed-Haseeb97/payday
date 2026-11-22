@@ -1,6 +1,8 @@
 # Payday ⚡
-### Cash Flow Intelligence & Receivables Operating System for Freelance Studios
+### Cash Flow Intelligence & Receivables Operating System for Small Businesses & Teams in India
 
+[![Live App](https://img.shields.io/badge/Live_App-payday--ashen.vercel.app-10b981?style=for-the-badge&logo=vercel)](https://payday-ashen.vercel.app)
+[![GitHub](https://img.shields.io/badge/GitHub-Syed--Haseeb97%2Fpayday-181717?style=for-the-badge&logo=github)](https://github.com/Syed-Haseeb97/payday)
 [![Next.js](https://img.shields.io/badge/Next.js-16.4.6-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.3.0-blue?style=flat&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
@@ -9,7 +11,10 @@
 [![Playwright](https://img.shields.io/badge/Playwright-22_Passed-2EAD33?style=flat&logo=playwright)](https://playwright.dev/)
 [![License](https://img.shields.io/badge/License-MIT-orange.svg)](LICENSE)
 
-> **"Small creative businesses don't fail because they lack talent or clients. They fail because money arrives late and bills arrive on time."**
+> 🌐 **Live Deployment**: **[https://payday-ashen.vercel.app](https://payday-ashen.vercel.app)**  
+> 🔗 **GitHub Repository**: **[https://github.com/Syed-Haseeb97/payday](https://github.com/Syed-Haseeb97/payday)**  
+> 
+> *Production-grade, fully deployed Next.js 16 app linked to live Supabase PostgreSQL, Groq (Qwen 3.8 27B) + OpenRouter fallback AI, 90-day cash runway simulator, Bad Day Mode, UPI payment links, and Add-to-Home-Screen PWA.*
 
 ---
 
