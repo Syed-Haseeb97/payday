@@ -252,7 +252,7 @@ export function generateSeedData(baseDateStr?: string): SeedDataBundle {
     ];
 
     for (const m of milestoneDefs) {
-      const invId = `i1000000-0000-0000-0000-${String(invCounter).padStart(12, '0')}`;
+      const invId = `a1000000-0000-0000-0000-${String(invCounter).padStart(12, '0')}`;
       const invNum = `INV-${String(invCounter).padStart(4, '0')}`;
       invCounter++;
 
@@ -349,7 +349,7 @@ export function generateSeedData(baseDateStr?: string): SeedDataBundle {
 
       // Record payments if any
       if (paidAmount > 0) {
-        const payId = `p1000000-0000-0000-0000-${String(payCounter).padStart(12, '0')}`;
+        const payId = `d1000000-0000-0000-0000-${String(payCounter).padStart(12, '0')}`;
         payCounter++;
         payments.push({
           id: payId,

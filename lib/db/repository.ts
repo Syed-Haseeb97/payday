@@ -340,7 +340,7 @@ export class InMemoryRepository implements PaydayRepository {
 
     for (const m of milestoneDefinitions) {
       const invCount = this.store.invoices.length + 1;
-      const invId = `i1000000-0000-0000-0000-${String(invCount).padStart(12, '0')}`;
+      const invId = `a1000000-0000-0000-0000-${String(invCount).padStart(12, '0')}`;
       const invNum = `INV-${String(invCount).padStart(4, '0')}`;
 
       const newInv: Invoice = {
@@ -459,7 +459,7 @@ export class InMemoryRepository implements PaydayRepository {
     }
 
     const payCount = this.store.payments.length + 1;
-    const paymentId = `p1000000-0000-0000-0000-${String(payCount).padStart(12, '0')}`;
+    const paymentId = `d1000000-0000-0000-0000-${String(payCount).padStart(12, '0')}`;
 
     const payment: Payment = {
       id: paymentId,
