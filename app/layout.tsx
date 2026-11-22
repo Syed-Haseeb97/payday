@@ -3,10 +3,7 @@ import { Suspense } from 'react';
 import { Geist, Geist_Mono } from 'next/font/google';
 import '@/lib/zod';
 import './globals.css';
-import { AppHeader } from '@/components/shell/AppHeader';
-import { AppNav } from '@/components/shell/AppNav';
-import { AppFooter } from '@/components/shell/AppFooter';
-import { MobileNav } from '@/components/shell/MobileNav';
+import { AppShell } from '@/components/layout/AppShell';
 import { AddToHomeScreen } from '@/components/shell/AddToHomeScreen';
 
 const geistSans = Geist({
@@ -52,20 +49,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[var(--bg-canvas)] text-[var(--text-primary)]">
-        <AppHeader />
-        <Suspense fallback={<nav aria-label="Main Navigation" className="border-b border-[#C8C2B5] bg-white h-12" />}>
-          <AppNav />
-        </Suspense>
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 md:pb-8">
+      <body className="min-h-full bg-bg text-ink">
+        <AppShell>
           <Suspense fallback={null}>
             {children}
           </Suspense>
-        </main>
-        <AppFooter />
+        </AppShell>
         <Suspense fallback={null}>
           <AddToHomeScreen />
-          <MobileNav />
         </Suspense>
       </body>
     </html>
