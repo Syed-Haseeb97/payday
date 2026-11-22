@@ -2,7 +2,7 @@
 // Transactional safety: creates Client (if new), Booking, Milestones, and Payment together.
 // All-or-nothing compensation rollback on both In-Memory and Supabase repositories.
 
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 import { getRepository, PaydayRepository } from '../db/repository';
 import { Booking, Client, Invoice, Payment } from '../db/types';
 import { getIndiaTodayStr } from '../date';

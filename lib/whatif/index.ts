@@ -1,7 +1,7 @@
 // What-If Scenario Simulation Engine
 // Pure functions in lib/whatif, validated with Zod, fully deterministic.
 
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 import { ForecastInput, ForecastResult, CashHealth, OneOffExpense } from '../forecast';
 
 // ---------------------------------------------------------------------------

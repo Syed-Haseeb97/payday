@@ -1,7 +1,7 @@
 // Zod input validation schemas for all write operations
 // Never trust client input.
 
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 
 export const paymentReliabilitySchema = z.enum([
   'reliable',

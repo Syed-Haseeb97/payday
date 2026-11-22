@@ -233,6 +233,14 @@ Judges and evaluators can inspect live operational status at any time by navigat
 
 ## Test Verification
 
+### Supabase Contract Tests & Safety Guards
+- The contract test suite (`lib/db/repository-contract.test.ts`) verifies strict behavioral parity between `InMemoryRepository` and `SupabaseRepository`.
+- To test against a live Supabase database, set `SUPABASE_TEST_URL` and `SUPABASE_TEST_SERVICE_ROLE_KEY`.
+- **Safety Refusal Guard**: The test suite strictly refuses to run if `SUPABASE_TEST_URL` equals `SUPABASE_URL`, ensuring production databases are never touched by integration tests.
+- When `SUPABASE_TEST_URL` is omitted, the live Supabase suite is cleanly skipped while 100% of the repository contract executes against the in-memory engine.
+- All test entities carry a unique prefix (`CONTRACT_<timestamp>_<id>_`) and are cleaned up in reverse dependency order; `resetDemoData` is never called against Supabase in automated tests.
+
+
 Payday maintains strict testing discipline with **191 unit tests** in Vitest and end-to-end user journey validation via Playwright:
 
 ```bash

@@ -3,17 +3,37 @@ import { InMemoryRepository, PaydayRepository, SupabaseRepository } from './repo
 import { getIndiaTodayStr } from '../date';
 
 /**
+ * Validates Supabase test environment credentials.
+ * Refuses to run against production SUPABASE_URL if SUPABASE_TEST_URL equals SUPABASE_URL.
+ */
+export function validateSupabaseTestConfig(
+  testUrl?: string,
+  testKey?: string,
+  prodUrl?: string
+): { enabled: boolean; url?: string; key?: string } {
+  if (!testUrl || !testKey || testUrl.trim() === '' || testUrl.includes('your-project')) {
+    return { enabled: false };
+  }
+  if (prodUrl && prodUrl.trim() !== '' && testUrl.trim().toLowerCase() === prodUrl.trim().toLowerCase()) {
+    throw new Error('SUPABASE_TEST_URL must not match production SUPABASE_URL. Refusing to run tests against production database.');
+  }
+  return { enabled: true, url: testUrl.trim(), key: testKey.trim() };
+}
+
+/**
  * Shared Contract Test Suite for any PaydayRepository implementation.
  * Guarantees behavioral parity between InMemoryRepository and SupabaseRepository.
+ * Only touches rows carrying a unique test prefix and cleans up in reverse foreign key order.
+ * Never calls resetDemoData.
  */
-function createContractTestSuite(
+export function createContractTestSuite(
   suiteName: string,
   createRepo: () => Promise<PaydayRepository>,
   cleanup?: (repo: PaydayRepository) => Promise<void>
 ) {
   describe(`Repository Contract Suite: ${suiteName}`, () => {
     let repo: PaydayRepository;
-    const testPrefix = `CONTRACT_${Date.now()}_`;
+    const testPrefix = `CONTRACT_${Date.now()}_${Math.random().toString(36).substring(2, 7)}_`;
     const createdClientIds: string[] = [];
     const createdBookingIds: string[] = [];
 
@@ -199,8 +219,27 @@ function createContractTestSuite(
       expect(Array.isArray(forecastInputs.recurringExpenses)).toBe(true);
     });
 
-    it('implements reminders recording and lookup', async () => {
-      const invoices = await repo.getInvoices();
+    it('implements reminders recording and lookup on newly created test invoice', async () => {
+      const client = await repo.createClient({
+        name: `${testPrefix}Client_Reminder`,
+        phone: '+91 90000 00096',
+        payment_reliability: 'average',
+        average_delay_days: 5,
+      });
+      createdClientIds.push(client.id);
+
+      const { booking, invoices } = await repo.createBooking({
+        clientId: client.id,
+        title: `${testPrefix}Reminder Test Event`,
+        eventDate: '2026-12-15',
+        totalAmount: 40000,
+        customMilestones: [
+          { label: 'advance', amount: 20000, due: '2026-11-15' },
+          { label: 'final', amount: 20000, due: '2026-12-15' },
+        ],
+      });
+      createdBookingIds.push(booking.id);
+
       const inv = invoices[0];
 
       const reminder = await repo.recordReminder({
@@ -221,7 +260,7 @@ function createContractTestSuite(
       expect(lastSent?.id).toBe(reminder.id);
     });
 
-    it('implements alert dismiss and snooze operations', async () => {
+    it('implements alert dismiss and snooze operations safely', async () => {
       const alerts = await repo.getAlerts();
       if (alerts.length > 0) {
         const targetAlert = alerts[0];
@@ -229,17 +268,37 @@ function createContractTestSuite(
         await repo.dismissAlert(targetAlert.id);
       }
     });
-
-    it('implements resetDemoData restoring baseline records', async () => {
-      await repo.resetDemoData();
-      const clients = await repo.getClients();
-      expect(clients.length).toBeGreaterThanOrEqual(8);
-
-      const bookings = await repo.getBookings();
-      expect(bookings.length).toBeGreaterThanOrEqual(20);
-    });
   });
 }
+
+// Validation tests proving safety refusals
+describe('Supabase Test Safety Validation', () => {
+  it('refuses to run if SUPABASE_TEST_URL equals production SUPABASE_URL', () => {
+    expect(() => {
+      validateSupabaseTestConfig(
+        'https://my-project.supabase.co',
+        'service-role-key-123',
+        'https://my-project.supabase.co'
+      );
+    }).toThrow(/SUPABASE_TEST_URL must not match production SUPABASE_URL/i);
+  });
+
+  it('skips cleanly when SUPABASE_TEST_URL or key is absent or placeholder', () => {
+    expect(validateSupabaseTestConfig('', '', 'https://prod.supabase.co').enabled).toBe(false);
+    expect(validateSupabaseTestConfig(undefined, undefined, 'https://prod.supabase.co').enabled).toBe(false);
+    expect(validateSupabaseTestConfig('https://your-project.supabase.co', 'placeholder', 'https://prod.supabase.co').enabled).toBe(false);
+  });
+
+  it('enables tests when separate test credentials are provided', () => {
+    const res = validateSupabaseTestConfig(
+      'https://test-project.supabase.co',
+      'test-key',
+      'https://prod-project.supabase.co'
+    );
+    expect(res.enabled).toBe(true);
+    expect(res.url).toBe('https://test-project.supabase.co');
+  });
+});
 
 // 1. Run contract tests against InMemoryRepository (Always active)
 createContractTestSuite('InMemoryRepository', async () => {
@@ -248,18 +307,30 @@ createContractTestSuite('InMemoryRepository', async () => {
   return repo;
 });
 
+describe('InMemoryRepository Demo Reset', () => {
+  it('restores baseline records on demand for InMemory', async () => {
+    const repo = new InMemoryRepository();
+    await repo.resetDemoData();
+    const clients = await repo.getClients();
+    expect(clients.length).toBeGreaterThanOrEqual(8);
+
+    const bookings = await repo.getBookings();
+    expect(bookings.length).toBeGreaterThanOrEqual(20);
+  });
+});
+
 // 2. Run contract tests against SupabaseRepository ONLY when test credentials are provided
-const hasSupabaseTestCredentials = Boolean(
-  process.env.SUPABASE_TEST_URL &&
-  process.env.SUPABASE_TEST_SERVICE_ROLE_KEY &&
-  !process.env.SUPABASE_TEST_URL.includes('your-project')
+const testConfig = validateSupabaseTestConfig(
+  process.env.SUPABASE_TEST_URL,
+  process.env.SUPABASE_TEST_SERVICE_ROLE_KEY,
+  process.env.SUPABASE_URL
 );
 
-if (hasSupabaseTestCredentials) {
+if (testConfig.enabled) {
   createContractTestSuite('SupabaseRepository', async () => {
     return new SupabaseRepository(
-      process.env.SUPABASE_TEST_URL!,
-      process.env.SUPABASE_TEST_SERVICE_ROLE_KEY!
+      testConfig.url!,
+      testConfig.key!
     );
   });
 } else {
