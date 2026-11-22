@@ -57,7 +57,7 @@ async function fetchWithTimeout(
     }
 
     const data = await response.json();
-    const content = data?.choices?.[0]?.message?.content;
+    const content = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.message?.reasoning;
     if (!content) {
       throw new Error('LLM API returned empty completion content');
     }
@@ -124,13 +124,16 @@ export async function executeCompletionWithFallback(
     }
   }
 
-  // Attempt 2: Fallback Model (if specified, non-empty, and different from primary)
+  // Attempt 2: Fallback Model (if specified, non-empty, and different from primary or on a separate provider)
   const trimmedFallback = config.fallbackModel?.trim();
-  if (trimmedFallback && trimmedFallback.length > 0 && trimmedFallback !== config.model) {
+  const hasFallbackUrl = Boolean(config.fallbackBaseUrl && config.fallbackBaseUrl.length > 0);
+  if (trimmedFallback && trimmedFallback.length > 0 && (trimmedFallback !== config.model || hasFallbackUrl)) {
     try {
+      const fallbackUrl = config.fallbackBaseUrl || config.baseUrl;
+      const fallbackKey = config.fallbackApiKey || config.apiKey;
       const content = await fetchWithTimeout(
-        config.baseUrl,
-        config.apiKey,
+        fallbackUrl,
+        fallbackKey,
         trimmedFallback,
         options.messages,
         config.timeoutMs,

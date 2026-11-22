@@ -6,6 +6,8 @@ export interface LLMConfig {
   apiKey: string;
   model: string;
   fallbackModel: string;
+  fallbackBaseUrl?: string;
+  fallbackApiKey?: string;
   timeoutMs: number;
   maxRetries: number;
 }
@@ -16,6 +18,8 @@ export function getLLMConfig(): LLMConfig {
     apiKey: (process.env.LLM_API_KEY || '').trim(),
     model: (process.env.LLM_MODEL || '').trim(),
     fallbackModel: (process.env.LLM_FALLBACK_MODEL || '').trim(),
+    fallbackBaseUrl: (process.env.LLM_FALLBACK_BASE_URL || '').trim(),
+    fallbackApiKey: (process.env.LLM_FALLBACK_API_KEY || '').trim(),
     timeoutMs: 10000, // 10 second timeout per brief requirement
     maxRetries: 1,    // 1 retry before fallback per brief requirement
   };
