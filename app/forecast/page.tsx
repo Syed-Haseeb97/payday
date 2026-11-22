@@ -55,7 +55,12 @@ import {
   ForecastComparison,
 } from '@/lib/whatif';
 import { AskPayday } from '@/components/forecast/AskPayday';
-import { Client, Booking, Invoice, RecurringExpense } from '@/lib/db/types';
+import { RecoveryPlanCard } from '@/components/forecast/RecoveryPlanCard';
+import { ReminderDrawer } from '@/components/reminders/ReminderDrawer';
+import { Modal } from '@/components/ui/Modal';
+import { computeRecoveryPlan, RecoveryPlan, RecoveryAction } from '@/lib/recovery';
+import { suggestDefaultTone } from '@/lib/ai';
+import { Client, Booking, Invoice, RecurringExpense, PaymentMethod } from '@/lib/db/types';
 
 interface RawForecastInputs {
   today: string;
@@ -86,6 +91,21 @@ export default function ForecastPage() {
 
   // Events list filter
   const [eventFilter, setEventFilter] = useState<'all' | 'inflow' | 'outflow'>('all');
+
+  // Recovery plan actions state
+  const [reminderDrawerOpen, setReminderDrawerOpen] = useState(false);
+  const [selectedActionForReminder, setSelectedActionForReminder] = useState<RecoveryAction | null>(null);
+
+  // Payment Recording Modal State
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [paymentAction, setPaymentAction] = useState<RecoveryAction | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState<number>(0);
+  const [paymentDate, setPaymentDate] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('UPI');
+  const [paymentReference, setPaymentReference] = useState('');
+  const [paymentNotes, setPaymentNotes] = useState('');
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // SSR mounted guard for Recharts
   const [mounted, setMounted] = useState(false);
@@ -180,6 +200,72 @@ export default function ForecastPage() {
     if (!activeInput) return null;
     return computeCashForecast(activeInput);
   }, [activeInput]);
+
+  const recoveryPlan: RecoveryPlan | null = useMemo(() => {
+    if (!activeInput) return null;
+    return computeRecoveryPlan(activeInput);
+  }, [activeInput]);
+
+  // Handle smooth scroll to recovery plan if hash is #recovery-plan
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#recovery-plan') {
+      const el = document.getElementById('recovery-plan');
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 100);
+      }
+    }
+  }, [recoveryPlan]);
+
+  const handleOpenReminder = (action: RecoveryAction) => {
+    setSelectedActionForReminder(action);
+    setReminderDrawerOpen(true);
+  };
+
+  const handleOpenPayment = (action: RecoveryAction) => {
+    setPaymentAction(action);
+    setPaymentAmount(action.balance);
+    setPaymentDate(rawInputs?.today || new Date().toISOString().split('T')[0]);
+    setPaymentMethod('UPI');
+    setPaymentReference('');
+    setPaymentNotes('');
+    setPaymentError(null);
+    setIsPaymentOpen(true);
+  };
+
+  const handleSubmitPayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!paymentAction || !rawInputs) return;
+    setPaymentSubmitting(true);
+    setPaymentError(null);
+
+    try {
+      const res = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invoiceId: paymentAction.invoice.id,
+          amount: paymentAmount,
+          paymentDate,
+          paymentMethod,
+          reference: paymentReference,
+          notes: paymentNotes,
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Failed to record payment');
+      }
+
+      setIsPaymentOpen(false);
+      setPaymentAction(null);
+      fetchInputs();
+    } catch (err: unknown) {
+      setPaymentError(err instanceof Error ? err.message : 'Error recording payment');
+    } finally {
+      setPaymentSubmitting(false);
+    }
+  };
 
   const comparison: ForecastComparison | null = useMemo(() => {
     if (!baseResult || !activeResult || scenarios.length === 0) return null;
@@ -894,6 +980,15 @@ export default function ForecastPage() {
             </div>
           </div>
 
+          {/* Recovery Plan Card (Deterministic Gap Resolution) */}
+          {recoveryPlan && (
+            <RecoveryPlanCard
+              plan={recoveryPlan}
+              onOpenReminder={handleOpenReminder}
+              onRecordPayment={handleOpenPayment}
+            />
+          )}
+
           {/* Upcoming Events List */}
           <div className="p-5 sm:p-6 rounded-2xl app-card bg-surface border border-line space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border-line)] pb-4">
@@ -1332,6 +1427,153 @@ export default function ForecastPage() {
           </div>
         </div>
       </div>
+
+      {/* Reminder Slide-Over Drawer */}
+      {selectedActionForReminder && (
+        <ReminderDrawer
+          isOpen={reminderDrawerOpen}
+          onClose={() => {
+            setReminderDrawerOpen(false);
+            setSelectedActionForReminder(null);
+          }}
+          invoiceId={selectedActionForReminder.invoice.id}
+          defaultTone={suggestDefaultTone(
+            selectedActionForReminder.daysOverdue,
+            selectedActionForReminder.client.payment_reliability
+          )}
+          clientName={selectedActionForReminder.client.name}
+          amountFormatted={formatINR(selectedActionForReminder.balance)}
+          onPaymentRecorded={fetchInputs}
+        />
+      )}
+
+      {/* Payment Recording Modal */}
+      {isPaymentOpen && paymentAction && (
+        <Modal
+          isOpen={isPaymentOpen}
+          onClose={() => {
+            setIsPaymentOpen(false);
+            setPaymentAction(null);
+          }}
+          title={`Record Payment: ${paymentAction.client.name}`}
+        >
+          <form onSubmit={handleSubmitPayment} className="space-y-4">
+            <div className="p-3 rounded-xl bg-[#F5F3EE] border border-[#C8C2B5] text-xs font-mono space-y-1">
+              <div className="flex justify-between">
+                <span className="text-[#5F626A]">Milestone:</span>
+                <span className="font-semibold text-[#16181D]">
+                  {paymentAction.invoice.milestone_label}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#5F626A]">Total Amount:</span>
+                <span className="font-semibold text-[#16181D]">
+                  {formatINR(paymentAction.invoice.amount)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#5F626A]">Already Paid:</span>
+                <span className="font-semibold text-[#1D6B52]">
+                  {formatINR(paymentAction.invoice.paid_amount)}
+                </span>
+              </div>
+              <div className="flex justify-between border-t border-[#C8C2B5] pt-1">
+                <span className="text-[#5F626A]">Remaining Balance:</span>
+                <span className="font-bold text-[#16181D]">
+                  {formatINR(paymentAction.balance)}
+                </span>
+              </div>
+            </div>
+
+            {paymentError && (
+              <div className="p-3 rounded-xl bg-[#F8E9E4] border border-[#B53A26] text-xs text-[#B53A26]">
+                {paymentError}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-mono uppercase tracking-wider text-[#5F626A] font-semibold mb-1">
+                Payment Amount (₹)
+              </label>
+              <input
+                type="number"
+                min="1"
+                max={paymentAction.balance}
+                step="any"
+                required
+                value={paymentAmount || ''}
+                onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
+                className="w-full px-3 py-2 rounded-xl border border-[#C8C2B5] bg-white font-mono text-sm focus:outline-none focus:border-[#16181D]"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#5F626A] font-semibold mb-1">
+                  Payment Date
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={paymentDate}
+                  onChange={(e) => setPaymentDate(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-[#C8C2B5] bg-white font-mono text-xs focus:outline-none focus:border-[#16181D]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#5F626A] font-semibold mb-1">
+                  Method
+                </label>
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                  className="w-full px-3 py-2 rounded-xl border border-[#C8C2B5] bg-white font-mono text-xs focus:outline-none focus:border-[#16181D]"
+                >
+                  <option value="UPI">UPI</option>
+                  <option value="bank_transfer">Bank Transfer (NEFT/IMPS)</option>
+                  <option value="cash">Cash</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono uppercase tracking-wider text-[#5F626A] font-semibold mb-1">
+                Reference / UTR (Optional)
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. UPI Ref / 12-digit UTR"
+                value={paymentReference}
+                onChange={(e) => setPaymentReference(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-[#C8C2B5] bg-white font-mono text-xs focus:outline-none focus:border-[#16181D]"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsPaymentOpen(false);
+                  setPaymentAction(null);
+                }}
+                className="px-4 py-2 rounded-full border border-[#C8C2B5] bg-white font-mono text-xs uppercase tracking-wider font-semibold text-[#5F626A] hover:bg-[#F5F3EE]"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={paymentSubmitting}
+                className="px-5 py-2 rounded-full bg-[#16181D] text-[#F5F3EE] font-mono text-xs uppercase tracking-wider font-semibold hover:opacity-90 disabled:opacity-50"
+              >
+                {paymentSubmitting ? 'Recording...' : 'Record Payment'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

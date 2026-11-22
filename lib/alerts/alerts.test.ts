@@ -201,7 +201,7 @@ describe('Payday Alerts Engine', () => {
     expect(rule4?.severity).toBe('critical');
     expect(rule4?.action.type).toBe('link');
     expect(rule4?.action.label).toBe('See what-if');
-    expect(rule4?.action.href).toBe('/forecast');
+    expect(rule4?.action.href).toBe('/forecast#recovery-plan');
   });
 
   it('triggers Rule 5: warning when cash forecast is tight (positive but below 20% buffer)', () => {

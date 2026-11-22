@@ -164,7 +164,7 @@ export function deriveAlerts(
       action: {
         type: 'link',
         label: 'See what-if',
-        href: '/forecast',
+        href: '/forecast#recovery-plan',
       },
     });
   } else if (forecast.summary.health === 'tight') {
