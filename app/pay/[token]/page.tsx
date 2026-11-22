@@ -4,7 +4,8 @@ import { connection } from 'next/server';
 import { getRepository } from '@/lib/db/repository';
 import { isValidPayToken } from '@/lib/pay/token';
 import { DEMO_USER } from '@/lib/db/types';
-import { PayPortal } from '@/components/pay/PayPortal';
+import { PayScreen } from '@/components/screens/PayScreen';
+import type { PayPage as PayPageType } from '@/lib/types';
 
 interface PayPageProps {
   params: Promise<{ token: string }>;
@@ -40,38 +41,31 @@ export default async function PayPage({ params }: PayPageProps) {
   // ONLY client first name (never full legal name, phone, email, notes, or reliability)
   const rawClientName = invoice.client?.name || 'Client';
   const clientFirstName = rawClientName.split(' ')[0] || 'Client';
-  const eventName = invoice.booking?.title || 'Wedding Photography';
   const businessName = DEMO_USER.business_name || 'Arjun Visuals';
-
   const balance = invoice.amount - invoice.paid_amount;
   const pendingClaim = (invoice.payment_claims || []).find((c) => c.status === 'pending');
-
-  const fallbackUpi = `upi://pay?pa=${DEMO_USER.upi_id || 'arjunvisuals@okaxis'}&pn=${encodeURIComponent(
+  const upiId = DEMO_USER.upi_id || 'arjunvisuals@okaxis';
+  const fallbackUpi = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(
     businessName
-  )}&am=${balance}&cu=INR`;
+  )}&am=${balance}&cu=INR&tn=${encodeURIComponent(`${invoice.invoice_number} ${invoice.milestone_label}`)}`;
 
-  return (
-    <PayPortal
-      businessName={businessName}
-      clientFirstName={clientFirstName}
-      milestoneLabel={invoice.milestone_label}
-      eventName={eventName}
-      amount={invoice.amount}
-      paidAmount={invoice.paid_amount}
-      balance={balance}
-      dueDate={invoice.due_date}
-      status={invoice.status}
-      upiLink={invoice.upi_link || fallbackUpi}
-      initialPendingClaim={
-        pendingClaim
-          ? {
-              id: pendingClaim.id,
-              claimed_amount: pendingClaim.claimed_amount,
-              reference: pendingClaim.reference,
-            }
-          : null
-      }
-      token={token}
-    />
-  );
+  const pageData: PayPageType = {
+    studio_name: businessName,
+    client_first_name: clientFirstName,
+    invoice_number: invoice.invoice_number,
+    milestone_label: invoice.milestone_label,
+    amount_due: balance,
+    due_date: invoice.due_date,
+    upi_id: upiId,
+    upi_uri: invoice.upi_link || fallbackUpi,
+    bank: {
+      account_name: businessName,
+      bank_name: 'HDFC Bank',
+      account_number_masked: 'XXXX XXXX 4821',
+      ifsc: 'HDFC0001234',
+    },
+    claim_pending: Boolean(pendingClaim),
+  };
+
+  return <PayScreen page={pageData} token={token} />;
 }

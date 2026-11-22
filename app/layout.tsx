@@ -50,11 +50,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full bg-bg text-ink">
-        <AppShell>
-          <Suspense fallback={null}>
+        <Suspense fallback={null}>
+          <AppShell>
             {children}
-          </Suspense>
-        </AppShell>
+          </AppShell>
+        </Suspense>
         <Suspense fallback={null}>
           <AddToHomeScreen />
         </Suspense>

@@ -8,7 +8,10 @@ export function useAsync<T>(fn: () => Promise<T>, deps: unknown[]) {
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(true);
   const fnRef = useRef(fn);
-  fnRef.current = fn;
+
+  useEffect(() => {
+    fnRef.current = fn;
+  });
 
   const reload = useCallback(async () => {
     setLoading(true);

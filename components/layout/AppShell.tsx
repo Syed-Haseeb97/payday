@@ -1,7 +1,7 @@
 'use client';
 
 import { CalendarDays, ChartSpline, Flame, House, LayoutGrid, Plus, Settings, Tags, Users, Wallet, type LucideIcon } from 'lucide-react';
-import { useEffect, useState, type ReactNode } from 'react';
+import { Suspense, useEffect, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/cn';
 import { Link } from '@/lib/router';
@@ -32,8 +32,22 @@ const rail: NavItem[] = [
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={<div className="min-h-dvh flex flex-col">{children}</div>}>
+      <AppShellInner>{children}</AppShellInner>
+    </Suspense>
+  );
+}
+
+function AppShellInner({ children }: { children: ReactNode }) {
   const path = usePathname() || '/';
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setQuickAddOpen(true);
+    window.addEventListener('open-quick-add', handler);
+    return () => window.removeEventListener('open-quick-add', handler);
+  }, []);
 
   // Sync theme
   useEffect(() => {
@@ -69,12 +83,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         <button
           type="button"
           onClick={() => setQuickAddOpen(true)}
-          className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-primary text-on-primary shadow-[var(--shadow-fab)] transition-transform hover:scale-105"
+          className="mb-4 flex flex-col items-center justify-center rounded-2xl bg-primary text-on-primary py-2 px-1 text-center shadow-[var(--shadow-fab)] transition-transform hover:scale-105"
           aria-label="Quick Add"
           title="Quick Add"
         >
-          <span className="sr-only">Quick Add</span>
-          <Plus className="size-6" strokeWidth={2.5} aria-hidden />
+          <Plus className="size-5" strokeWidth={2.5} aria-hidden />
+          <span className="text-[10px] font-semibold leading-tight mt-0.5">Quick Add</span>
         </button>
         {rail.map((item) => (
           <RailLink key={item.to} item={item} active={item.match(path)} />

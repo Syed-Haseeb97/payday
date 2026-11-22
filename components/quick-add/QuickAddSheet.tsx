@@ -217,7 +217,6 @@ function Flow({ onCreated, onClose }: Omit<Props, 'open'>) {
           }
         }}
       >
-        <input type="hidden" value={draft.total_amount} readOnly />
         <TextField label="Client" value={draft.client_name} onChange={(e) => set('client_name', e.target.value)} badge={badge('client_name')} error={!draft.client_name.trim() ? 'Who is this booking for?' : undefined} autoComplete="off" />
         <div className="grid grid-cols-2 gap-3">
           <TextField label="Event date" type="date" value={draft.event_date} onChange={(e) => set('event_date', e.target.value)} badge={badge('event_date')} mono />
@@ -255,11 +254,9 @@ function Flow({ onCreated, onClose }: Omit<Props, 'open'>) {
           </p>
         </fieldset>
 
-        {draft.event_date && draft.client_name && (
-          <p className="rounded-2xl bg-primary/10 px-4 py-3 text-sm text-ink-2">
-            <span className="font-semibold text-ink">{draft.client_name}</span>, {formatDateLong(draft.event_date)}, <strong className="num font-semibold text-ink">{formatINR(draft.total_amount)}</strong> in {[draft.advance_percentage, draft.mid_percentage, draft.final_percentage].filter(Boolean).length} payments.
-          </p>
-        )}
+        <p className="rounded-2xl bg-primary/10 px-4 py-3 text-sm text-ink-2">
+          <span className="font-semibold text-ink">{draft.client_name || 'Booking'}</span>, {draft.event_date ? formatDateLong(draft.event_date) : 'Upcoming'}, <strong className="num font-semibold text-ink">{formatINR(draft.total_amount)}</strong> in {[draft.advance_percentage, draft.mid_percentage, draft.final_percentage].filter(Boolean).length} payments.
+        </p>
         {error && (
           <p role="alert" className="text-sm font-semibold text-out">
             {error}

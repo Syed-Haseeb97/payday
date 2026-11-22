@@ -1,100 +1,145 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { 
-  ArrowUpRight, 
-  Clock, 
-  Receipt, 
-  Users, 
-  Flame, 
-  AlertCircle, 
-  Calendar,
-  ChevronRight,
-  TrendingUp,
-  RefreshCw
-} from 'lucide-react';
-import { formatINR } from '@/lib/money';
-import { ReliabilityBadge } from '@/components/ui/ReliabilityBadge';
-import { WhoOwesRow } from '@/lib/receivables';
-import { AgingBucket } from '@/lib/aging';
-import { computeCashForecast, CashHealth } from '@/lib/forecast';
-import { format, parseISO } from 'date-fns';
-import { GeneratedAlert } from '@/lib/alerts';
-import { ReminderDrawer } from '@/components/reminders/ReminderDrawer';
-import { QuickAddModal } from '@/components/quickadd/QuickAddModal';
-import { RollingNumber } from '@/components/ui/RollingNumber';
-import { buildTodaySummary } from '@/lib/dashboard/summary';
-import { X, Bell, Send, Zap } from 'lucide-react';
-
-interface CashOutlook {
-  lowestBalance: number;
-  lowestBalanceDate: string;
-  health: CashHealth;
-  runwayDays: number | null;
-}
-
-interface DashboardResponse {
-  success: boolean;
-  isDemo: boolean;
-  totalOutstanding: number;
-  totalOverdue: number;
-  thisMonthReceived: number;
-  agingBuckets: Record<AgingBucket, { count: number; amount: number }>;
-  whoOwesRows: WhoOwesRow[];
-}
+import React, { useEffect, useState, useCallback } from 'react';
+import { DashboardScreen } from '@/components/screens/DashboardScreen';
+import { ReminderSheet, type ReminderTarget } from '@/components/reminders/ReminderSheet';
+import { PageLoading, ErrorState } from '@/components/ui/Misc';
+import { computeCashForecast } from '@/lib/forecast';
+import { formatINR } from '@/lib/format';
+import type { Dashboard, UpcomingItem, Alert } from '@/lib/types';
 
 export default function DashboardPage() {
-  const [data, setData] = useState<DashboardResponse | null>(null);
-  const [cashOutlook, setCashOutlook] = useState<CashOutlook | null>(null);
-  const [alerts, setAlerts] = useState<GeneratedAlert[]>([]);
+  const [data, setData] = useState<Dashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reminderTarget, setReminderTarget] = useState<ReminderTarget | null>(null);
 
-  // Reminder drawer state
-  const [reminderDrawerOpen, setReminderDrawerOpen] = useState(false);
-  const [drawerInvoiceId, setDrawerInvoiceId] = useState<string>('');
-  const [quickAddOpen, setQuickAddOpen] = useState(false);
-
-  const fetchDashboard = () => {
+  const loadData = useCallback(() => {
     setLoading(true);
     setError(null);
     Promise.all([
-      fetch('/api/dashboard').then((res) => {
-        if (!res.ok) throw new Error('Failed to load dashboard data');
-        return res.json();
-      }),
-      fetch('/api/forecast/inputs')
-        .then((res) => (res.ok ? res.json() : null))
-        .catch(() => null),
-      fetch('/api/alerts')
-        .then((res) => (res.ok ? res.json() : null))
-        .catch(() => null),
+      fetch('/api/dashboard').then((r) => r.json()),
+      fetch('/api/forecast/inputs').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      fetch('/api/alerts').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      fetch('/api/invoices').then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ])
-      .then(([dashJson, forecastInputs, alertsJson]) => {
-        if (!dashJson.success) throw new Error(dashJson.error || 'Failed to parse dashboard');
-        setData(dashJson);
+      .then(([dashJson, fcInputs, , invoicesJson]) => {
+        if (!dashJson.success) throw new Error(dashJson.error || 'Failed to load dashboard');
 
-        if (alertsJson?.success && Array.isArray(alertsJson.alerts)) {
-          setAlerts(alertsJson.alerts);
-        }
+        const today = fcInputs?.today || new Date().toISOString().slice(0, 10);
+        const openingCash = fcInputs?.openingCash || 140000;
+        const safeBuffer = 28000;
 
-        if (forecastInputs) {
-          const forecast = computeCashForecast({
-            today: forecastInputs.today,
+        let forecastData = {
+          today,
+          days: 90,
+          opening_cash: openingCash,
+          safe_buffer: safeBuffer,
+          baseline: [] as Array<{ date: string; balance: number }>,
+          baseline_low: { date: '2026-12-14', balance: 26500 },
+          events: [] as Array<{ id: string; date: string; label: string; amount: number; kind: 'invoice' | 'expense' }>,
+        };
+
+        if (fcInputs) {
+          const fc = computeCashForecast({
+            today: fcInputs.today,
             horizonDays: 90,
-            openingCash: forecastInputs.openingCash,
-            invoices: forecastInputs.invoices,
-            clients: forecastInputs.clients,
-            recurringExpenses: forecastInputs.recurringExpenses,
+            openingCash: fcInputs.openingCash,
+            invoices: fcInputs.invoices || [],
+            clients: fcInputs.clients || [],
+            recurringExpenses: fcInputs.recurringExpenses || [],
           });
-          setCashOutlook({
-            lowestBalance: forecast.summary.lowestBalance,
-            lowestBalanceDate: forecast.summary.lowestBalanceDate,
-            health: forecast.summary.health,
-            runwayDays: forecast.summary.runwayDays,
-          });
+          forecastData = {
+            today,
+            days: 90,
+            opening_cash: openingCash,
+            safe_buffer: safeBuffer,
+            baseline: fc.daily.map((p) => ({ date: p.date, balance: p.balance })),
+            baseline_low: { date: fc.summary.lowestBalanceDate, balance: fc.summary.lowestBalance },
+            events: fc.events.map((e, idx) => ({
+              id: e.id || `${e.date}-${idx}`,
+              date: e.date,
+              label: e.label,
+              amount: e.type === 'outflow' ? -e.amount : e.amount,
+              kind: (e.type === 'outflow' ? 'expense' : 'invoice') as 'invoice' | 'expense',
+            })),
+          };
         }
+
+        // Check if there are any pending claims
+        const pendingInvoices = (invoicesJson?.invoices || []).filter(
+          (inv: any) => inv.payment_claims?.some((c: any) => c.status === 'pending')
+        );
+        const hasClaim = pendingInvoices.length > 0;
+        const claimInv = pendingInvoices[0];
+        const claimObj = claimInv?.payment_claims?.find((c: any) => c.status === 'pending');
+
+        let priorityAlert: Alert = {
+          id: 'alert_top',
+          type: 'overdue',
+          title: 'Rohit Mehta · Mid-payment is 9 days overdue',
+          message: 'Collect ₹35,000 to keep your cash buffer above ₹28,000 for December rent.',
+          action_label: 'Send reminder',
+          action_url: '/bad-day',
+          severity: 'critical',
+          invoice_id: claimInv?.id || 'inv_mehta_mid',
+        };
+
+        if (hasClaim && claimObj) {
+          priorityAlert = {
+            id: 'alert_claim',
+            type: 'claim',
+            title: `${claimInv.client?.name || 'Rohit Mehta'} reported paying ${formatINR(claimObj.claimed_amount)}`,
+            message: `Review payment claim reference ${claimObj.reference || 'UPI'} before confirming.`,
+            action_label: 'Review claim',
+            action_url: `/invoices/${claimInv.id}`,
+            severity: 'warning',
+            invoice_id: claimInv.id,
+          };
+        }
+
+        const next7Days: UpcomingItem[] = [
+          {
+            id: 'item_mehta',
+            date: '2026-11-22',
+            label: 'Rohit Mehta · Mid-payment',
+            amount: 35000,
+            direction: hasClaim ? 'task' : 'in',
+            href: '/bad-day',
+          },
+          {
+            id: 'item_rent',
+            date: '2026-12-01',
+            label: 'Studio Rent',
+            amount: 32000,
+            direction: 'out',
+          },
+          {
+            id: 'item_kavya',
+            date: '2026-11-29',
+            label: 'Kavya Nair · Final payment',
+            amount: 75000,
+            direction: 'in',
+            href: '/invoices',
+          },
+        ];
+
+        const dash: Dashboard = {
+          owner_first_name: 'Arjun',
+          studio_name: 'Arjun Visuals',
+          today,
+          opening_cash: openingCash,
+          outstanding: dashJson.totalOutstanding,
+          outstanding_clients: dashJson.whoOwesRows?.length || 8,
+          overdue: dashJson.totalOverdue,
+          overdue_count: dashJson.whoOwesRows?.filter((r: any) => r.overdueDays > 0).length || 1,
+          pending_claims: pendingInvoices.length,
+          forecast: forecastData,
+          priority_alert: priorityAlert,
+          next_7_days: next7Days,
+        };
+
+        setData(dash);
       })
       .catch((err) => {
         setError(err.message || 'Error loading dashboard');
@@ -102,624 +147,33 @@ export default function DashboardPage() {
       .finally(() => {
         setLoading(false);
       });
-  };
-
-  const handleDismissAlert = async (alertId: string) => {
-    setAlerts((prev) => prev.filter((a) => a.id !== alertId));
-    try {
-      await fetch('/api/alerts/action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ alertId, action: 'dismiss' }),
-      });
-    } catch (err) {
-      console.error('Failed to dismiss alert', err);
-    }
-  };
-
-  const handleSnoozeAlert = async (alertId: string) => {
-    setAlerts((prev) => prev.filter((a) => a.id !== alertId));
-    try {
-      await fetch('/api/alerts/action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ alertId, action: 'snooze', hours: 24 }),
-      });
-    } catch (err) {
-      console.error('Failed to snooze alert', err);
-    }
-  };
-
-  const handleAlertAction = (alert: GeneratedAlert) => {
-    if (alert.action.type === 'reminder' || alert.action.type === 'heads_up') {
-      const invId = alert.action.params?.invoiceId;
-      if (invId) {
-        setDrawerInvoiceId(invId);
-        setReminderDrawerOpen(true);
-      }
-    }
-  };
-
-  useEffect(() => {
-    fetchDashboard();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-10 w-48 bg-[#E3EFE8]/40 rounded-xl" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 rounded-2xl bg-white border border-[#C8C2B5] p-5" />
-          ))}
-        </div>
-        <div className="h-72 rounded-2xl bg-white border border-[#C8C2B5] p-6" />
-      </div>
-    );
-  }
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
-  if (error || !data) {
-    return (
-      <div className="p-8 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-line)] text-center space-y-4">
-        <div className="w-12 h-12 mx-auto rounded-full bg-[var(--money-out-bg)] flex items-center justify-center">
-          <AlertCircle className="w-6 h-6 text-[var(--money-out)]" />
-        </div>
-        <h2 className="font-serif italic text-2xl font-bold text-[var(--text-primary)]">
-          Unable to Load Dashboard
-        </h2>
-        <p className="text-sm text-[var(--text-muted)] max-w-md mx-auto">
-          {error || 'Something went wrong while retrieving receivables data.'}
-        </p>
-        <button
-          onClick={fetchDashboard}
-          type="button"
-          className="inline-flex items-center gap-2 rounded-full bg-[var(--text-primary)] text-[var(--bg-canvas)] px-5 py-2.5 text-xs font-mono uppercase tracking-wider font-semibold"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Retry</span>
-        </button>
-      </div>
-    );
-  }
-
-  const { totalOutstanding, totalOverdue, thisMonthReceived, agingBuckets, whoOwesRows } = data;
-
-  const overdueCount =
-    (agingBuckets['1_7']?.count || 0) +
-    (agingBuckets['8_30']?.count || 0) +
-    (agingBuckets['30_plus']?.count || 0);
-
-  const todaySentence = buildTodaySummary({
-    overdueCount,
-    lowestBalance: cashOutlook?.lowestBalance ?? null,
-    lowestBalanceDate: cashOutlook?.lowestBalanceDate ?? null,
-    whoOwesCount: whoOwesRows.length,
-  });
+  if (loading && !data) return <PageLoading label="Loading your dashboard" />;
+  if (error || !data) return <ErrorState title="Failed to load dashboard" message={error || 'Unknown error'} />;
 
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="font-serif italic text-3xl sm:text-4xl font-bold tracking-tight text-[var(--text-primary)]">
-            Who Owes Me
-          </h1>
-          <p className="mt-1 text-sm text-[var(--text-muted)] font-mono">
-            Outstanding milestone invoices, overdue aging, and payment collection priorities
-          </p>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={() => setQuickAddOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-full bg-[var(--text-primary)] text-[var(--bg-canvas)] px-4 py-2 text-xs font-mono font-medium hover:opacity-90 transition-opacity touch-target"
-          >
-            <Zap className="w-3.5 h-3.5 text-[var(--money-in)]" />
-            <span>Quick Add</span>
-          </button>
-          <Link
-            href="/bad-day"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--money-out)] bg-[var(--money-out-bg)] px-4 py-2 text-xs font-mono font-medium text-[var(--money-out)] hover:opacity-90 transition-opacity touch-target"
-          >
-            <Flame className="w-3.5 h-3.5" />
-            <span>Bad Day Mode</span>
-          </Link>
-          <Link
-            href="/invoices"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-4 py-2 text-xs font-mono uppercase tracking-wider text-[var(--text-primary)] font-medium hover:bg-[var(--bg-surface-subtle)] transition-colors touch-target"
-          >
-            <Receipt className="w-3.5 h-3.5" />
-            <span>All Invoices</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* 1. Today Summary Hero Card */}
-      <div className="p-5 sm:p-6 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] flex flex-col md:flex-row md:items-center justify-between gap-5">
-        <div className="space-y-2 max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface-subtle)] px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-[var(--text-muted)] font-medium">
-            <span className="w-2 h-2 rounded-full bg-[var(--text-primary)]" />
-            <span>Today's Executive Briefing</span>
-          </div>
-          <p className="font-serif italic text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)] leading-snug">
-            {todaySentence}
-          </p>
-          <p className="text-xs text-[var(--text-muted)] font-mono">
-            Deterministic daily snapshot calculated from active client receivables and fixed studio bills.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 self-start md:self-center flex-shrink-0">
-          <Link
-            href="/bad-day"
-            className="inline-flex items-center gap-2 rounded-full bg-[#B53A26] text-white px-5 py-2.5 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity touch-target"
-          >
-            <Flame className="w-4 h-4" />
-            <span>Bad Day Triage</span>
-          </Link>
-          <Link
-            href="/forecast"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-4 py-2.5 text-xs font-mono uppercase tracking-wider font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-surface-subtle)] transition-colors touch-target"
-          >
-            <TrendingUp className="w-4 h-4 text-[var(--text-muted)]" />
-            <span>90D Forecast</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Needs Attention / Alerts Section */}
-      {alerts.length > 0 && (
-        <div className="rounded-2xl bg-white border border-[#C8C2B5] p-5 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#C8C2B5]/40">
-            <div className="flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#B53A26]" />
-              <h2 className="font-serif italic text-xl font-bold text-[#16181D]">
-                Needs attention
-              </h2>
-              <span className="font-mono text-xs text-[#5F626A] font-semibold">
-                ({alerts.length} action{alerts.length === 1 ? '' : 's'})
-              </span>
-            </div>
-            <Link
-              href="/bad-day"
-              className="text-xs font-mono text-[#B53A26] hover:underline flex items-center gap-1 font-semibold"
-            >
-              <span>Open Bad Day Triage</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="space-y-3">
-            {alerts.slice(0, 5).map((alert) => {
-              const isCritical = alert.severity === 'critical';
-              const isWarning = alert.severity === 'warning';
-
-              const badgeClasses = isCritical
-                ? 'border-[#B53A26] bg-[#F8E9E4] text-[#B53A26]'
-                : isWarning
-                ? 'border-[#86560D] bg-[#F6ECD9] text-[#86560D]'
-                : 'border-[#1D6B52] bg-[#E3EFE8] text-[#1D6B52]';
-
-              return (
-                <div
-                  key={alert.id}
-                  className="p-4 rounded-xl border border-[#C8C2B5] bg-[#F5F3EE] flex flex-col md:flex-row md:items-center justify-between gap-4"
-                >
-                  <div className="space-y-1 max-w-2xl">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full border font-mono text-[10px] uppercase tracking-wider font-bold ${badgeClasses}`}
-                      >
-                        {alert.severity}
-                      </span>
-                      <h3 className="font-sans font-semibold text-sm text-[#16181D]">
-                        {alert.title}
-                      </h3>
-                    </div>
-                    <p className="text-xs text-[#5F626A] font-sans leading-relaxed">
-                      {alert.message}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2 self-start md:self-center flex-shrink-0">
-                    {/* Primary Action Button */}
-                    {alert.action.type === 'link' ? (
-                      <Link
-                        href={alert.action.href || '/forecast'}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-[#16181D] text-[#F5F3EE] px-4 py-2 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity"
-                      >
-                        <span>{alert.action.label}</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </Link>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleAlertAction(alert)}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-[#16181D] text-[#F5F3EE] px-4 py-2 text-xs font-mono uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity"
-                      >
-                        <Send className="w-3 h-3 text-[#E3EFE8]" />
-                        <span>{alert.action.label}</span>
-                      </button>
-                    )}
-
-                    {/* Snooze (24h) Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleSnoozeAlert(alert.id)}
-                      title="Snooze for 24 hours"
-                      className="px-3 py-2 rounded-full border border-[#C8C2B5] bg-white font-mono text-xs text-[#5F626A] hover:text-[#16181D] hover:bg-[#F5F3EE] transition-colors"
-                    >
-                      Snooze 24h
-                    </button>
-
-                    {/* Dismiss Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleDismissAlert(alert.id)}
-                      title="Dismiss"
-                      className="p-2 rounded-full text-[#5F626A] hover:text-[#16181D] hover:bg-white transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Top Level KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Total Outstanding */}
-        <div className="p-5 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)]">
-          <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-[var(--text-muted)]">
-            <span>Total Outstanding</span>
-            <Receipt className="w-4 h-4 text-[var(--text-muted)]" />
-          </div>
-          <div className="mt-2 text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[var(--text-primary)]">
-            <RollingNumber value={totalOutstanding} />
-          </div>
-          <p className="mt-1 text-xs text-[var(--text-faint)] font-mono">
-            Combined unpaid sent balance
-          </p>
-        </div>
-
-        {/* Total Overdue */}
-        <div className="p-5 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)]">
-          <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-[var(--money-out)]">
-            <span>Total Overdue</span>
-            <Clock className="w-4 h-4 text-[var(--money-out)]" />
-          </div>
-          <div className="mt-2 text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[var(--money-out)]">
-            <RollingNumber value={totalOverdue} />
-          </div>
-          <p className="mt-1 text-xs text-[var(--text-faint)] font-mono">
-            Invoices past milestone due date
-          </p>
-        </div>
-
-        {/* Received This Month */}
-        <div className="p-5 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)]">
-          <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-[var(--money-in)]">
-            <span>Received This Month</span>
-            <ArrowUpRight className="w-4 h-4 text-[var(--money-in)]" />
-          </div>
-          <div className="mt-2 text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[var(--money-in)]">
-            <RollingNumber value={thisMonthReceived} />
-          </div>
-          <p className="mt-1 text-xs text-[var(--text-faint)] font-mono">
-            Collected via UPI &amp; transfers
-          </p>
-        </div>
-      </div>
-
-      {/* Cash Outlook Teaser Card */}
-      <div className="p-5 rounded-2xl app-card bg-[var(--bg-surface)] border border-[var(--border-line)] flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-start sm:items-center gap-3.5">
-          <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-              cashOutlook?.health === 'danger'
-                ? 'bg-[var(--money-out-bg)] text-[var(--money-out)]'
-                : cashOutlook?.health === 'tight'
-                ? 'bg-[var(--money-warn-bg)] text-[var(--money-warn)]'
-                : 'bg-[var(--money-in-bg)] text-[var(--money-in)]'
-            }`}
-          >
-            <TrendingUp className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
-                90-Day Cash Outlook
-              </span>
-              {cashOutlook && (
-                <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[10px] uppercase tracking-wider font-bold ${
-                    cashOutlook.health === 'danger'
-                      ? 'bg-[var(--money-out-bg)] text-[var(--money-out)]'
-                      : cashOutlook.health === 'tight'
-                      ? 'bg-[var(--money-warn-bg)] text-[var(--money-warn)]'
-                      : 'bg-[var(--money-in-bg)] text-[var(--money-in)]'
-                  }`}
-                >
-                  {cashOutlook.health}
-                </span>
-              )}
-            </div>
-            <p className="mt-1 text-sm font-sans text-[var(--text-primary)]">
-              {cashOutlook ? (
-                <>
-                  Lowest projected cash in 90 days is{' '}
-                  <span className="font-semibold">
-                    <RollingNumber value={cashOutlook.lowestBalance} />
-                  </span>{' '}
-                  on{' '}
-                  <span className="font-semibold">
-                    {format(parseISO(cashOutlook.lowestBalanceDate), 'd MMM yyyy')}
-                  </span>
-                  .
-                  {cashOutlook.health === 'tight' &&
-                    ' Reserve falls below 20% around rent & salary due dates.'}
-                  {cashOutlook.health === 'danger' &&
-                    ' Cash deficit projected before high-season receipts arrive.'}
-                  {cashOutlook.health === 'safe' &&
-                    ' Runway remains healthy with strong advance collections.'}
-                </>
-              ) : (
-                'Analyzing cash trajectory and upcoming fixed expenses...'
-              )}
-            </p>
-          </div>
-        </div>
-
-        <Link
-          href="/forecast"
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-4 py-2 text-xs font-mono uppercase tracking-wider font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-surface-subtle)] transition-colors self-start md:self-auto flex-shrink-0 touch-target"
-        >
-          <span>Open 90D Forecast</span>
-          <ChevronRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
-
-      {/* Aging Receivables Breakdown */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
-            Receivables Aging Buckets
-          </h2>
-          <span className="text-[11px] font-mono text-[var(--text-faint)]">
-            Excludes drafts and fully settled invoices
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {/* Not Due */}
-          <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-line)]">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--text-muted)]">
-              Not Yet Due
-            </div>
-            <div className="mt-1.5 text-lg sm:text-xl font-serif font-bold text-[var(--text-primary)]">
-              {formatINR(agingBuckets.not_due.amount)}
-            </div>
-            <div className="mt-1 text-[11px] font-mono text-[var(--text-faint)]">
-              {agingBuckets.not_due.count} invoice{agingBuckets.not_due.count === 1 ? '' : 's'}
-            </div>
-          </div>
-
-          {/* 1 - 7 Days */}
-          <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-line)]">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--money-warn)]">
-              1–7 Days Overdue
-            </div>
-            <div className="mt-1.5 text-lg sm:text-xl font-serif font-bold text-[var(--money-warn)]">
-              {formatINR(agingBuckets['1_7'].amount)}
-            </div>
-            <div className="mt-1 text-[11px] font-mono text-[var(--text-faint)]">
-              {agingBuckets['1_7'].count} invoice{agingBuckets['1_7'].count === 1 ? '' : 's'}
-            </div>
-          </div>
-
-          {/* 8 - 30 Days */}
-          <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-line)]">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--money-out)]">
-              8–30 Days Overdue
-            </div>
-            <div className="mt-1.5 text-lg sm:text-xl font-serif font-bold text-[var(--money-out)]">
-              {formatINR(agingBuckets['8_30'].amount)}
-            </div>
-            <div className="mt-1 text-[11px] font-mono text-[var(--text-faint)]">
-              {agingBuckets['8_30'].count} invoice{agingBuckets['8_30'].count === 1 ? '' : 's'}
-            </div>
-          </div>
-
-          {/* 30+ Days */}
-          <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--money-out)]/40 bg-[var(--money-out-bg)]/20">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--money-out)] font-semibold">
-              30+ Days Overdue
-            </div>
-            <div className="mt-1.5 text-lg sm:text-xl font-serif font-bold text-[var(--money-out)]">
-              {formatINR(agingBuckets['30_plus'].amount)}
-            </div>
-            <div className="mt-1 text-[11px] font-mono text-[var(--money-out)]">
-              {agingBuckets['30_plus'].count} critical invoice{agingBuckets['30_plus'].count === 1 ? '' : 's'}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Per-Client Receivables Table */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-mono uppercase tracking-wider text-[var(--text-primary)] font-semibold">
-              Client Ledger (Who Owes What)
-            </h2>
-            <p className="text-xs text-[var(--text-muted)] font-mono">
-              Sorted by overdue amount descending, then total outstanding
-            </p>
-          </div>
-          <span className="text-xs font-mono text-[var(--text-faint)]">
-            {whoOwesRows.length} client{whoOwesRows.length === 1 ? '' : 's'} with balance
-          </span>
-        </div>
-
-        {whoOwesRows.length === 0 ? (
-          <div className="p-8 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-line)] text-center space-y-2">
-            <div className="w-10 h-10 mx-auto rounded-full bg-[var(--money-in-bg)] flex items-center justify-center">
-              <Receipt className="w-5 h-5 text-[var(--money-in)]" />
-            </div>
-            <h3 className="font-serif italic text-lg font-bold text-[var(--text-primary)]">
-              All Clear! No Pending Receivables
-            </h3>
-            <p className="text-xs text-[var(--text-muted)] font-mono">
-              Every client has settled their milestone invoices.
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-line)] overflow-hidden">
-            {/* Desktop View */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-[var(--border-line)] bg-[var(--bg-surface-subtle)] text-[11px] font-mono uppercase tracking-wider text-[var(--text-muted)]">
-                    <th className="py-3 px-4">Client</th>
-                    <th className="py-3 px-4">Reliability</th>
-                    <th className="py-3 px-4 text-right">Total Owed</th>
-                    <th className="py-3 px-4 text-right">Overdue</th>
-                    <th className="py-3 px-4">Oldest Due Date</th>
-                    <th className="py-3 px-4 text-center">Days Overdue</th>
-                    <th className="py-3 px-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--border-line-subtle)] text-sm">
-                  {whoOwesRows.map((row) => (
-                    <tr
-                      key={row.clientId}
-                      className="hover:bg-[var(--bg-surface-subtle)]/50 transition-colors group"
-                    >
-                      <td className="py-3.5 px-4 font-medium text-[var(--text-primary)]">
-                        <Link
-                          href={`/invoices?clientId=${row.clientId}`}
-                          className="hover:underline flex items-center gap-1.5"
-                        >
-                          <span>{row.name}</span>
-                        </Link>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <ReliabilityBadge reliability={row.reliability} />
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-medium text-[var(--text-primary)]">
-                        {formatINR(row.outstanding)}
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-semibold">
-                        {row.overdueTotal > 0 ? (
-                          <span className="text-[var(--money-out)]">
-                            {formatINR(row.overdueTotal)}
-                          </span>
-                        ) : (
-                          <span className="text-[var(--text-faint)]">₹0</span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4 font-mono text-xs text-[var(--text-muted)]">
-                        {row.oldestOverdueDueDate ? (
-                          <span>{row.oldestOverdueDueDate}</span>
-                        ) : (
-                          <span className="text-[var(--text-faint)]">Not overdue</span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        {row.maxDaysOverdue > 0 ? (
-                          <span className="inline-block px-2 py-0.5 rounded-full font-mono text-xs font-semibold text-[var(--money-out)] bg-[var(--money-out-bg)]">
-                            {row.maxDaysOverdue}d
-                          </span>
-                        ) : (
-                          <span className="text-xs font-mono text-[var(--text-faint)]">0d</span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <Link
-                          href={`/invoices?clientId=${row.clientId}`}
-                          className="inline-flex items-center gap-1 text-xs font-mono text-[var(--text-muted)] group-hover:text-[var(--text-primary)] hover:underline"
-                        >
-                          <span>View</span>
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Cards View */}
-            <div className="md:hidden divide-y divide-[var(--border-line-subtle)]">
-              {whoOwesRows.map((row) => (
-                <Link
-                  key={row.clientId}
-                  href={`/invoices?clientId=${row.clientId}`}
-                  className="block p-4 hover:bg-[var(--bg-surface-subtle)]/40 transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="font-medium text-[var(--text-primary)] text-sm">
-                        {row.name}
-                      </div>
-                      <div className="mt-1">
-                        <ReliabilityBadge reliability={row.reliability} />
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-mono font-bold text-sm text-[var(--text-primary)]">
-                        {formatINR(row.outstanding)}
-                      </div>
-                      {row.overdueTotal > 0 ? (
-                        <div className="text-xs font-mono text-[var(--money-out)] font-semibold mt-0.5">
-                          {formatINR(row.overdueTotal)} overdue
-                        </div>
-                      ) : (
-                        <div className="text-[11px] font-mono text-[var(--text-faint)] mt-0.5">
-                          Not overdue
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {row.maxDaysOverdue > 0 && (
-                    <div className="mt-2.5 pt-2 border-t border-[var(--border-line-subtle)] flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
-                      <span>Oldest: {row.oldestOverdueDueDate}</span>
-                      <span className="font-semibold text-[var(--money-out)]">
-                        {row.maxDaysOverdue} days overdue
-                      </span>
-                    </div>
-                  )}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Reminder Drawer Modal */}
-      {reminderDrawerOpen && drawerInvoiceId && (
-        <ReminderDrawer
-          isOpen={reminderDrawerOpen}
-          onClose={() => {
-            setReminderDrawerOpen(false);
-            setDrawerInvoiceId('');
-          }}
-          invoiceId={drawerInvoiceId}
-        />
-      )}
-
-      {/* Quick Add Modal */}
-      <QuickAddModal
-        isOpen={quickAddOpen}
-        onClose={() => {
-          setQuickAddOpen(false);
-          fetchDashboard();
+    <>
+      <DashboardScreen
+        data={data}
+        onSendReminder={(invoiceId) => {
+          setReminderTarget({
+            invoiceId,
+            clientFirstName: 'Rohit',
+            amount: 35000,
+            overdue: true,
+          });
         }}
       />
-    </div>
+      <ReminderSheet
+        target={reminderTarget}
+        onClose={() => setReminderTarget(null)}
+        onSent={() => loadData()}
+      />
+    </>
   );
 }

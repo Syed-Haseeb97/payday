@@ -2,7 +2,7 @@
 
 import React from 'react';
 import NextLink from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 export interface LinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   to?: string;

@@ -1,5 +1,31 @@
 @import "tailwindcss";
 
+html {
+  scroll-padding-top: 5rem;
+  scroll-padding-bottom: 6rem;
+}
+
+@media (min-width: 1024px) {
+  html {
+    scroll-padding-top: 3rem;
+    scroll-padding-left: 8rem;
+    scroll-padding-bottom: 3rem;
+  }
+}
+
+button, input, textarea, select, [role="button"], a {
+  scroll-margin-top: 5rem;
+  scroll-margin-bottom: 6rem;
+}
+
+@media (min-width: 1024px) {
+  button, input, textarea, select, [role="button"], a {
+    scroll-margin-top: 3rem;
+    scroll-margin-left: 8rem;
+    scroll-margin-bottom: 3rem;
+  }
+}
+
 :root,
 [data-theme='dark'],
 .dark {
@@ -79,10 +105,10 @@
   --on-in: #ffffff;
   --out: #1e3a8a;
   --on-out: #ffffff;
-  --warn: #2563eb;
+  --warn: #1d4ed8;
   --on-warn: #ffffff;
 
-  --ring: #2563eb;
+  --ring: #1d4ed8;
 
   --shadow-card: 0 1px 2px rgb(29 78 216 / 0.05), 0 10px 30px -14px rgb(29 78 216 / 0.18);
   --shadow-pop: 0 30px 80px -20px rgb(11 31 68 / 0.35);
@@ -102,8 +128,8 @@
   --money-in-bg: rgba(3, 105, 161, 0.12);
   --money-out: #b53a26;
   --money-out-bg: rgba(181, 58, 38, 0.12);
-  --money-warn: #2563eb;
-  --money-warn-bg: rgba(37, 99, 235, 0.12);
+  --money-warn: #1d4ed8;
+  --money-warn-bg: rgba(29, 78, 216, 0.12);
   --card-bg: var(--surface);
   --card-border: var(--border);
   --card-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
