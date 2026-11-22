@@ -2,7 +2,7 @@
 
 import { CircleCheck, LifeBuoy, RotateCcw, Send, Sparkles, X } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button, WhatsAppIcon } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Money } from '@/components/ui/Money';
 import { PageHeader } from '@/components/ui/Misc';
@@ -71,7 +71,7 @@ export function ForecastScreen({ forecast: f, suggestions, applying, onAsk, onAp
             <div className="grid grid-cols-3 gap-3 sm:gap-6">
               <div>
                 <p className="text-xs font-medium text-ink-3 sm:text-sm">Lowest Balance</p>
-                <Money value={low.balance} roll className={cn('mt-0.5 block text-xl font-semibold sm:text-3xl', low.balance < 0 ? 'text-out' : low.balance < f.safe_buffer ? 'text-warn' : 'text-ink')} />
+                <Money value={low.balance} roll className={cn('mt-0.5 block text-xl font-semibold sm:text-3xl', low.balance < 0 ? 'text-out' : low.balance < f.safe_buffer ? 'text-warn' : 'text-in')} />
                 <p className="text-xs text-ink-2 sm:text-sm">on {formatDate(low.date)}</p>
               </div>
               <div>
@@ -109,7 +109,7 @@ export function ForecastScreen({ forecast: f, suggestions, applying, onAsk, onAp
                 <div className="min-w-0">
                   <p className="text-xs font-semibold tracking-wider text-in uppercase">Recommendation · Recovery Plan</p>
                   <h2 id="recovery-title" className="mt-1 text-lg leading-snug font-semibold">
-                    {`Collect ${formatINR(f.recovery.amount)} from ${f.recovery.client_name} and your lowest balance rises from ${formatINR(f.recovery.from_low)} to ${formatINR(f.recovery.to_low)}`}
+                    Collect <span className="text-in">{formatINR(f.recovery.amount)}</span> from {f.recovery.client_name} and your lowest balance rises from <span className={f.recovery.from_low < 0 ? 'text-out font-bold' : ''}>{formatINR(f.recovery.from_low)}</span> to <span className="text-in font-bold">{formatINR(f.recovery.to_low)}</span>
                   </h2>
                   <p className="mt-1.5 text-sm text-ink-2">
                     {f.recovery.to_low >= f.safe_buffer ? `That one payment carries you past ${formatDate(f.recovery.low_date)} and keeps you above your safe buffer.` : `It's the single biggest lever before ${formatDate(f.recovery.low_date)}.`}
@@ -117,7 +117,7 @@ export function ForecastScreen({ forecast: f, suggestions, applying, onAsk, onAp
                 </div>
               </div>
               <div className="relative mt-4 grid grid-cols-2 gap-3">
-                <Button icon={Send} onClick={() => onSendReminder(f.recovery!)}>
+                <Button variant="whatsapp" icon={WhatsAppIcon} onClick={() => onSendReminder(f.recovery!)}>
                   Send reminder
                 </Button>
                 <Button variant="secondary" icon={CircleCheck} onClick={() => onRecordPayment(f.recovery!)}>

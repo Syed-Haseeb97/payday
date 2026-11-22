@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowDownLeft, ArrowRight, ArrowUpRight, BellRing, ChartSpline, HandCoins, Plus, Send, TriangleAlert } from 'lucide-react';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { Button, ButtonLink, WhatsAppIcon } from '@/components/ui/Button';
 import { Card, SectionTitle } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { Money } from '@/components/ui/Money';
@@ -71,7 +71,12 @@ export function DashboardScreen({ data, onSendReminder }: Props) {
             </div>
           </div>
           <div className="relative mt-4 flex gap-3">
-            <Button icon={Send} full onClick={() => alert.invoice_id && onSendReminder(alert.invoice_id)}>
+            <Button
+              variant={alert.action_label === 'Send reminder' ? 'whatsapp' : 'primary'}
+              icon={alert.action_label === 'Send reminder' ? WhatsAppIcon : Send}
+              full
+              onClick={() => alert.invoice_id && onSendReminder(alert.invoice_id)}
+            >
               {alert.action_label}
             </Button>
             <ButtonLink to={alert.action_url} variant="secondary" className="shrink-0">
@@ -92,7 +97,7 @@ export function DashboardScreen({ data, onSendReminder }: Props) {
               <p className="mt-2 text-ink-2">
                 Lowest point <span className="font-semibold text-ink">{formatDate(low.date)}</span>
               </p>
-              <Money value={low.balance} roll className={cn('mt-0.5 block text-[2.5rem] leading-none font-semibold sm:text-5xl', low.balance < 0 ? 'text-out' : 'text-ink')} />
+              <Money value={low.balance} roll className={cn('mt-0.5 block text-[2.5rem] leading-none font-semibold sm:text-5xl', low.balance < 0 ? 'text-out' : low.balance < f.safe_buffer ? 'text-warn' : 'text-in')} />
             </div>
             <ButtonLink to="/forecast" variant="quiet" size="sm" icon={ChartSpline} className="-mr-2 shrink-0">
               <span className="max-sm:sr-only">Open forecast</span>
@@ -136,7 +141,7 @@ export function DashboardScreen({ data, onSendReminder }: Props) {
                       {days === 0 ? 'Today' : `${formatDow(item.date)}, ${formatDate(item.date)}`} · {item.direction === 'in' ? 'Expected in' : item.direction === 'out' ? 'Going out' : 'To review'}
                     </span>
                   </span>
-                  <span className={cn('num shrink-0 font-semibold', item.direction === 'in' ? 'text-in' : item.direction === 'out' ? 'text-ink' : 'text-warn')}>
+                  <span className={cn('num shrink-0 font-semibold', item.direction === 'in' ? 'text-in' : item.direction === 'out' ? 'text-out' : 'text-warn')}>
                     {item.direction === 'out' ? '-' : item.direction === 'in' ? '+' : ''}
                     {formatINR(item.amount)}
                   </span>

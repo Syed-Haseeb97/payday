@@ -74,6 +74,12 @@ export default function DashboardPage() {
         const claimInv = pendingInvoices[0];
         const claimObj = claimInv?.payment_claims?.find((c: any) => c.status === 'pending');
 
+        const mehtaInv = (invoicesJson?.invoices || []).find(
+          (inv: any) =>
+            (inv.client?.name?.includes('Mehta') || inv.client_name?.includes('Mehta') || inv.invoice_number === 'INV-0047') &&
+            (inv.amount - inv.paid_amount === 35000 || inv.status === 'overdue')
+        ) || (invoicesJson?.invoices || []).find((inv: any) => inv.status === 'overdue') || (invoicesJson?.invoices || [])[0];
+
         let priorityAlert: Alert = {
           id: 'alert_top',
           type: 'overdue',
@@ -82,7 +88,7 @@ export default function DashboardPage() {
           action_label: 'Send reminder',
           action_url: '/bad-day',
           severity: 'critical',
-          invoice_id: claimInv?.id || 'inv_mehta_mid',
+          invoice_id: mehtaInv?.id || 'INV-0047',
         };
 
         if (hasClaim && claimObj) {

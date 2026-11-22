@@ -1,8 +1,8 @@
 'use client';
 
-import { Check, Copy, MessageCircle } from 'lucide-react';
+import { Check, Copy } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Button, buttonClass } from '@/components/ui/Button';
+import { Button, WhatsAppIcon, buttonClass } from '@/components/ui/Button';
 import { Segmented, TextArea } from '@/components/ui/Field';
 import { Sheet } from '@/components/ui/Sheet';
 import { Skeleton } from '@/components/ui/Misc';
@@ -32,8 +32,8 @@ export function ReminderSheet({ target, onClose, onSent }: ReminderSheetProps) {
       title={target ? `WhatsApp Follow-Up Draft · Remind ${target.clientFirstName}` : 'WhatsApp Follow-Up Draft · Reminder'}
       description={target ? `${formatINR(target.amount)} · WhatsApp Follow-Up Draft with a UPI pay link` : undefined}
       icon={
-        <span className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-2xl bg-in/15 text-in">
-          <MessageCircle className="size-5" aria-hidden />
+        <span className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#25D366]/20 text-[#128C7E] dark:text-[#25D366]">
+          <WhatsAppIcon className="size-5 shrink-0" ariaHidden />
         </span>
       }
     >
@@ -178,9 +178,9 @@ function ReminderBody({ target, onSent, onClose }: { target: ReminderTarget; onS
           target="_blank"
           rel="noopener noreferrer"
           onClick={finish}
-          className={cn(buttonClass('primary', 'md', true), !draft && 'pointer-events-none opacity-50')}
+          className={cn(buttonClass('whatsapp', 'md', true), !draft && 'pointer-events-none opacity-50')}
         >
-          <MessageCircle className="size-4 shrink-0" aria-hidden />
+          <WhatsAppIcon className="size-5 shrink-0" ariaHidden />
           <span>Send via WhatsApp</span>
         </a>
       </div>

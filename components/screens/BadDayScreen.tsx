@@ -1,7 +1,7 @@
 'use client';
 
 import { Check, Flame, HandCoins, Send } from 'lucide-react';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { Button, ButtonLink, WhatsAppIcon } from '@/components/ui/Button';
 import { Chip, ClaimChip, ReliabilityChip, StatusChip } from '@/components/ui/Chip';
 import { Money } from '@/components/ui/Money';
 import { cn } from '@/lib/cn';
@@ -33,7 +33,7 @@ export function BadDayScreen({ data, onRemind }: Props) {
         </div>
         <div className="card p-4">
           <p className="text-sm font-medium text-ink-2">Due in 14 days</p>
-          <Money value={data.due_soon_total} roll className="mt-1 block text-2xl font-semibold" />
+          <Money value={data.due_soon_total} roll className="mt-1 block text-2xl font-semibold text-warn" />
         </div>
       </div>
 
@@ -86,7 +86,13 @@ function TriageRow({ item, rank, onRemind }: { item: BadDayItem; rank: number; o
                 Review claim
               </ButtonLink>
             ) : (
-              <Button icon={Send} variant={top ? 'danger' : item.reminded_on ? 'secondary' : 'primary'} full className="sm:w-auto" onClick={() => onRemind(item)}>
+              <Button
+                icon={item.reminded_on ? Send : WhatsAppIcon}
+                variant={item.reminded_on ? 'secondary' : 'whatsapp'}
+                full
+                className="sm:w-auto"
+                onClick={() => onRemind(item)}
+              >
                 {item.reminded_on ? 'Remind again' : (
                   <>
                     <span className="sr-only">Draft WhatsApp Reminder · </span>

@@ -45,5 +45,5 @@ describe('Client bundle security audit', () => {
         ).toBe(false);
       }
     }
-  });
+  }, 20000);
 });

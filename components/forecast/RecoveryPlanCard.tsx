@@ -12,6 +12,7 @@ import {
   ArrowRight,
   TrendingUp,
 } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/ui/Button';
 import { RecoveryPlan, RecoveryAction } from '@/lib/recovery';
 import { formatINR } from '@/lib/money';
 
@@ -140,9 +141,9 @@ export function RecoveryPlanCard({
               <button
                 type="button"
                 onClick={() => onOpenReminder(act)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--border-line)] bg-surface hover:bg-[var(--bg-surface-subtle)] text-xs font-mono text-[var(--text-primary)] transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#1EBE5D] text-[#072e18] text-xs font-mono font-bold transition-colors shadow-sm"
               >
-                <Send className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                <WhatsAppIcon className="w-3.5 h-3.5 text-[#072e18]" />
                 <span>Send reminder</span>
               </button>
 

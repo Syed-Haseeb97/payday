@@ -4,7 +4,7 @@ import { ArrowLeft, CircleCheck, Copy, Link2, Receipt, Send } from 'lucide-react
 import { useState } from 'react';
 import { ClaimReviewCard } from '@/components/invoices/ClaimReviewCard';
 import { MilestoneTimeline } from '@/components/invoices/MilestoneTimeline';
-import { Button } from '@/components/ui/Button';
+import { Button, WhatsAppIcon } from '@/components/ui/Button';
 import { Card, SectionTitle } from '@/components/ui/Card';
 import { ClaimChip, ReliabilityChip, StatusChip } from '@/components/ui/Chip';
 import { Money } from '@/components/ui/Money';
@@ -104,7 +104,7 @@ export function InvoiceDetailScreen({ detail, onChanged, onSendReminder, onRecor
                   <Button variant="secondary" icon={Copy} onClick={copy} state={copied === 'copied' ? 'done' : 'idle'} doneLabel="Link Copied!">
                     Copy Pay Link
                   </Button>
-                  <Button icon={Send} onClick={onSendReminder}>
+                  <Button variant="whatsapp" icon={WhatsAppIcon} onClick={onSendReminder}>
                     Send reminder
                   </Button>
                   <Button variant="secondary" icon={CircleCheck} onClick={onRecordPayment}>
