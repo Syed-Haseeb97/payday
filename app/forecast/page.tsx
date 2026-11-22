@@ -54,6 +54,7 @@ import {
   WhatIfScenario,
   ForecastComparison,
 } from '@/lib/whatif';
+import { AskPayday } from '@/components/forecast/AskPayday';
 import { Client, Booking, Invoice, RecurringExpense } from '@/lib/db/types';
 
 interface RawForecastInputs {
@@ -144,6 +145,10 @@ export default function ForecastPage() {
       }
     }
   }, [rawInputs]);
+
+  const handleApplyAskScenarios = (newScenarios: WhatIfScenario[]) => {
+    setScenarios((prev) => [...prev, ...newScenarios]);
+  };
 
   // ---------------------------------------------------------------------------
   // Real-Time Pure Forecast Computations (Zero Network Delay)
@@ -1009,6 +1014,9 @@ export default function ForecastPage() {
             mobileDrawerOpen ? 'block' : 'hidden lg:block'
           }`}
         >
+          {/* Ask Payday Natural Language What-If Input */}
+          <AskPayday onApplyScenarios={handleApplyAskScenarios} />
+
           {/* What-If Panel Card */}
           <div className="p-5 sm:p-6 rounded-2xl app-card bg-surface border border-line space-y-6 sticky top-6">
             <div className="flex items-center justify-between border-b border-[var(--border-line)] pb-4">
