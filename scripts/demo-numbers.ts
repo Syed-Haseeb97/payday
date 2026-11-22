@@ -6,6 +6,7 @@ import { rankBadDayActions } from '../lib/ranking';
 import { applyScenarios } from '../lib/whatif';
 import { parseQuickAddWithRules } from '../lib/quickadd/rules';
 import { formatINR } from '../lib/money';
+import { computeRecoveryPlan } from '../lib/recovery';
 
 export function getDemoNumbers() {
   const today = getIndiaTodayStr();
@@ -63,6 +64,9 @@ export function getDemoNumbers() {
   const mehtaLowest = mehtaLateForecast.summary.lowestBalance;
   const mehtaLowestDate = mehtaLateForecast.summary.lowestBalanceDate;
 
+  // Recovery plan for Mehta late scenario
+  const recoveryPlan = computeRecoveryPlan(whatIfInput);
+
   // Quick Add examples
   const example1 = parseQuickAddWithRules('Sharma wedding 14 Dec, ₹80k, ₹25k advance paid', today);
   const example2 = parseQuickAddWithRules('Priya & Karan engagement 2 Jan 45000 advance 10000 via UPI', today);
@@ -86,6 +90,18 @@ export function getDemoNumbers() {
       mehtaLowest,
       mehtaLowestDate,
       difference: mehtaLowest - baselineLowest,
+    },
+    recoveryPlan: {
+      needed: recoveryPlan.needed,
+      initialLowest: recoveryPlan.initialLowestBalance,
+      initialLowestDate: recoveryPlan.initialLowestDate,
+      safeBuffer: recoveryPlan.safeBuffer,
+      topActionClient: recoveryPlan.actions[0]?.client.name,
+      topActionAmount: recoveryPlan.actions[0]?.amount,
+      resultingLowest: recoveryPlan.resultingLowestBalance,
+      resultingLowestDate: recoveryPlan.resultingLowestDate,
+      fullyResolved: recoveryPlan.fullyResolved,
+      summary: recoveryPlan.summarySentence,
     },
     quickAdd: [
       { text: 'Sharma wedding 14 Dec, ₹80k, ₹25k advance paid', total: example1.parsed.totalAmount, advance: example1.parsed.advanceAmount },
@@ -112,6 +128,15 @@ if (require.main === module) {
   console.log(`Baseline Lowest Balance: ${formatINR(numbers.forecast.baselineLowest)} (${numbers.forecast.baselineLowestDate})`);
   console.log(`After Mehta Late (20d): ${formatINR(numbers.forecast.mehtaLowest)} (${numbers.forecast.mehtaLowestDate})`);
   console.log(`Impact / Dip: ${formatINR(numbers.forecast.difference)}\n`);
+
+  console.log('--- Recovery Plan (when Mehta pays 20d late) ---');
+  console.log(`Plan Needed: ${numbers.recoveryPlan.needed}`);
+  console.log(`Initial Lowest: ${formatINR(numbers.recoveryPlan.initialLowest)} (${numbers.recoveryPlan.initialLowestDate})`);
+  console.log(`Safe Buffer (20%): ${formatINR(numbers.recoveryPlan.safeBuffer)}`);
+  console.log(`Top Recovery Action: Collect ${formatINR(numbers.recoveryPlan.topActionAmount || 0)} from ${numbers.recoveryPlan.topActionClient}`);
+  console.log(`Resulting Lowest Balance: ${formatINR(numbers.recoveryPlan.resultingLowest)} (${numbers.recoveryPlan.resultingLowestDate})`);
+  console.log(`Fully Resolved: ${numbers.recoveryPlan.fullyResolved}`);
+  console.log(`Summary: ${numbers.recoveryPlan.summary}\n`);
 
   console.log('--- Quick Add Examples ---');
   for (const ex of numbers.quickAdd) {

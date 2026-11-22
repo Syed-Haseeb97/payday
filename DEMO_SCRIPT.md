@@ -6,7 +6,7 @@
 
 ---
 
-## Screen 0: Introduction & The Persona (0:00 – 0:20)
+## Screen 0: Introduction & The Persona (0:00 – 0:15)
 
 **URL**: `<your-deployment-url>/dashboard`
 
@@ -22,11 +22,11 @@
 - **Opening Cash**: `₹1,40,000`
 - **Total Outstanding**: `₹11,24,000`
 - **Total Overdue**: `₹35,000`
-- **Today's Briefing**: Identifies overdue items and the 90-day cash outlook lowest point (`₹26,500` on 13 Dec 2026).
+- **Today's Briefing**: Identifies overdue items and the 90-day cash outlook lowest point (`₹26,500` on 14 Dec 2026).
 
 ---
 
-## Screen 1: Bad Day Triage & WhatsApp Reminder (0:20 – 0:50)
+## Screen 1: Bad Day Triage & WhatsApp Reminder with Pay Link (0:15 – 0:40)
 
 **URL**: Click **Bad Day Triage** in the top navigation (`/bad-day`).
 
@@ -37,15 +37,15 @@
 4. In the Slide-Over Drawer:
    - Toggle Tone between **Friendly**, **Firm**, and **Final**.
    - Toggle Language between **English** and **Hinglish**.
-5. Observe the prefilled message containing the exact rupee balance (`₹95,000`) and the `wa.me` deep link.
-6. Click **Mark as Sent**.
+   - Observe the prefilled message containing the exact rupee balance (`₹95,000`), the `wa.me` deep link, and the public **Pay Link** (`https://.../pay/<token>`).
+5. Click **Mark as Sent**.
 
 ### Talking Points:
 > "When receivables need attention, Arjun enters **Bad Day Mode**. Our deterministic ranking engine scores and sorts candidates by financial impact on the 90-day lowest balance, days overdue, and client unreliability.
 >
 > Rohit Mehta is ranked as the highest-priority action: an upcoming ₹95,000 milestone due in 10 days with a historical 13-day delay. Reaching out with a heads-up prevents delays and protects Arjun's upcoming bills.
 >
-> Arjun clicks 'Draft WhatsApp'. If an LLM is configured, it drafts a polite, concise reminder message under 70 words without aggressive language, keeping the exact rupee amount accurate. If no LLM is configured, our deterministic template fallback produces the message immediately. One click allows copying the text or opening a pre-populated WhatsApp link."
+> Arjun clicks 'Draft WhatsApp'. If an LLM is configured, it drafts a polite, concise reminder message under 70 words without aggressive language, keeping the exact rupee amount accurate and appending a secure, direct Pay Link. If no LLM is configured, our deterministic template fallback produces the message immediately."
 
 ### Key Numbers on Screen:
 - Top Ranked Item: **Rohit Mehta (Mehta Weddings)**
@@ -54,29 +54,69 @@
 
 ---
 
-## Screen 2: 90-Day Cash Runway & What-If Stress Testing (0:50 – 1:25)
+## Screen 2: 90-Day Runway, Ask Payday & The Recovery Plan (0:40 – 1:15)
 
 **URL**: Click **Forecast (90d)** in the navigation (`/forecast`).
 
 ### What to Click:
-1. Point to the **Daily Cash Trajectory** chart and the **Lowest Balance** card (`₹26,500` on 13 Dec 2026).
-2. Under "What-If Scenarios", click the one-click preset: **"Slowest client pays 15 days late"** (or apply the Mehta delayed scenario).
-3. Watch the trajectory recalculate into a projected deficit (`-₹9,500` on 14 Dec 2026, a dip of `₹36,000`).
-4. Click **Reset** to restore baseline.
+1. Point to the **Daily Cash Trajectory** chart and the **Lowest Balance** card (`₹26,500` on 14 Dec 2026).
+2. In the **Ask Payday** natural-language simulator input, type or click:  
+   `What if Mehta pays 20 days late?`
+3. Click **Ask**:
+   - The preview card extracts: `Delay Rohit Mehta by 20 days`.
+4. Click **Apply Scenario**:
+   - Watch the trajectory recalculate into a projected deficit: **-₹9,500** on 15 Dec 2026 (a dip of `₹36,000`).
+5. Notice the **Recovery Plan** card automatically appearing above the chart:
+   - Deficit detected below safe buffer (`₹28,000`).
+   - Top action: **Collect ₹95,000 from Rohit Mehta (Mehta Weddings)**.
+   - Resulting lowest balance rises to **₹85,500** on 15 Dec 2026 (Fully Resolved: `Yes`).
+6. Click **Reset** to restore baseline.
 
 ### Talking Points:
-> "Next, Arjun opens the 90-day forecast. The forecast engine calculates daily inflows and recurring outflows in Indian Standard Time, factoring in each client's historical payment delay alongside fixed recurring bills like studio rent.
+> "Next, Arjun opens the 90-day forecast. In baseline, his lowest projected balance is ₹26,500. But Arjun wants to stress-test his runway in plain English.
 >
-> In the baseline projection, his lowest cash balance is ₹26,500. But what happens if his slowest client delays payment? With one tap on the stress-test preset, the forecast recalculates: the balance dips below zero to -₹9,500 when rent is due. Arjun can see the exact deficit date weeks in advance and take action early. Clicking 'Reset' restores the baseline trajectory."
+> He types into Ask Payday: *'What if Mehta pays 20 days late?'*. The question parses into a scenario and recalculates the curve: on December 15th, when studio rent is deducted, his cash drops below zero to -₹9,500.
+>
+> Because his cash dips below the 20% safe buffer of ₹28,000, Payday immediately renders a deterministic **Recovery Plan**. It doesn't give vague advice; it computes the exact math: collect the ₹95,000 milestone from Rohit Mehta, and his lowest balance climbs to positive ₹85,500, completely averting the crisis."
 
 ### Key Numbers on Screen:
-- Baseline Lowest Balance: `₹26,500` (on 13 Dec 2026)
-- What-If Projected Lowest Balance: `-₹9,500` (on 14 Dec 2026)
+- Baseline Lowest Balance: `₹26,500` (on 14 Dec 2026)
+- What-If Projected Lowest Balance: `-₹9,500` (on 15 Dec 2026)
 - Projected Cash Dip: `-₹36,000`
+- Safe Buffer (20% of opening cash): `₹28,000`
+- Recovery Action: Collect `₹95,000` from Rohit Mehta
+- Resulting Lowest Balance: `₹85,500` (Fully Resolved)
 
 ---
 
-## Screen 3: Zero-Friction Quick Add (1:25 – 1:50)
+## Screen 3: Client Pay Page & Payment Claim Loop (1:15 – 1:35)
+
+**URL**: Open an invoice (e.g. `/invoices/<id>`) and click **Client Pay Page** (or navigate to `/pay/<token>` in a new tab).
+
+### What to Click:
+1. Point to the public, mobile-friendly **Client Pay Page**:
+   - Clean, trustworthy aesthetic showing Studio Name ("Arjun Visuals"), invoice title, amount due (`₹95,000`), due date, and UPI ID.
+   - Click **Copy UPI ID** or tap the instant UPI intent link / scan QR.
+2. In the "Paid via UPI or Bank Transfer?" section, click **I have paid**:
+   - Enter Amount: `₹35,000` (partial payment).
+   - Method: `UPI`.
+   - Transaction Reference / UTR: `UPI987654321012`.
+   - Click **Submit Claim**.
+3. The page displays a confirmation banner: *"Payment claimed. Awaiting studio confirmation."*
+4. Return to the Studio Dashboard (`/dashboard`):
+   - Notice the high-priority alert capsule: *"Payment claimed: ₹35,000 from Rohit Mehta"*.
+5. Click the alert or navigate to the invoice details:
+   - Inspect the **Pending Payment Claim** banner showing UTR and timestamp.
+   - Click **Confirm Payment**: The ₹35,000 receipt is recorded, invoice balance reduces to `₹60,000`, and the claim is cleared.
+
+### Talking Points:
+> "Closing the loop between studio and client is usually messy. With Payday, every invoice generates a cryptographically signed public Pay Page.
+>
+> The client sees only what they need to see—no internal notes, no client history, no markup. They pay via UPI and submit a claim with their UTR number. Back in Arjun's dashboard, an alert informs him immediately. Arjun verifies the receipt in his banking app and clicks 'Confirm Payment'. The balance updates, the forecast recalculates, and client learning adjusts in real time."
+
+---
+
+## Screen 4: Zero-Friction Quick Add (1:35 – 1:50)
 
 **URL**: Click **Quick Add** (`+ Quick Add`) in the header.
 
@@ -104,7 +144,7 @@
 
 ---
 
-## Screen 4: Pricing & Settings Overview (1:50 – 2:00)
+## Screen 5: Pricing & Settings Overview (1:50 – 2:00)
 
 **URL**: Click **Pricing** (`/pricing`) or **Settings** (`/settings`).
 
