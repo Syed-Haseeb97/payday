@@ -53,3 +53,9 @@ This document lists all third-party open-source libraries, versions, licenses, f
 | **Supabase Postgres** | Persistent relational storage & transactional rollback | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | In-memory repository with relative synthetic demo seed data |
 | **OpenAI / Compatible LLM API** | AI reminder drafting & WhatsApp unstructured parse | `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_FALLBACK_MODEL` | Deterministic rule-based template generation and regex parser |
 | **Vercel** | Hosting, Edge CDN, and Serverless deployment | Platform managed | Standard Node.js / Docker container |
+
+## Tools and third-party components used
+
+- **Figma Make**: Frontend design and code generated with Figma Make (`Build_Payday_Finance_App.zip`: Vite + React + Tailwind v4 design system tokens, UI primitives, and screen layouts).
+- **Codebenders / Nexen**: Backend business logic, Next.js App Router integration, database layer, AI pipeline with offline fallbacks, cash runway forecasting engine, automated recovery planning, and comprehensive Vitest & Playwright test suites built in Codebenders/Nexen.
+

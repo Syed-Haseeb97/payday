@@ -284,6 +284,13 @@ npm run demo:numbers
 
 ---
 
+## Tools and third-party components used
+
+- **Figma Make**: Frontend design and code generated with Figma Make (`Build_Payday_Finance_App.zip`: Vite + React + Tailwind v4 design system tokens, UI primitives, and screen layouts).
+- **Codebenders / Nexen**: Backend business logic, Next.js App Router integration, Supabase repository, AI parsing and drafting pipeline with deterministic fallbacks, cash flow forecasting engine, recovery plan algorithm, and automated Vitest/Playwright test suites built in Codebenders/Nexen.
+
+---
+
 ## Known Limitations
 
 1. **Single Studio Tenant**:
