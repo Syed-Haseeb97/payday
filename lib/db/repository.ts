@@ -1060,12 +1060,18 @@ export class SupabaseRepository implements PaydayRepository {
   }
 
   async getInvoiceById(id: string): Promise<Invoice | null> {
-    const { data, error } = await this.client
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    let query = this.client
       .from('invoices')
-      .select('*, client:clients(*), booking:bookings(*), payments(*), payment_claims(*)')
-      .eq('id', id)
-      .maybeSingle();
+      .select('*, client:clients(*), booking:bookings(*), payments(*), payment_claims(*)');
 
+    if (isUuid) {
+      query = query.eq('id', id);
+    } else {
+      query = query.ilike('invoice_number', id);
+    }
+
+    const { data, error } = await query.maybeSingle();
     if (error) throw error;
     if (!data) return null;
 

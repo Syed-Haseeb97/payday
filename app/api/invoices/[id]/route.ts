@@ -8,9 +8,10 @@ export async function GET(
   try {
     const { id } = await params;
     const repo = getRepository();
-    let invoice = await repo.getInvoiceById(id);
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    let invoice = isUuid ? await repo.getInvoiceById(id) : null;
 
-    // Fallback: If not found by direct ID (UUID), search by invoice_number or fuzzy match
+    // Fallback: If not a UUID or not found by ID, search by invoice_number or fuzzy match
     if (!invoice) {
       const allInvoices = await repo.getInvoices();
       const norm = id.trim().toLowerCase();
