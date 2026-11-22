@@ -35,7 +35,8 @@ export async function POST(
     }
 
     // Idempotent handling if already confirmed/rejected
-    if (claim.status === action) {
+    const targetStatus = action === 'confirm' ? 'confirmed' : 'rejected';
+    if (claim.status === targetStatus) {
       return NextResponse.json({
         success: true,
         message: `Claim is already ${action}ed`,

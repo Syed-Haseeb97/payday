@@ -223,7 +223,7 @@ export default function ForecastPage() {
 
   const handleOpenPayment = (action: RecoveryAction) => {
     setPaymentAction(action);
-    setPaymentAmount(action.balance);
+    setPaymentAmount(action.amount);
     setPaymentDate(rawInputs?.today || new Date().toISOString().split('T')[0]);
     setPaymentMethod('UPI');
     setPaymentReference('');
@@ -589,9 +589,9 @@ export default function ForecastPage() {
       {/* Health Banner (Safe / Tight / Danger) */}
       <div>
         {summary.health === 'safe' && (
-          <div className="p-4 sm:p-5 rounded-2xl border border-[#C8C2B5] bg-[#E3EFE8] text-[#1D6B52] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="p-4 sm:p-5 rounded-2xl border border-[var(--border-line)] bg-[var(--money-in-bg)] text-[var(--money-in)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#1D6B52]" />
+              <ShieldCheck className="w-5 h-5 flex-shrink-0 mt-0.5 text-[var(--money-in)]" />
               <div>
                 <div className="font-mono text-xs uppercase tracking-wider font-bold">
                   Status: Healthy Cash Runway
@@ -605,7 +605,7 @@ export default function ForecastPage() {
                 </div>
               </div>
             </div>
-            <div className="text-[11px] font-mono uppercase tracking-wider text-[#1D6B52]/80 self-end sm:self-auto">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--money-in)] opacity-80 self-end sm:self-auto">
               Safe &gt; 20% Reserve
             </div>
           </div>
@@ -1197,7 +1197,7 @@ export default function ForecastPage() {
                     className={`font-mono text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${
                       comparison.healthWorsened
                         ? 'bg-[#F8E9E4] text-[#B53A26]'
-                        : 'bg-[#E3EFE8] text-[#1D6B52]'
+                        : 'bg-[var(--money-in-bg)] text-[var(--money-in)]'
                     }`}
                   >
                     {comparison.healthWorsened ? 'Health Worsened' : 'Stable'}
@@ -1237,7 +1237,7 @@ export default function ForecastPage() {
                         className={`font-bold ${
                           activeResult.summary.runwayDays !== null
                             ? 'text-[#B53A26]'
-                            : 'text-[#1D6B52]'
+                            : 'text-[var(--money-in)]'
                         }`}
                       >
                         {activeResult.summary.runwayDays !== null
@@ -1438,12 +1438,11 @@ export default function ForecastPage() {
           }}
           invoiceId={selectedActionForReminder.invoice.id}
           defaultTone={suggestDefaultTone(
-            selectedActionForReminder.daysOverdue,
+            selectedActionForReminder.isOverdue ? selectedActionForReminder.daysOverdueOrToDue : 0,
             selectedActionForReminder.client.payment_reliability
           )}
           clientName={selectedActionForReminder.client.name}
-          amountFormatted={formatINR(selectedActionForReminder.balance)}
-          onPaymentRecorded={fetchInputs}
+          amountFormatted={formatINR(selectedActionForReminder.amount)}
         />
       )}
 
@@ -1473,14 +1472,14 @@ export default function ForecastPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-[#5F626A]">Already Paid:</span>
-                <span className="font-semibold text-[#1D6B52]">
+                <span className="font-semibold text-[var(--money-in)]">
                   {formatINR(paymentAction.invoice.paid_amount)}
                 </span>
               </div>
               <div className="flex justify-between border-t border-[#C8C2B5] pt-1">
                 <span className="text-[#5F626A]">Remaining Balance:</span>
                 <span className="font-bold text-[#16181D]">
-                  {formatINR(paymentAction.balance)}
+                  {formatINR(paymentAction.amount)}
                 </span>
               </div>
             </div>
@@ -1498,7 +1497,7 @@ export default function ForecastPage() {
               <input
                 type="number"
                 min="1"
-                max={paymentAction.balance}
+                max={paymentAction.amount}
                 step="any"
                 required
                 value={paymentAmount || ''}

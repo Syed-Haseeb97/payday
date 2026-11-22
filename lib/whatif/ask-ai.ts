@@ -34,17 +34,19 @@ Do not include any explanations, markdown code fences, or additional text. If th
 User question: "${question.trim()}"`;
 
   try {
-    const response = await executeCompletionWithFallback({
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.1,
-      maxTokens: 500,
-      fallbackTemplate: () => JSON.stringify({ scenarios: [] }),
-    });
+    const response = await executeCompletionWithFallback(
+      {
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.1,
+        maxTokens: 500,
+      },
+      () => JSON.stringify({ scenarios: [] })
+    );
 
-    if (response.usedFallbackTemplate) {
+    if (response.modelUsed === 'deterministic-template') {
       return {
         scenarios: parseAskWithRules(question, todayStr),
         mode: 'rules',

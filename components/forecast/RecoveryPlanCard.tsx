@@ -53,7 +53,7 @@ export function RecoveryPlanCard({
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider ${
             plan.fullyResolved
-              ? 'bg-[#E3EFE8] text-[#1D6B52] border border-[#1D6B52]/20'
+              ? 'bg-[var(--money-in-bg)] text-[var(--money-in)] border border-[var(--border-line)]'
               : 'bg-[#F6ECD9] text-[#86560D] border border-[#86560D]/20'
           }`}
         >
@@ -80,7 +80,7 @@ export function RecoveryPlanCard({
           <span>→</span>
           <span>
             Projected with Plan:{' '}
-            <strong className="text-[#1D6B52]">
+            <strong className="text-[var(--money-in)]">
               {formatINR(plan.resultingLowestBalance)}
             </strong>
           </span>
@@ -126,7 +126,7 @@ export function RecoveryPlanCard({
               </div>
 
               <div className="text-right">
-                <span className="font-mono text-xs font-bold text-[#1D6B52] block">
+                <span className="font-mono text-xs font-bold text-[var(--money-in)] block">
                   +{formatINR(act.effectOnLowestBalance)}
                 </span>
                 <span className="font-mono text-[10px] text-[var(--text-muted)]">
@@ -174,7 +174,7 @@ export function RecoveryPlanCard({
 
           <p className="text-xs font-sans text-[var(--text-muted)]">
             Moving <strong className="text-[var(--text-primary)]">{plan.deferral.name}</strong> ({formatINR(plan.deferral.amount)}) from {plan.deferral.originalDate} to <strong>{plan.deferral.deferredDate}</strong> improves the lowest balance to{' '}
-            <strong className="text-[#1D6B52]">{formatINR(plan.deferral.resultingLowestBalance)}</strong>.
+            <strong className="text-[var(--money-in)]">{formatINR(plan.deferral.resultingLowestBalance)}</strong>.
           </p>
         </div>
       )}

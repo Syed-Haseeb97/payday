@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { Geist, Geist_Mono } from 'next/font/google';
 import '@/lib/zod';
 import './globals.css';
@@ -46,12 +47,18 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-[var(--bg-canvas)] text-[var(--text-primary)]">
         <AppHeader />
-        <AppNav />
+        <Suspense fallback={<nav aria-label="Main Navigation" className="border-b border-[#C8C2B5] bg-white h-12" />}>
+          <AppNav />
+        </Suspense>
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 md:pb-8">
-          {children}
+          <Suspense fallback={null}>
+            {children}
+          </Suspense>
         </main>
         <AppFooter />
-        <MobileNav />
+        <Suspense fallback={null}>
+          <MobileNav />
+        </Suspense>
       </body>
     </html>
   );

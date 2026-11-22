@@ -30,7 +30,7 @@ const mockClients: Client[] = [
     average_delay_days: 1,
     created_at: '2026-01-01',
   },
-];
+] as unknown as Client[];
 
 const mockBookings: Booking[] = [
   {
@@ -49,7 +49,7 @@ const mockBookings: Booking[] = [
     total_amount: 95000,
     created_at: '2026-01-01',
   },
-];
+] as unknown as Booking[];
 
 const mockInvoices: Invoice[] = [
   {
@@ -63,7 +63,7 @@ const mockInvoices: Invoice[] = [
     sent: true,
     created_at: '2026-01-01',
   },
-];
+] as unknown as Invoice[];
 
 describe('Ask Payday - Deterministic Rules Parser', () => {
   const todayStr = '2026-11-22';

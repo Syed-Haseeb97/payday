@@ -10,6 +10,7 @@ interface AskPaydayProps {
 }
 
 const EXAMPLE_QUESTIONS = [
+  'What if Mehta pays 20 days late?',
   'What if Mehta pays 3 weeks late and I buy a ₹90k lens on 5 Dec?',
   'What if I lose the Sharma winter booking?',
   'Rohit pays his overdue invoice tomorrow',
@@ -107,7 +108,7 @@ export function AskPayday({ onApplyScenarios }: AskPaydayProps) {
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             maxLength={600}
-            placeholder='e.g. "What if Mehta pays 3 weeks late and I buy a ₹90k lens?"'
+            placeholder='e.g. "What if Mehta pays 20 days late?"'
             className="w-full text-xs font-sans rounded-xl border border-[var(--border-line)] bg-surface px-3.5 py-2.5 pr-20 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--border-focus)] transition-all"
             disabled={loading}
           />
@@ -165,7 +166,7 @@ export function AskPayday({ onApplyScenarios }: AskPaydayProps) {
               <span
                 className={`font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${
                   preview.mode === 'ai'
-                    ? 'bg-[#E3EFE8] text-[#1D6B52]'
+                    ? 'bg-[#E3EFE8] text-[#1D6B52] dark:bg-[#1D6B52]/20 dark:text-[#4ADE80]'
                     : 'bg-[#F6ECD9] text-[#86560D]'
                 }`}
               >

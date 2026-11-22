@@ -3,6 +3,34 @@ import { computeRecoveryPlan } from './index';
 import { ForecastInput, SAFE_BUFFER_PERCENTAGE } from '../forecast';
 import { generateSeedData } from '../db/seed-data';
 import { applyScenarios } from '../whatif';
+import { Client, Invoice } from '../db/types';
+
+function mockClient(partial: Partial<Client> & { id: string; name: string }): Client {
+  return {
+    user_id: 'u1',
+    phone: '+91 90000 00001',
+    payment_reliability: 'average',
+    average_delay_days: 0,
+    created_at: '2026-01-01',
+    updated_at: '2026-01-01',
+    ...partial,
+  } as Client;
+}
+
+function mockInvoice(partial: Partial<Invoice> & { id: string; client_id: string; amount: number; due_date: string }): Invoice {
+  return {
+    user_id: 'u1',
+    booking_id: 'b1',
+    milestone_label: 'advance',
+    paid_amount: 0,
+    status: 'sent',
+    sent: true,
+    invoice_number: 'INV-001',
+    created_at: '2026-01-01',
+    updated_at: '2026-01-01',
+    ...partial,
+  } as Invoice;
+}
 
 describe('Recovery Plan Engine (lib/recovery)', () => {
   const today = '2026-11-22';
@@ -14,13 +42,13 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
       horizonDays: 90,
       openingCash,
       clients: [
-        {
+        mockClient({
           id: 'c1',
           name: 'Healthy Client',
           phone: '+91 90000 00001',
           payment_reliability: 'reliable',
           average_delay_days: 0,
-        },
+        }),
       ],
       invoices: [],
       recurringExpenses: [],
@@ -40,23 +68,23 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
       horizonDays: 90,
       openingCash: 50000, // Safe buffer = 10,000
       clients: [
-        {
+        mockClient({
           id: 'c1',
           name: 'Client A',
           phone: '+91 90000 00001',
           payment_reliability: 'average',
           average_delay_days: 0,
-        },
-        {
+        }),
+        mockClient({
           id: 'c2',
           name: 'Client B',
           phone: '+91 90000 00002',
           payment_reliability: 'average',
           average_delay_days: 0,
-        },
+        }),
       ],
       invoices: [
-        {
+        mockInvoice({
           id: 'inv-small',
           booking_id: 'b1',
           client_id: 'c1',
@@ -65,8 +93,8 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
           paid_amount: 0,
           due_date: '2026-11-30', // Due on day 8
           sent: true,
-        },
-        {
+        }),
+        mockInvoice({
           id: 'inv-big',
           booking_id: 'b2',
           client_id: 'c2',
@@ -75,7 +103,7 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
           paid_amount: 0,
           due_date: '2026-11-30', // Due on day 8
           sent: true,
-        },
+        }),
       ],
       recurringExpenses: [],
       oneOffExpenses: [
@@ -97,23 +125,23 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
       horizonDays: 90,
       openingCash: 50000, // Safe buffer = 10,000
       clients: [
-        {
+        mockClient({
           id: 'c1',
           name: 'Client 1',
           phone: '+91 90000 00001',
           payment_reliability: 'average',
           average_delay_days: 0,
-        },
-        {
+        }),
+        mockClient({
           id: 'c2',
           name: 'Client 2',
           phone: '+91 90000 00002',
           payment_reliability: 'average',
           average_delay_days: 0,
-        },
+        }),
       ],
       invoices: [
-        {
+        mockInvoice({
           id: 'inv-1',
           booking_id: 'b1',
           client_id: 'c1',
@@ -122,8 +150,8 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
           paid_amount: 0,
           due_date: '2026-11-30', // Day 8 (after rent)
           sent: true,
-        },
-        {
+        }),
+        mockInvoice({
           id: 'inv-2',
           booking_id: 'b2',
           client_id: 'c2',
@@ -132,7 +160,7 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
           paid_amount: 0,
           due_date: '2026-11-30', // Day 8 (after rent)
           sent: true,
-        },
+        }),
       ],
       recurringExpenses: [],
       oneOffExpenses: [{ name: 'Rent', amount: 55000, date: '2026-11-27' }], // Day 5
@@ -149,24 +177,28 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
   });
 
   it('caps at maximum 5 actions even if deficit remains', () => {
-    const clients = Array.from({ length: 8 }, (_, i) => ({
-      id: `c${i}`,
-      name: `Client ${i}`,
-      phone: `+91 90000 0000${i}`,
-      payment_reliability: 'average' as const,
-      average_delay_days: 0,
-    }));
+    const clients = Array.from({ length: 8 }, (_, i) =>
+      mockClient({
+        id: `c${i}`,
+        name: `Client ${i}`,
+        phone: `+91 90000 0000${i}`,
+        payment_reliability: 'average' as const,
+        average_delay_days: 0,
+      })
+    );
 
-    const invoices = Array.from({ length: 8 }, (_, i) => ({
-      id: `inv-${i}`,
-      booking_id: `b-${i}`,
-      client_id: `c${i}`,
-      milestone_label: 'advance' as const,
-      amount: 5000,
-      paid_amount: 0,
-      due_date: '2026-11-30', // Day 8 (after outflow)
-      sent: true,
-    }));
+    const invoices = Array.from({ length: 8 }, (_, i) =>
+      mockInvoice({
+        id: `inv-${i}`,
+        booking_id: `b-${i}`,
+        client_id: `c${i}`,
+        milestone_label: 'advance' as const,
+        amount: 5000,
+        paid_amount: 0,
+        due_date: '2026-11-30', // Day 8 (after outflow)
+        sent: true,
+      })
+    );
 
     const input: ForecastInput = {
       today,
@@ -190,11 +222,11 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
       horizonDays: 90,
       openingCash: 50000,
       clients: [
-        { id: 'c1', name: 'Client 1', phone: '+91 90000 00001', payment_reliability: 'average', average_delay_days: 0 },
-        { id: 'c2', name: 'Client 2', phone: '+91 90000 00002', payment_reliability: 'average', average_delay_days: 0 },
+        mockClient({ id: 'c1', name: 'Client 1', phone: '+91 90000 00001', payment_reliability: 'average', average_delay_days: 0 }),
+        mockClient({ id: 'c2', name: 'Client 2', phone: '+91 90000 00002', payment_reliability: 'average', average_delay_days: 0 }),
       ],
       invoices: [
-        {
+        mockInvoice({
           id: 'inv-later-date',
           booking_id: 'b1',
           client_id: 'c1',
@@ -203,8 +235,8 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
           paid_amount: 0,
           due_date: '2026-12-02', // Day 10
           sent: true,
-        },
-        {
+        }),
+        mockInvoice({
           id: 'inv-earlier-date',
           booking_id: 'b2',
           client_id: 'c2',
@@ -213,7 +245,7 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
           paid_amount: 0,
           due_date: '2026-11-30', // Day 8 (earlier due date wins tie-break)
           sent: true,
-        },
+        }),
       ],
       recurringExpenses: [],
       oneOffExpenses: [{ name: 'Outflow', amount: 65000, date: '2026-11-27' }],
@@ -229,17 +261,17 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
       horizonDays: 90,
       openingCash: 30000, // Safe buffer = 6,000
       clients: [
-        {
+        mockClient({
           id: 'c-inflow',
           name: 'Wedding Client',
           phone: '+91 90000 00005',
           payment_reliability: 'reliable',
           average_delay_days: 0,
-        },
+        }),
       ],
       invoices: [
         // Inflow of 25,000 arrives on 2026-11-28 (day 6)
-        {
+        mockInvoice({
           id: 'inv-inflow',
           booking_id: 'b1',
           client_id: 'c-inflow',
@@ -248,7 +280,7 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
           paid_amount: 0,
           due_date: '2026-11-28',
           sent: true,
-        },
+        }),
       ],
       recurringExpenses: [],
       oneOffExpenses: [
@@ -275,8 +307,8 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
       today,
       horizonDays: 90,
       openingCash: 50000,
-      clients: [{ id: 'c1', name: 'Client 1', phone: '+91 90000 00001', payment_reliability: 'average', average_delay_days: 5 }],
-      invoices: [{ id: 'inv-1', booking_id: 'b1', client_id: 'c1', milestone_label: 'advance', amount: 15000, paid_amount: 0, due_date: '2026-11-10', sent: true }],
+      clients: [mockClient({ id: 'c1', name: 'Client 1', phone: '+91 90000 00001', payment_reliability: 'average', average_delay_days: 5 })],
+      invoices: [mockInvoice({ id: 'inv-1', booking_id: 'b1', client_id: 'c1', milestone_label: 'advance', amount: 15000, paid_amount: 0, due_date: '2026-11-10', sent: true })],
       recurringExpenses: [],
       oneOffExpenses: [{ name: 'Expense', amount: 70000, date: '2026-11-25' }],
     };
@@ -315,7 +347,7 @@ describe('Recovery Plan Engine (lib/recovery)', () => {
       (a) => a.invoice.client_id === mehtaClient.id && a.isOverdue
     );
     expect(mehtaOverdueAction).toBeDefined();
-    expect(mehtaOverdueAction?.invoice.amount - mehtaOverdueAction?.invoice.paid_amount).toBe(35000);
+    expect(mehtaOverdueAction!.invoice.amount - mehtaOverdueAction!.invoice.paid_amount).toBe(35000);
     expect(plan.resultingLowestBalance).toBeGreaterThan(plan.initialLowestBalance);
   });
 });

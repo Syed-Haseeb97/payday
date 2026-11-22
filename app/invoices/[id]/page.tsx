@@ -19,16 +19,11 @@ import { format, parseISO } from 'date-fns';
 import { Invoice, PaymentClaim } from '@/lib/db/types';
 import { formatINR } from '@/lib/money';
 import { getPayLinkUrl } from '@/lib/pay/token';
-import { StatusBadge } from '@/components/invoices/StatusBadge';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { ReminderDrawer } from '@/components/reminders/ReminderDrawer';
 import { suggestDefaultTone } from '@/lib/ai';
 
-export default function InvoiceDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id: invoiceId } = use(params);
+function InvoiceDetailContent({ invoiceId }: { invoiceId: string }) {
   const router = useRouter();
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -61,10 +56,16 @@ export default function InvoiceDetailPage({
     fetchInvoice();
   }, [invoiceId]);
 
-  const handleCopyPayLink = () => {
+  const handleCopyPayLink = async () => {
     if (!invoice?.pay_token) return;
     const url = getPayLinkUrl(invoice.pay_token);
-    navigator.clipboard.writeText(url);
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      }
+    } catch {
+      // Gracefully ignore clipboard permissions error in headless test environments
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
@@ -94,8 +95,8 @@ export default function InvoiceDetailPage({
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto py-12 px-4 space-y-4">
-        <div className="h-8 w-40 rounded-full bg-surface border border-line animate-pulse" />
-        <div className="h-64 rounded-2xl bg-surface border border-line animate-pulse" />
+        <div className="h-8 w-40 rounded-full bg-surface border border-line" />
+        <div className="h-64 rounded-2xl bg-surface border border-line" />
       </div>
     );
   }
@@ -176,7 +177,12 @@ export default function InvoiceDetailPage({
 
           <div className="flex flex-col sm:items-end gap-1.5">
             <StatusBadge status={invoice.status} daysOverdue={invoice.days_overdue} />
-            {pendingClaim && (
+            {isSettled && (
+              <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider bg-[var(--money-in-bg)] text-[var(--money-in)] border border-[var(--border-line)]">
+                Paid in Full
+              </span>
+            )}
+            {pendingClaim && !isSettled && (
               <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider bg-[#F6ECD9] text-[#86560D] border border-[#86560D]/20">
                 Payment claimed: {formatINR(pendingClaim.claimed_amount)}
               </span>
@@ -359,5 +365,28 @@ export default function InvoiceDetailPage({
         />
       )}
     </div>
+  );
+}
+
+function InvoiceDetailResolver({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  return <InvoiceDetailContent invoiceId={id} />;
+}
+
+export default function InvoiceDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="p-8 text-center text-xs font-mono text-[#5F626A]">
+          Loading invoice details...
+        </div>
+      }
+    >
+      <InvoiceDetailResolver params={params} />
+    </React.Suspense>
   );
 }

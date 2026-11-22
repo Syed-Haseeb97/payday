@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import { connection } from 'next/server';
 import { getRepository } from '@/lib/db/repository';
 import { isValidPayToken } from '@/lib/pay/token';
 import { DEMO_USER } from '@/lib/db/types';
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PayPage({ params }: PayPageProps) {
+  await connection();
   const { token } = await params;
 
   // Unknown or malformed token renders a generic 404 page revealing nothing about the system

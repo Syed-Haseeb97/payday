@@ -13,6 +13,7 @@ test.describe('Payday Hackathon Demo Path & Hardening', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
     page.on('pageerror', (err) => consoleErrors.push(err.message));
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
 
     await page.goto('/dashboard');
     await expect(page).toHaveTitle(/Payday/i);
@@ -45,6 +46,7 @@ test.describe('Payday Hackathon Demo Path & Hardening', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
     page.on('pageerror', (err) => consoleErrors.push(err.message));
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
 
     await page.goto('/bad-day');
     
@@ -82,6 +84,7 @@ test.describe('Payday Hackathon Demo Path & Hardening', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
     page.on('pageerror', (err) => consoleErrors.push(err.message));
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
 
     await page.goto('/forecast');
     await page.waitForLoadState('networkidle');
@@ -126,6 +129,7 @@ test.describe('Payday Hackathon Demo Path & Hardening', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
     page.on('pageerror', (err) => consoleErrors.push(err.message));
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
 
     await page.goto('/dashboard');
 
@@ -179,6 +183,7 @@ test.describe('Payday Hackathon Demo Path & Hardening', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
     page.on('pageerror', (err) => consoleErrors.push(err.message));
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
 
     await page.goto('/invoices');
 
@@ -217,6 +222,7 @@ test.describe('Payday Hackathon Demo Path & Hardening', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
     page.on('pageerror', (err) => consoleErrors.push(err.message));
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
 
     await page.goto('/pricing');
     await expect(page.locator('text=Your Numbers')).toBeVisible();
@@ -243,8 +249,20 @@ test.describe('Payday Hackathon Demo Path & Hardening', () => {
     expect(consoleErrors).toHaveLength(0);
   });
 
-  test('7. Accessibility audit: zero serious/critical violations on main pages in both themes', async ({ page }) => {
-    const pages = ['/dashboard', '/bad-day', '/forecast', '/invoices', '/pricing'];
+  test('7. Accessibility audit: zero serious/critical violations on main pages in both themes', async ({ page, request }) => {
+    // Fetch a sample invoice token for public pay page testing
+    const res = await request.get('/api/invoices');
+    const json = await res.json();
+    const sampleToken = json.invoices[0]?.pay_token || 'tok_sample_test_token_123456';
+
+    const pages = [
+      '/dashboard',
+      '/bad-day',
+      '/forecast',
+      '/invoices',
+      '/pricing',
+      `/pay/${sampleToken}`,
+    ];
 
     for (const path of pages) {
       await page.goto(path);
@@ -282,12 +300,13 @@ test.describe('Payday Hackathon Demo Path & Hardening', () => {
     }
   });
 
-  test('8. Security headers & CSP: zero securitypolicyviolation events or console errors across all pages', async ({ page }) => {
+  test('8. Security headers & CSP: zero securitypolicyviolation events or console errors across all pages', async ({ page, request }) => {
     const consoleErrors: string[] = [];
     page.on('console', (msg) => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
     page.on('pageerror', (err) => consoleErrors.push(err.message));
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
 
     await page.addInitScript(() => {
       (window as any).__cspViolations = [];
@@ -304,7 +323,21 @@ test.describe('Payday Hackathon Demo Path & Hardening', () => {
       });
     });
 
-    const routes = ['/dashboard', '/bad-day', '/forecast', '/invoices', '/pricing', '/settings', '/bookings', '/clients'];
+    const res = await request.get('/api/invoices');
+    const json = await res.json();
+    const sampleToken = json.invoices[0]?.pay_token || 'tok_sample_test_token_123456';
+
+    const routes = [
+      '/dashboard',
+      '/bad-day',
+      '/forecast',
+      '/invoices',
+      '/pricing',
+      '/settings',
+      '/bookings',
+      '/clients',
+      `/pay/${sampleToken}`,
+    ];
     for (const route of routes) {
       await page.goto(route);
       await page.waitForLoadState('networkidle');
@@ -317,5 +350,150 @@ test.describe('Payday Hackathon Demo Path & Hardening', () => {
     }
 
     expect(consoleErrors).toHaveLength(0);
+  });
+
+  test('9. Ask Payday: parses question, applies scenario chips, updates lowest balance, and triggers recovery plan card', async ({ page }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
+    page.on('pageerror', (err) => consoleErrors.push(err.message));
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
+
+    await page.goto('/forecast');
+    await page.waitForLoadState('networkidle');
+
+    // On mobile viewports, open What-If drawer if present
+    const whatIfDrawerBtn = page.locator('button:has-text("What-If"):visible').first();
+    if (await whatIfDrawerBtn.isVisible()) {
+      await whatIfDrawerBtn.click();
+    }
+
+    // Find Ask Payday input and click the Mehta 20d chip
+    const mehtaChip = page.locator('button:has-text("What if Mehta pays 20 days late?")').first();
+    await expect(mehtaChip).toBeVisible();
+    await mehtaChip.click();
+
+    // Verify input populated
+    const askInput = page.locator('input[placeholder*="What if Mehta pays 20 days late"]').first();
+    await expect(askInput).toHaveValue(/Mehta/i);
+
+    // Click Ask / Parse button
+    const parseBtn = page.locator('button:has-text("Ask"):visible, button:has-text("Parse Question"):visible, button:has-text("Parse"):visible').first();
+    await parseBtn.click();
+
+    // Staged scenario preview appears with Apply button
+    const applyBtn = page.locator('button:has-text("Apply to Forecast"):visible').first();
+    await expect(applyBtn).toBeVisible();
+    await applyBtn.click();
+
+    // Scenario applied -> Recovery plan appears under the forecast chart
+    const recoveryCard = page.locator('#recovery-plan');
+    await expect(recoveryCard).toBeVisible();
+    const planText = await recoveryCard.textContent();
+    expect(planText).toMatch(/Rohit Mehta|Mehta Wedding/i);
+    expect(planText).toMatch(/Recommendation/i);
+
+    // Verify Send reminder and Record payment buttons exist
+    await expect(recoveryCard.locator('button:has-text("Send reminder")').first()).toBeVisible();
+    await expect(recoveryCard.locator('button:has-text("Record payment")').first()).toBeVisible();
+
+    expect(consoleErrors).toHaveLength(0);
+  });
+
+  test('10. Client pay page: zero leakage, incognito claim, owner badges, alert, and confirm payment', async ({ page, browser, request }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
+    page.on('pageerror', (err) => consoleErrors.push(err.message));
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
+
+    // 1. Get Mehta invoice token from API
+    const res = await request.get('/api/invoices');
+    const json = await res.json();
+    const mehtaInv = json.invoices.find((i: any) =>
+      i.client?.name?.toLowerCase().includes('mehta') && i.amount - i.paid_amount > 0
+    );
+    expect(mehtaInv).toBeDefined();
+    expect(mehtaInv.pay_token).toBeDefined();
+    const token = mehtaInv.pay_token;
+
+    // 2. Open fresh incognito browser context (no owner cookies or local storage)
+    const incognito = await browser.newContext();
+    const incognitoPage = await incognito.newPage();
+
+    await incognitoPage.goto(`/pay/${token}`);
+    await incognitoPage.waitForLoadState('networkidle');
+
+    // Verify only first name is shown (e.g. "Hi Rohit"), never full legal name or contact details
+    await expect(incognitoPage.locator('text=Hi Rohit').first()).toBeVisible();
+    await expect(incognitoPage.locator('text=+91')).toHaveCount(0);
+    await expect(incognitoPage.locator('text=@example.fake')).toHaveCount(0);
+    await expect(incognitoPage.locator('text=Reliability')).toHaveCount(0);
+
+    // Verify UPI QR and Pay via UPI button
+    await expect(incognitoPage.locator('svg[aria-label*="UPI QR Code"]').first()).toBeVisible();
+    await expect(incognitoPage.locator('a:has-text("Pay via UPI")').first()).toBeVisible();
+
+    // Fill "I have paid" claim form
+    const amountInput = incognitoPage.locator('input#claimed-amount-input');
+    await expect(amountInput).toBeVisible();
+    await amountInput.fill('35000');
+
+    const refInput = incognitoPage.locator('input#claimed-ref-input');
+    await refInput.fill('UPI987654321012');
+
+    await incognitoPage.locator('button:has-text("Report Payment")').click();
+
+    // Confirmation message appears
+    await expect(incognitoPage.locator('text=Payment Reported').first()).toBeVisible();
+    await expect(incognitoPage.locator('text=awaiting confirmation from Arjun Visuals').first()).toBeVisible();
+
+    await incognito.close();
+
+    // 3. Return to owner context: verify badge in invoices list
+    await page.goto('/invoices');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('text=Payment claimed: ₹35,000').locator('visible=true').first()).toBeVisible();
+
+    // 4. Verify badge in Bad Day triage
+    await page.goto('/bad-day');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('text=Payment claimed: ₹35,000').first()).toBeVisible();
+
+    // 5. Verify payment_claimed alert on Dashboard
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+    const alertCard = page.locator('text=reported paying ₹35,000').first();
+    await expect(alertCard).toBeVisible();
+
+    // 6. Click Review claim or go to invoice detail
+    await page.goto(`/invoices/${mehtaInv.id}`);
+    await page.waitForLoadState('networkidle');
+
+    // Verify Copy pay link button works
+    const copyBtn = page.locator('button:has-text("Copy Pay Link"):visible').first();
+    await expect(copyBtn).toBeVisible();
+    await copyBtn.click();
+    await expect(page.locator('text=Link Copied!').first()).toBeVisible();
+
+    // Verify claim review card and click "Confirm Payment"
+    const confirmBtn = page.locator('button:has-text("Confirm Payment"):visible').first();
+    await expect(confirmBtn).toBeVisible();
+    await confirmBtn.click();
+
+    // Invoice updates: claim disappears, receipt is recorded
+    await expect(page.locator('text=Payment Receipts').first()).toBeVisible();
+    await expect(page.locator('text=UPI987654321012').first()).toBeVisible();
+
+    expect(consoleErrors).toHaveLength(0);
+  });
+
+  test('11. Invalid pay token renders generic 404', async ({ page }) => {
+    const res = await page.goto('/pay/garbage-invalid-token-1234567890');
+    await expect(page.locator('text=404 Not Found').first()).toBeVisible();
+    await expect(page.locator('text=Page Not Found').first()).toBeVisible();
+    expect([200, 404]).toContain(res?.status());
   });
 });
