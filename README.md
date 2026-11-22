@@ -2,19 +2,35 @@
 ### Cash Flow Intelligence & Receivables Operating System for Small Businesses & Teams in India
 
 [![Live App](https://img.shields.io/badge/Live_App-payday--ashen.vercel.app-10b981?style=for-the-badge&logo=vercel)](https://payday-ashen.vercel.app)
+[![Demo Video](https://img.shields.io/badge/Demo_Video-64s_Walkthrough-f43f5e?style=for-the-badge&logo=youtube)](https://payday-ashen.vercel.app/demo.mp4)
 [![GitHub](https://img.shields.io/badge/GitHub-Syed--Haseeb97%2Fpayday-181717?style=for-the-badge&logo=github)](https://github.com/Syed-Haseeb97/payday)
 [![Next.js](https://img.shields.io/badge/Next.js-16.4.6-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.3.0-blue?style=flat&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
-[![Vitest](https://img.shields.io/badge/Vitest-234_Passed-6E9F18?style=flat&logo=vitest)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-252_Passed-6E9F18?style=flat&logo=vitest)](https://vitest.dev/)
 [![Playwright](https://img.shields.io/badge/Playwright-22_Passed-2EAD33?style=flat&logo=playwright)](https://playwright.dev/)
 [![License](https://img.shields.io/badge/License-MIT-orange.svg)](LICENSE)
 
 > 🌐 **Live Deployment**: **[https://payday-ashen.vercel.app](https://payday-ashen.vercel.app)**  
+> 🎬 **Walkthrough Video**: **[Watch Demo Video (64s)](https://payday-ashen.vercel.app/demo.mp4)** | Direct File: [`public/demo.mp4`](./public/demo.mp4)  
 > 🔗 **GitHub Repository**: **[https://github.com/Syed-Haseeb97/payday](https://github.com/Syed-Haseeb97/payday)**  
 > 
 > *Production-grade, fully deployed Next.js 16 app linked to live Supabase PostgreSQL, Groq (Qwen 3.8 27B) + OpenRouter fallback AI, 90-day cash runway simulator, Bad Day Mode, UPI payment links, and Add-to-Home-Screen PWA.*
+
+---
+
+## 🎬 Video Walkthrough (64 Seconds · Zero Repetition)
+
+> 📺 **Watch live in browser**: **[https://payday-ashen.vercel.app/demo.mp4](https://payday-ashen.vercel.app/demo.mp4)**  
+> 📦 **High-definition MP4 asset**: [`public/demo.mp4`](./public/demo.mp4) *(1080p · 8.6 MB)*
+
+A fast-paced, 64-second editorial walkthrough demonstrating how Payday directly solves Problem Statement 1 (*The One-Person Back Office*):
+1. **Act I: The Core Problem (0s–12s)**: *"Small businesses don't fail from lack of customers. They fail because money arrives late and bills arrive on time."* Explains the tension between ₹11,24,000 in paper receivables vs ₹26,500 bank balance when studio rent is due.
+2. **Act II: The Solution (12s–20s)**: Introducing Payday — built specifically for 1–5 person Indian agencies, studios, and micro-teams.
+3. **Act III: Zero-Repetition Walkthrough (20s–47s)**: Live product walkthrough with animated cursor interactions covering the Dashboard, WhatsApp Reminder, Bad Day Mode, 90-Day Runway Forecast, What-If Late Scenario, Recovery Plan Solver, Milestones Ledger, Claim Verification, and 0%-fee UPI Pay Portal.
+4. **Act IV: Minimum Data Effort (47s–56s)**: WhatsApp Quick Add rough text intake + EMA payment delay learning.
+5. **Act V: Why Switch (56s–64s)**: Moving from cash anxiety to total financial clarity, backed by 252 tests.
 
 ---
 
@@ -174,7 +190,7 @@ flowchart TD
 | **Data Visualization** | Recharts | Responsive SVG charts with custom Indian compact currency tooltips. |
 | **Database** | Dual Mode: In-Memory / Supabase Postgres | Zero-config instant demo out-of-the-box; production-ready Postgres persistence. |
 | **Security & CSP** | JIT-less Zod 4, Web Crypto API | Zero `eval` execution; zero `securitypolicyviolation` events under strict CSP. |
-| **Testing** | Vitest (234 unit tests) + Playwright E2E (22 tests) | 100% pure function math verification + end-to-end user journey validation. |
+| **Testing** | Vitest (252 unit tests) + Playwright E2E (22 tests) | 100% pure function math verification + end-to-end user journey validation. |
 
 ### Editorial Precision & Design Aesthetics
 - **Light Mode Canvas**: Warm Archival Paper (`#F5F3EE`) with pure white surface cards (`#FFFFFF`) and hairline stone borders (`#C8C2B5`, 1px solid, `rounded-2xl`).
@@ -253,7 +269,7 @@ An annotated template is provided in [`.env.example`](.env.example).
 
 ## Test Verification
 
-Payday maintains strict testing discipline with **234 unit tests** across 26 test suites in Vitest and **22 end-to-end browser tests** in Playwright:
+Payday maintains strict testing discipline with **252 unit tests** across 29 test suites in Vitest and **22 end-to-end browser tests** in Playwright:
 
 ### Supabase Contract Tests & Safety Guards
 - The contract test suite (`lib/db/repository-contract.test.ts`) verifies strict behavioral parity between `InMemoryRepository` and `SupabaseRepository`.
