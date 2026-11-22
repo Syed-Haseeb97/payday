@@ -7,6 +7,7 @@ import { AppHeader } from '@/components/shell/AppHeader';
 import { AppNav } from '@/components/shell/AppNav';
 import { AppFooter } from '@/components/shell/AppFooter';
 import { MobileNav } from '@/components/shell/MobileNav';
+import { AddToHomeScreen } from '@/components/shell/AddToHomeScreen';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -36,6 +37,12 @@ export const metadata: Metadata = {
     title: 'Payday: the one-person back office for wedding photographers',
     description: 'Milestone invoicing, 90-day cash runway forecast, and Bad Day debt recovery for freelance wedding photographers in India.',
   },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Payday',
+  },
 };
 
 export default function RootLayout({
@@ -57,6 +64,7 @@ export default function RootLayout({
         </main>
         <AppFooter />
         <Suspense fallback={null}>
+          <AddToHomeScreen />
           <MobileNav />
         </Suspense>
       </body>

@@ -10,6 +10,6 @@ describe('Rolling Number & Currency Formatting Utilities', () => {
 
   it('formats zero and negative rupee amounts correctly', () => {
     expect(formatINR(0)).toBe('₹0');
-    expect(formatINR(-25000)).toBe('−₹25,000');
+    expect(formatINR(-25000)).toBe('-₹25,000');
   });
 });

@@ -1,0 +1,16 @@
+{
+  "name": "Payday — One-Person Back Office",
+  "short_name": "Payday",
+  "description": "Cash flow and receivables operating system for freelance wedding photographers and solo creative studios.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#F5F3EE",
+  "theme_color": "#16181D",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
