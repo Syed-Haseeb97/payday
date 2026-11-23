@@ -17,7 +17,7 @@ export interface OneOffExpense {
 
 export interface ForecastInput {
   today: string; // YYYY-MM-DD
-  horizonDays: number; // 30, 60, 90 (or any positive number)
+  horizonDays?: number; // 30, 60, 90 (or any positive number, defaults to 90)
   openingCash: number;
   invoices: Invoice[]; // Unpaid invoices with balance > 0
   clients: Client[];
@@ -208,7 +208,8 @@ export function expandRecurringExpense(
  * Computes daily projected cash balance and upcoming events over a given horizon.
  */
 export function computeCashForecast(input: ForecastInput): ForecastResult {
-  const { today, horizonDays, openingCash, invoices, clients, recurringExpenses } = input;
+  const horizonDays = input.horizonDays || 90;
+  const { today, openingCash, invoices, clients, recurringExpenses } = input;
   const oneOffExpenses = input.oneOffExpenses || [];
 
   const horizonEndDate = addDays(today, horizonDays - 1);

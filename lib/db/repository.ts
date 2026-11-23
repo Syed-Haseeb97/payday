@@ -57,6 +57,7 @@ export interface DashboardViewData {
 
 export interface ForecastInputs {
   today: string;
+  horizonDays?: number;
   openingCash: number;
   invoices: Invoice[];
   clients: Client[];
@@ -600,6 +601,7 @@ export class InMemoryRepository implements PaydayRepository {
 
     return {
       today,
+      horizonDays: 90,
       openingCash: settings.opening_cash_balance,
       invoices: unpaidInvoices,
       clients,
@@ -1289,6 +1291,7 @@ export class SupabaseRepository implements PaydayRepository {
 
     return {
       today,
+      horizonDays: 90,
       openingCash: settings.opening_cash_balance,
       invoices: unpaidInvoices,
       clients,

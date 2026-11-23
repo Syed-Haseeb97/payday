@@ -74,10 +74,10 @@ export function RunwayChart({ baseline, scenario, safeBuffer, height = 240, comp
   const [hover, setHover] = useState<number | null>(null);
   const [announce, setAnnounce] = useState('');
 
-  const primary = scenario ?? baseline;
+  const primary = scenario ?? baseline ?? [];
   const n = primary.length;
   const lowIdx = lowIndex(primary);
-  const low = primary[lowIdx] || { date: '2026-12-14', balance: 0 };
+  const low = primary[lowIdx] || (primary.length > 0 ? primary[0] : { date: '2026-12-14', balance: 26500 });
 
   const geom = useMemo(() => {
     const all = [...baseline, ...(scenario ?? [])].map((p) => p.balance);

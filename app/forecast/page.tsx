@@ -45,7 +45,8 @@ export default function ForecastPage() {
   useEffect(() => {
     if (!baseInput) return;
 
-    const baseResult = computeCashForecast(baseInput);
+    const safeInput = { ...baseInput, horizonDays: baseInput.horizonDays || 90 };
+    const baseResult = computeCashForecast(safeInput);
     const safeBuffer = 28000;
     const today = baseInput.today;
 
@@ -54,7 +55,7 @@ export default function ForecastPage() {
     let recovery: RecoveryPlan | undefined = undefined;
 
     if (activeScenarios.length > 0) {
-      const modifiedInput = applyScenarios(baseInput, activeScenarios);
+      const modifiedInput = applyScenarios(safeInput, activeScenarios);
       const scenarioResult = computeCashForecast(modifiedInput);
       scenarioPoints = scenarioResult.daily.map((p) => ({ date: p.date, balance: p.balance }));
       scenarioLow = {
